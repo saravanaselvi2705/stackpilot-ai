@@ -1,0 +1,228 @@
+import React, { useState } from 'react';
+import { Card, Button, Badge } from '../../components/UI';
+import { IoSparklesSharp, IoBugOutline, IoCheckmarkCircleOutline, IoMailOutline, IoWalletOutline, IoCopyOutline } from 'react-icons/io5';
+import API from '../../services/api';
+
+export const AIScripts: React.FC = () => {
+  const [activeTool, setActiveTool] = useState<'testcases' | 'bugreport' | 'cost' | 'email'>('testcases');
+  const [prompt, setPrompt] = useState<string>('');
+  const [output, setOutput] = useState<string>('');
+  const [generating, setGenerating] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  // Form parameters
+  const [emailScenario, setEmailScenario] = useState<string>('Follow up on pending design approval');
+  const [costScope, setCostScope] = useState<string>('React Native mobile application with payments');
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGenerating(true);
+    setOutput('');
+    try {
+      if (activeTool === 'testcases') {
+        const text = await API.ai.generate('testcases', prompt || 'User Authentication Module');
+        setOutput(text);
+      } else if (activeTool === 'bugreport') {
+        const text = await API.ai.generate('bugreport', prompt || 'Unhandled exception in compiler pipeline');
+        setOutput(text);
+      } else if (activeTool === 'cost') {
+        // Cost estimation simulation
+        await new Promise(r => setTimeout(r, 1000));
+        const costStr = `# Cost & Budget Estimates: "${costScope}"
+
+### 1. Scope Breakdown
+- **Mobile UI & Integration**: $15,000 (80 hours dev)
+- **Payment Gateway**: $8,500 (40 hours dev)
+- **Quality Assurance**: $4,500 (30 hours QA)
+
+### 2. Allocation Roster
+- **Senior Developer**: $90/hr (80 hours) = $7,200
+- **Lead QA Engineer**: $60/hr (30 hours) = $1,800
+- **Project Strategy PM**: $75/hr (25 hours) = $1,875
+
+**Total Internal Labor Cost**: $10,875
+**Client Proposal Value**: $28,000
+**Projected Margin Profit**: 61.15% (Healthy)
+`;
+        setOutput(costStr);
+      } else if (activeTool === 'email') {
+        await new Promise(r => setTimeout(r, 800));
+        const emailStr = `Subject: Quick updates: StackPilot AI [${emailScenario}]
+
+Dear Client Team,
+
+I hope this email finds you well.
+
+This is a quick notification to update you on progress regarding the escrow milestones: [${emailScenario}]. 
+
+Our team has completed the integration work, and testing is underway. We anticipate a review release within three business days.
+
+Please let us know if you require any specific alterations.
+
+Best regards,
+StackPilot Operations Admin
+`;
+        setOutput(emailStr);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const tools = [
+    { key: 'testcases', title: 'Test Case Writer', icon: <IoCheckmarkCircleOutline size={16} />, desc: 'Write test scenarios for features' },
+    { key: 'bugreport', title: 'Bug Reporter', icon: <IoBugOutline size={16} />, desc: 'Draft bug reports' },
+    { key: 'cost', title: 'Project Cost Estimator', icon: <IoWalletOutline size={16} />, desc: 'Estimate project costs' },
+    { key: 'email', title: 'Client Email Composer', icon: <IoMailOutline size={16} />, desc: 'Compose follow-up emails' }
+  ] as const;
+
+  return (
+    <div className="space-y-8">
+      {/* Heading */}
+      <div>
+        <h1 className="text-3xl font-black font-display text-white tracking-tight">AI Tools</h1>
+        <p className="text-xs text-slate-400 mt-1">Use pre-configured AI templates to write emails, estimate project costs, and draft reports.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Left Side: Selectors & Inputs */}
+        <div className="space-y-6 lg:col-span-1">
+          <Card>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Select AI Tool</h3>
+            <div className="space-y-2">
+              {tools.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => { setActiveTool(t.key); setOutput(''); setPrompt(''); }}
+                  className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                    activeTool === t.key 
+                      ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25 shadow-inner' 
+                      : 'bg-slate-900/40 border-slate-850 hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <div className="shrink-0">{t.icon}</div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-200 truncate">{t.title}</h4>
+                    <p className="text-[9px] text-slate-500 truncate">{t.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Parameters</h3>
+            <form onSubmit={handleGenerate} className="space-y-4">
+              {activeTool === 'testcases' && (
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Feature Details</label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="e.g. JWT Token refresh flow with authorization header validation..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50 resize-none"
+                  />
+                </div>
+              )}
+
+              {activeTool === 'bugreport' && (
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Issue Details</label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="e.g. Unhandled ReferenceError map property is undefined in sidebar components..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50 resize-none"
+                  />
+                </div>
+              )}
+
+              {activeTool === 'cost' && (
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Project Scope</label>
+                  <input
+                    type="text"
+                    required
+                    value={costScope}
+                    onChange={(e) => setCostScope(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                  />
+                </div>
+              )}
+
+              {activeTool === 'email' && (
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Email Topic</label>
+                  <input
+                    type="text"
+                    required
+                    value={emailScenario}
+                    onChange={(e) => setEmailScenario(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                  />
+                </div>
+              )}
+
+              <Button type="submit" loading={generating} className="w-full text-xs flex items-center justify-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white">
+                <IoSparklesSharp size={12} className="animate-spin-slow" />
+                Run AI Tool
+              </Button>
+            </form>
+          </Card>
+        </div>
+
+        {/* Right Side: Output Visualizer */}
+        <div className="lg:col-span-2">
+          <Card className="min-h-[460px] flex flex-col justify-between">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-200">AI Output</h3>
+                <Badge variant="primary">{activeTool.toUpperCase()}</Badge>
+              </div>
+              {output && (
+                <button 
+                  onClick={handleCopy}
+                  className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px]"
+                >
+                  {copied ? <span className="text-[9px] font-bold text-emerald-400">Copied!</span> : <IoCopyOutline size={14} />}
+                  Copy Output
+                </button>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto mt-4 p-4 bg-slate-950/40 rounded-xl border border-slate-850/80 font-mono text-[10px] leading-relaxed text-slate-300">
+              {generating ? (
+                <div className="flex flex-col items-center justify-center h-full space-y-3">
+                  <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <p className="text-slate-500 text-[10px] animate-pulse">StackPilot AI is generating...</p>
+                </div>
+              ) : output ? (
+                <pre className="whitespace-pre-wrap">{output}</pre>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-600 text-center px-6">
+                  Select a tool and enter parameters to generate content.
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default AIScripts;
