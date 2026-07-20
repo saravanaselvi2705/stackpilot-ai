@@ -137,7 +137,7 @@ export const Finance: React.FC = () => {
                     <p className="text-[9px] text-slate-500 font-semibold truncate mt-0.5">{inv.clientName}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-black text-slate-200 block">${inv.total.toLocaleString()}</span>
+                    <span className="text-xs font-black text-slate-200 block">₹{inv.total.toLocaleString()}</span>
                     <Badge variant={inv.status === 'Paid' ? 'success' : inv.status === 'Sent' ? 'primary' : 'secondary'}>
                       {inv.status}
                     </Badge>
@@ -198,8 +198,8 @@ export const Finance: React.FC = () => {
                           <tr key={idx} className="border-b border-slate-850 hover:bg-slate-900/10 text-slate-300">
                             <td className="py-3 px-3 font-semibold">{item.description}</td>
                             <td className="py-3 px-3 text-center font-mono">{item.quantity}</td>
-                            <td className="py-3 px-3 text-right font-mono">${item.rate.toLocaleString()}</td>
-                            <td className="py-3 px-3 text-right font-black text-slate-200">${item.amount.toLocaleString()}</td>
+                            <td className="py-3 px-3 text-right font-mono">₹{item.rate.toLocaleString()}</td>
+                            <td className="py-3 px-3 text-right font-black text-slate-200">₹{item.amount.toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -210,15 +210,15 @@ export const Finance: React.FC = () => {
                   <div className="space-y-1.5 max-w-xs ml-auto pt-4 border-t border-slate-800/40 text-xs">
                     <div className="flex justify-between text-slate-500">
                       <span>Subtotal:</span>
-                      <span className="font-mono text-slate-300">${selectedInvoice.subtotal.toLocaleString()}</span>
+                      <span className="font-mono text-slate-300">₹{selectedInvoice.subtotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-slate-500">
                       <span>Tax (18%):</span>
-                      <span className="font-mono text-slate-300">${selectedInvoice.taxAmount.toLocaleString()}</span>
+                      <span className="font-mono text-slate-300">₹{selectedInvoice.taxAmount.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between border-t border-slate-800 pt-2 font-bold text-sm">
                       <span className="text-white">Total:</span>
-                      <span className="font-mono text-[#22C55E]">${selectedInvoice.total.toLocaleString()}</span>
+                      <span className="font-mono text-[#22C55E]">₹{selectedInvoice.total.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export const Finance: React.FC = () => {
                     <input
                       type="number"
                       required
-                      placeholder="Rate ($)"
+                      placeholder="Rate (₹)"
                       value={item.rate}
                       onChange={(e) => handleItemChange(idx, 'rate', Number(e.target.value))}
                       className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#22C55E]/50"
@@ -377,8 +377,8 @@ export const Finance: React.FC = () => {
                     <tr key={idx} className="border-b border-slate-100 text-slate-700">
                       <td className="py-3 px-3 font-semibold">{item.description}</td>
                       <td className="py-3 px-3 text-center font-mono">{item.quantity}</td>
-                      <td className="py-3 px-3 text-right font-mono">${item.rate.toLocaleString()}</td>
-                      <td className="py-3 px-3 text-right font-black text-slate-900">${item.amount.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-right font-mono">₹{item.rate.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">₹{item.amount.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -397,15 +397,15 @@ export const Finance: React.FC = () => {
               <div className="space-y-1.5 w-48 text-xs text-slate-600 text-right">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span className="font-mono text-slate-800">${selectedInvoice.subtotal.toLocaleString()}</span>
+                  <span className="font-mono text-slate-800">₹{selectedInvoice.subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (18%):</span>
-                  <span className="font-mono text-slate-800">${selectedInvoice.taxAmount.toLocaleString()}</span>
+                  <span className="font-mono text-slate-800">₹{selectedInvoice.taxAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-200 pt-2 font-bold text-sm text-slate-900">
                   <span>Total Due:</span>
-                  <span className="font-mono text-[#22C55E]">${selectedInvoice.total.toLocaleString()}</span>
+                  <span className="font-mono text-[#22C55E]">₹{selectedInvoice.total.toLocaleString()}</span>
                 </div>
               </div>
             </div>

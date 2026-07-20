@@ -10,7 +10,6 @@ import Dashboard from './features/dashboard/Dashboard';
 import CRM from './features/crm/CRM';
 import Projects from './features/projects/Projects';
 import Tasks from './features/tasks/Tasks';
-import Requirements from './features/requirements/Requirements';
 import AIScripts from './features/ai/AIScripts';
 import Documentation from './features/docs/Documentation';
 import SEO from './features/seo/SEO';
@@ -50,7 +49,7 @@ export const App: React.FC = () => {
             <Route path="/crm" element={<CRM />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/tasks" element={<Tasks />} />
-            <Route path="/requirements" element={<Requirements />} />
+            <Route path="/requirements" element={<Navigate to="/documentation?tab=requirements" replace />} />
             <Route path="/ai-studio" element={<AIScripts />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/seo" element={<SEO />} />

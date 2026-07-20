@@ -82,6 +82,7 @@ const TaskSchema = new Schema({
   assigneeId: { type: Schema.Types.ObjectId, ref: 'User' },
   dueDate: { type: Date },
   labels: [{ type: String }],
+  estimatedTime: { type: Number, default: 0 },
   checklist: [{
     text: { type: String, required: true },
     done: { type: Boolean, default: false }

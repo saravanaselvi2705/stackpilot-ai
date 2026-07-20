@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/UI';
-import { IoSparklesSharp } from 'react-icons/io5';
+import { IoSparklesSharp, IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 
 export const Login: React.FC = () => {
   const { login, error } = useAuth();
   const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('password123');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [loginErr, setLoginErr] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -76,11 +78,21 @@ export const Login: React.FC = () => {
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
                 <Link to="/forgot-password" className="text-[10px] text-[#22C55E] hover:text-[#1db053] font-bold uppercase tracking-wider">Forgot?</Link>
               </div>
-              <input
-                type="password"
-                defaultValue="password123"
-                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-3 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50 focus:ring-1 focus:ring-[#22C55E]/20 transition-all opacity-80"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-850 rounded-xl pl-4 pr-12 py-3 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50 focus:ring-1 focus:ring-[#22C55E]/20 transition-all opacity-80"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-450 hover:text-[#22C55E] cursor-pointer flex items-center justify-center"
+                >
+                  {showPassword ? <IoEyeOffOutline size={16} /> : <IoEyeOutline size={16} />}
+                </button>
+              </div>
             </div>
 
             {/* Error notifications */}

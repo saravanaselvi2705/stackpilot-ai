@@ -6,6 +6,8 @@ import type { Project } from '../../../../../packages/shared/types';
 
 export const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [hoveredProject, setHoveredProject] = useState<Project | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -103,7 +105,7 @@ export const Projects: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold">
                     <span>Spent vs Budget</span>
-                    <span>${p.spent.toLocaleString()} / ${p.budget.toLocaleString()} ({percentSpent}%)</span>
+                    <span>₹{p.spent.toLocaleString()} / ₹{p.budget.toLocaleString()} ({percentSpent}%)</span>
                   </div>
                   <ProgressBar value={percentSpent} color={percentSpent > 80 ? 'bg-red-500' : 'bg-[#22C55E]'} />
                 </div>
@@ -155,8 +157,17 @@ export const Projects: React.FC = () => {
                 <span className="col-span-3 text-slate-300 font-semibold truncate">{p.name}</span>
                 <div className="col-span-9 grid grid-cols-9 h-6 relative bg-slate-900/10 rounded-lg overflow-hidden">
                   <div 
-                    className="h-full rounded-md bg-gradient-to-r from-[#22C55E]/25 to-[#22C55E] border-l-2 border-[#22C55E] shadow-md shadow-[#22C55E]/10 flex items-center px-3"
+                    className="h-full rounded-md bg-gradient-to-r from-[#22C55E]/25 to-[#22C55E] border-l-2 border-[#22C55E] shadow-md shadow-[#22C55E]/10 flex items-center px-3 cursor-pointer hover:brightness-110 transition-all"
                     style={{ gridColumnStart: startCol, gridColumnEnd: startCol + widthCols }}
+                    onMouseEnter={(e) => {
+                      setHoveredProject(p);
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoverPosition({ x: rect.left + rect.width / 2, y: rect.top - 8 });
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredProject(null);
+                      setHoverPosition(null);
+                    }}
                   >
                     <span className="text-[9px] font-bold text-emerald-200 truncate">{p.status}</span>
                   </div>
@@ -166,6 +177,36 @@ export const Projects: React.FC = () => {
           })}
         </div>
       </Card>
+
+      {hoveredProject && hoverPosition && (
+        <div 
+          className="fixed z-50 bg-slate-950 border border-[#22C55E]/40 px-3.5 py-2.5 rounded-2xl text-[10px] text-slate-200 font-bold shadow-2xl pointer-events-none -translate-x-1/2 -translate-y-full w-56 transition-all duration-150 backdrop-blur-md"
+          style={{ left: hoverPosition.x, top: hoverPosition.y }}
+        >
+          <div className="flex items-center justify-between gap-1 border-b border-slate-800 pb-1.5 mb-1.5">
+            <span className="text-white truncate max-w-[130px] font-display text-xs">{hoveredProject.name}</span>
+            <Badge variant={hoveredProject.status === 'Active' ? 'success' : 'warning'}>{hoveredProject.status}</Badge>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-slate-500 font-normal">
+              <span>Duration:</span>
+              <span className="text-slate-300 font-mono text-[9px]">
+                {new Date(hoveredProject.startDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})} - {new Date(hoveredProject.endDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+              </span>
+            </div>
+            <div className="flex justify-between text-slate-500 font-normal">
+              <span>Budget Spent:</span>
+              <span className="text-[#22C55E] font-mono text-[9px]">
+                ₹{hoveredProject.spent.toLocaleString()} / ₹{hoveredProject.budget.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between text-slate-500 font-normal">
+              <span>Client:</span>
+              <span className="text-slate-300 capitalize">{hoveredProject.client || 'Internal'}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Deploy Project Modal Form */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Create Project">
@@ -195,7 +236,7 @@ export const Projects: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Budget ($)</label>
+              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Budget (₹)</label>
               <input
                 type="number"
                 value={budget}

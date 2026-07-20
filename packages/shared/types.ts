@@ -76,6 +76,7 @@ export interface Task {
   checklist?: { id: string; text: string; done: boolean }[];
   comments?: { id: string; userId: string; userName: string; userAvatar?: string; text: string; createdAt: string }[];
   attachments?: { id: string; name: string; url: string; size: string; createdAt: string }[];
+  estimatedTime?: number;
   createdAt: string;
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, Button, Badge, Modal } from '../../components/UI';
 import { IoAdd, IoMailOutline, IoCallOutline, IoBusinessOutline, IoFunnelOutline } from 'react-icons/io5';
 import API from '../../services/api';
@@ -6,6 +7,8 @@ import type { Client } from '../../../../../packages/shared/types';
 
 export const CRM: React.FC = () => {
   const [leads, setLeads] = useState<Client[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'clients';
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -81,6 +84,12 @@ export const CRM: React.FC = () => {
     { key: 'Inactive', title: 'Inactive Clients', border: 'border-slate-800', bg: 'bg-slate-900/10', color: 'text-slate-500' }
   ];
 
+  const filteredPipelineStages = pipelineStages.filter(stage => {
+    if (activeTab === 'clients') return stage.key === 'Active';
+    if (activeTab === 'leads') return stage.key === 'Lead';
+    return true; // Show all stages for Contacts
+  });
+
   return (
     <div className="space-y-8">
       {/* CRM Heading */}
@@ -94,9 +103,43 @@ export const CRM: React.FC = () => {
         </Button>
       </div>
 
+      {/* Navigation Subtabs */}
+      <div className="flex gap-2 border-b border-slate-800 pb-2">
+        <button
+          onClick={() => setSearchParams({ tab: 'clients' })}
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            activeTab === 'clients'
+              ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 shadow-inner'
+              : 'text-slate-450 hover:text-white border border-transparent'
+          }`}
+        >
+          Clients
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'leads' })}
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            activeTab === 'leads'
+              ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 shadow-inner'
+              : 'text-slate-450 hover:text-white border border-transparent'
+          }`}
+        >
+          Leads
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'contacts' })}
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            activeTab === 'contacts'
+              ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 shadow-inner'
+              : 'text-slate-450 hover:text-white border border-transparent'
+          }`}
+        >
+          Contacts
+        </button>
+      </div>
+
       {/* Visual Pipeline Board */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {pipelineStages.map((stage) => {
+        {filteredPipelineStages.map((stage) => {
           const stageLeads = leads.filter(l => l.status === stage.key);
           const stageTotalValue = stageLeads.reduce((acc, curr) => acc + (curr.value || 0), 0);
 
@@ -108,7 +151,7 @@ export const CRM: React.FC = () => {
                   <h3 className={`text-xs font-bold ${stage.color} tracking-wider uppercase`}>{stage.title}</h3>
                   <span className="text-[10px] text-slate-500">{stageLeads.length} accounts</span>
                 </div>
-                <span className="text-xs font-black text-slate-300">${stageTotalValue.toLocaleString()}</span>
+                <span className="text-xs font-black text-slate-300">₹{stageTotalValue.toLocaleString()}</span>
               </div>
 
               {/* Lead Cards List */}
@@ -125,7 +168,7 @@ export const CRM: React.FC = () => {
                             <IoBusinessOutline size={10} /> {l.companyName}
                           </span>
                         </div>
-                        <span className="text-xs font-black text-[#22C55E]">${l.value?.toLocaleString()}</span>
+                        <span className="text-xs font-black text-[#22C55E]">₹{l.value?.toLocaleString()}</span>
                       </div>
 
                       {l.notes && <p className="text-[10px] text-slate-400 leading-relaxed truncate">{l.notes}</p>}
@@ -208,7 +251,11 @@ export const CRM: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => (
+              {leads.filter(l => {
+                if (activeTab === 'clients') return l.status === 'Active';
+                if (activeTab === 'leads') return l.status === 'Lead';
+                return true; // Show all for Contacts
+              }).map((l) => (
                 <tr key={l._id} className="border-b border-slate-800/40 hover:bg-slate-900/10 text-slate-300">
                   <td className="py-3.5 px-2 font-semibold text-white">{l.name}</td>
                   <td className="py-3.5 px-2">{l.companyName || 'Internal'}</td>
@@ -219,7 +266,7 @@ export const CRM: React.FC = () => {
                       {l.status}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-2 text-right font-black text-slate-200">${(l.value || 0).toLocaleString()}</td>
+                  <td className="py-3.5 px-2 text-right font-black text-slate-200">₹{(l.value || 0).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -280,7 +327,7 @@ export const CRM: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Value ($)</label>
+              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Value (₹)</label>
               <input
                 type="number"
                 value={value}

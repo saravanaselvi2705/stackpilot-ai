@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   IoSpeedometerOutline, 
@@ -16,27 +16,91 @@ import {
   IoSettingsOutline,
   IoChevronBackOutline,
   IoChevronForwardOutline,
-  IoLogOutOutline
+  IoLogOutOutline,
+  IoNotificationsOutline
 } from 'react-icons/io5';
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const location = useLocation();
+  const currentPathWithSearch = location.pathname + location.search;
 
-  const navigationItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <IoSpeedometerOutline size={20} /> },
-    { name: 'Clients', path: '/crm', icon: <IoPeopleOutline size={20} /> },
-    { name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={20} /> },
-    { name: 'Tasks', path: '/tasks', icon: <IoListOutline size={20} /> },
-    { name: 'Requirements', path: '/requirements', icon: <IoDocumentTextOutline size={20} /> },
-    { name: 'AI Tools', path: '/ai-studio', icon: <IoSparklesOutline size={20} /> },
-    { name: 'Documents', path: '/documentation', icon: <IoBookOutline size={20} /> },
-    { name: 'Reports', path: '/seo', icon: <IoGlobeOutline size={20} /> },
-    { name: 'Team', path: '/team', icon: <IoPeopleCircleOutline size={20} /> },
-    { name: 'Billing', path: '/finance', icon: <IoCashOutline size={20} /> },
-    { name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={20} /> },
-    { name: 'Settings', path: '/settings', icon: <IoSettingsOutline size={20} /> },
+  const navigationGroups = [
+    {
+      title: 'Dashboard',
+      items: [
+        { name: 'Overview', path: '/dashboard', icon: <IoSpeedometerOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'CRM',
+      items: [
+        { name: 'Clients', path: '/crm', icon: <IoPeopleOutline size={18} /> },
+        { name: 'Leads', path: '/crm?tab=leads', icon: <IoPeopleOutline size={18} /> },
+        { name: 'Contacts', path: '/crm?tab=contacts', icon: <IoPeopleOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Project Management',
+      items: [
+        { name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={18} /> },
+        { name: 'Tasks', path: '/tasks', icon: <IoListOutline size={18} /> },
+        { name: 'Requirements', path: '/documentation?tab=requirements', icon: <IoDocumentTextOutline size={18} /> },
+        { name: 'Documents', path: '/documentation', icon: <IoBookOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'AI Workspace',
+      items: [
+        { name: 'AI Tools', path: '/ai-studio', icon: <IoSparklesOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Finance',
+      items: [
+        { name: 'Billing', path: '/finance?tab=billing', icon: <IoCashOutline size={18} /> },
+        { name: 'Invoices', path: '/finance?tab=invoices', icon: <IoCashOutline size={18} /> },
+        { name: 'Reports', path: '/finance?tab=reports', icon: <IoCashOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Reports',
+      items: [
+        { name: 'Reports', path: '/seo', icon: <IoGlobeOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Team',
+      items: [
+        { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> },
+        { name: 'Leave Requests', path: '/team?tab=leaves', icon: <IoCalendarOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Productivity',
+      items: [
+        { name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={18} /> },
+        { name: 'Notifications', path: '/dashboard?tab=notifications', icon: <IoNotificationsOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'Administration',
+      items: [
+        { name: 'Settings', path: '/settings', icon: <IoSettingsOutline size={18} /> }
+      ]
+    }
   ];
+
+  const isActive = (itemPath: string) => {
+    if (currentPathWithSearch === itemPath) return true;
+    if (itemPath === '/crm' && location.pathname === '/crm' && !location.search) return true;
+    if (itemPath === '/documentation' && location.pathname === '/documentation' && !location.search) return true;
+    if (itemPath === '/finance?tab=billing' && location.pathname === '/finance' && (!location.search || location.search === '?tab=billing')) return true;
+    if (itemPath === '/team' && location.pathname === '/team' && !location.search) return true;
+    if (itemPath === '/dashboard' && location.pathname === '/dashboard' && !location.search) return true;
+    return location.pathname === itemPath.split('?')[0] && itemPath.indexOf('?') === -1;
+  };
 
   return (
     <aside 
@@ -68,22 +132,34 @@ export const Sidebar: React.FC = () => {
         </div>
  
          {/* Navigation list */}
-         <nav className="p-3 space-y-1.5 overflow-y-auto max-h-[calc(100vh-210px)]">
-           {navigationItems.map((item) => (
-             <NavLink
-               key={item.name}
-               to={item.path}
-               className={({ isActive }) =>
-                 `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                   isActive 
-                     ? 'bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 shadow-inner' 
-                     : 'text-slate-400 hover:text-white hover:bg-slate-800/40 border border-transparent'
-                 }`
-               }
-             >
-               <div className="shrink-0">{item.icon}</div>
-               {!collapsed && <span className="truncate">{item.name}</span>}
-             </NavLink>
+         <nav className="p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+           {navigationGroups.map((group) => (
+             <div key={group.title} className="space-y-0.5">
+               {!collapsed && (
+                 <h5 className="px-4 text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 mt-2">
+                   {group.title}
+                 </h5>
+               )}
+               {group.items.map((item) => {
+                 const active = isActive(item.path);
+                 return (
+                   <NavLink
+                     key={item.name}
+                     to={item.path}
+                     className={
+                       `flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                         active 
+                           ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20 shadow-inner' 
+                           : 'text-slate-400 hover:text-white hover:bg-slate-800/40 border-transparent'
+                       }`
+                     }
+                   >
+                     <div className="shrink-0">{item.icon}</div>
+                     {!collapsed && <span className="truncate">{item.name}</span>}
+                   </NavLink>
+                 );
+               })}
+             </div>
            ))}
          </nav>
        </div>

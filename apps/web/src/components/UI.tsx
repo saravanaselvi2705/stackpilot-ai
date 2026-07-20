@@ -76,8 +76,9 @@ export const Card: React.FC<CardProps> = ({ children, className = '', hoverEffec
 interface BadgeProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'purple';
+  className?: string;
 }
-export const Badge: React.FC<BadgeProps> = ({ children, variant = 'secondary' }) => {
+export const Badge: React.FC<BadgeProps> = ({ children, variant = 'secondary', className = '' }) => {
   const styles = {
     primary: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
     secondary: 'bg-slate-800 text-slate-300 border border-slate-700',
@@ -88,7 +89,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'secondary' })
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide ${styles[variant]}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide ${styles[variant]} ${className}`}>
       {children}
     </span>
   );

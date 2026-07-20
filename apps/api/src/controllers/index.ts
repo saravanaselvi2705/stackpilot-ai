@@ -193,7 +193,7 @@ export const getTasks = async (req: AuthenticatedRequest, res: Response) => {
 
 export const createTask = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { projectId, title, description, priority, assigneeId, dueDate, labels } = req.body;
+    const { projectId, title, description, priority, assigneeId, dueDate, labels, estimatedTime } = req.body;
     const task = new db.Task({
       projectId,
       title,
@@ -202,7 +202,8 @@ export const createTask = async (req: AuthenticatedRequest, res: Response) => {
       status: 'Todo',
       assigneeId,
       dueDate,
-      labels: labels || []
+      labels: labels || [],
+      estimatedTime: estimatedTime || 0
     });
 
     await task.save();

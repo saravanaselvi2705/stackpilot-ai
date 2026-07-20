@@ -1,8 +1,8 @@
 import axios from 'axios';
 import type { User, Project, Task, Client, Invoice, Document, SEOReport, BlogPost, Keyword, ActivityLog, Notification, UserRole } from '../../../../packages/shared/types';
 
-const API_URL = 'http://localhost:5000/api';
-
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 // Create Axios Client
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -111,6 +111,7 @@ const DEFAULT_TASKS: Task[] = [
     attachments: [
       { id: 'a-1', name: 'webpack_hooks_v2.pdf', url: '#', size: '2.4 MB', createdAt: new Date().toISOString() }
     ],
+    estimatedTime: 12,
     createdAt: new Date().toISOString()
   },
   {
@@ -125,6 +126,7 @@ const DEFAULT_TASKS: Task[] = [
     labels: ['Requirements'],
     checklist: [],
     comments: [],
+    estimatedTime: 4,
     createdAt: new Date().toISOString()
   },
   {
@@ -139,6 +141,7 @@ const DEFAULT_TASKS: Task[] = [
     labels: ['QA', 'Integration'],
     checklist: [],
     comments: [],
+    estimatedTime: 16,
     createdAt: new Date().toISOString()
   },
   {
@@ -153,6 +156,7 @@ const DEFAULT_TASKS: Task[] = [
     labels: ['Database', 'Migration'],
     checklist: [],
     comments: [],
+    estimatedTime: 6,
     createdAt: new Date().toISOString()
   }
 ];
@@ -433,7 +437,7 @@ export const API = {
           const res = await apiClient.get('/auth/profile');
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const cached = localStorage.getItem('stackpilot_user');
       if (cached) return JSON.parse(cached);
@@ -446,7 +450,7 @@ export const API = {
           const res = await apiClient.put('/auth/profile', updates);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const cached = localStorage.getItem('stackpilot_user');
       if (!cached) throw new Error('Not logged in.');
@@ -473,7 +477,7 @@ export const API = {
           const res = await apiClient.get('/projects');
           return res.data;
         }
-      } catch {}
+      } catch { }
       return mockDB.getProjects();
     },
 
@@ -483,7 +487,7 @@ export const API = {
           const res = await apiClient.post('/projects', p);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const projects = mockDB.getProjects();
       const newProj: Project = {
@@ -533,7 +537,7 @@ export const API = {
           const res = await apiClient.get('/tasks', { params: { projectId } });
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const tasks = mockDB.getTasks();
       if (projectId) {
@@ -548,7 +552,7 @@ export const API = {
           const res = await apiClient.post('/tasks', t);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const tasks = mockDB.getTasks();
       const newTask: Task = {
@@ -564,6 +568,7 @@ export const API = {
         checklist: [],
         comments: [],
         attachments: [],
+        estimatedTime: t.estimatedTime || 0,
         createdAt: new Date().toISOString()
       };
 
@@ -579,7 +584,7 @@ export const API = {
           const res = await apiClient.put(`/tasks/${id}`, updates);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const tasks = mockDB.getTasks();
       const idx = tasks.findIndex(t => t._id === id);
@@ -620,7 +625,7 @@ export const API = {
           const res = await apiClient.get('/crm/leads');
           return res.data;
         }
-      } catch {}
+      } catch { }
       return mockDB.getLeads();
     },
 
@@ -630,7 +635,7 @@ export const API = {
           const res = await apiClient.post('/crm/leads', l);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const leads = mockDB.getLeads();
       const newLead: Client = {
@@ -669,7 +674,7 @@ export const API = {
           const res = await apiClient.get('/finance/invoices');
           return res.data;
         }
-      } catch {}
+      } catch { }
       return mockDB.getInvoices();
     },
 
@@ -679,7 +684,7 @@ export const API = {
           const res = await apiClient.post('/finance/invoices', inv);
           return res.data;
         }
-      } catch {}
+      } catch { }
 
       const invoices = mockDB.getInvoices();
       const items = inv.items || [];
@@ -731,7 +736,7 @@ export const API = {
           const res = await apiClient.get('/seo/reports');
           return res.data;
         }
-      } catch {}
+      } catch { }
       return mockDB.getSEOs();
     },
 
@@ -802,7 +807,7 @@ export const API = {
           const res = await apiClient.post(`/ai/${tool}`, { prompt });
           return res.data.content;
         }
-      } catch {}
+      } catch { }
 
       // Fallback AI simulation
       await new Promise(r => setTimeout(r, 1200));

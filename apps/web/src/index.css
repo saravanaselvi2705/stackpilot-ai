@@ -209,3 +209,25 @@ td.text-white, th.text-white {
 .text-slate-400.hover\:text-white.hover\:bg-slate-800\/40:hover {
   background-color: #ECFDF5 !important;
 }
+
+/* Form Visibility Adjustments */
+input, textarea, select {
+  color: #111827 !important;
+  background-color: #FFFFFF !important;
+  border-color: #D1D5DB !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6B7280 !important;
+  opacity: 1 !important;
+}
+
+select option {
+  color: #111827 !important;
+  background-color: #FFFFFF !important;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: #22C55E !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+}

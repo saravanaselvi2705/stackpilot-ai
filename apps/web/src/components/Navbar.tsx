@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Badge, Drawer } from './UI';
 import { 
@@ -10,7 +11,8 @@ import {
   IoListOutline, 
   IoCashOutline, 
   IoPeopleOutline, 
-  IoDocumentTextOutline
+  IoDocumentTextOutline,
+  IoHomeOutline
 } from 'react-icons/io5';
 import type { UserRole } from '../../../../packages/shared/types';
 import API from '../services/api';
@@ -23,7 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
   const { user, switchRole, isMock } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifOpen, setNotifOpen] = useState<boolean>(false);
-  const [activeMenu, setActiveMenu] = useState<boolean>(false);
+  const navigate = useNavigate();
+
 
   const roles: UserRole[] = [
     'Super Admin',
@@ -87,6 +90,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
 
       {/* Right Side Options */}
       <div className="flex items-center gap-4">
+        {/* Home Button */}
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/40 hover:bg-slate-800/60 border border-slate-800/80 text-slate-400 hover:text-white transition-all text-xs font-semibold cursor-pointer"
+          title="Return to Dashboard"
+        >
+          <IoHomeOutline size={14} className="text-[#22C55E]" />
+          <span className="hidden sm:inline">Home</span>
+        </button>
+
         {/* Role Simulator Switcher */}
         <div className="flex items-center gap-2 bg-slate-900/30 border border-slate-800/50 rounded-xl px-3 py-1.5">
           <div className="flex items-center gap-1.5 text-[#22C55E] animate-pulse">

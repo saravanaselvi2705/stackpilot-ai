@@ -1,7 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '../../components/UI';
-import { IoSparklesSharp, IoBugOutline, IoCheckmarkCircleOutline, IoMailOutline, IoWalletOutline, IoCopyOutline } from 'react-icons/io5';
+import { 
+  IoSparklesSharp, 
+  IoBugOutline, 
+  IoCheckmarkCircleOutline, 
+  IoMailOutline, 
+  IoWalletOutline, 
+  IoCopyOutline, 
+  IoTrashOutline, 
+  IoDownloadOutline, 
+  IoCreateOutline, 
+  IoEyeOutline, 
+  IoSaveOutline, 
+  IoTimeOutline 
+} from 'react-icons/io5';
 import API from '../../services/api';
+
+interface AIHistoryItem {
+  id: string;
+  tool: string;
+  prompt: string;
+  output: string;
+  timestamp: string;
+}
 
 export const AIScripts: React.FC = () => {
   const [activeTool, setActiveTool] = useState<'testcases' | 'bugreport' | 'cost' | 'email'>('testcases');
@@ -10,44 +31,83 @@ export const AIScripts: React.FC = () => {
   const [generating, setGenerating] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
+  // Editor states
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedOutput, setEditedOutput] = useState<string>('');
+
+  // History Logs
+  const [history, setHistory] = useState<AIHistoryItem[]>([]);
+  const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
+
   // Form parameters
   const [emailScenario, setEmailScenario] = useState<string>('Follow up on pending design approval');
   const [costScope, setCostScope] = useState<string>('React Native mobile application with payments');
 
+  // Load history from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('sp_ai_history');
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      // Default baseline items
+      const defaults: AIHistoryItem[] = [
+        {
+          id: 'hist-1',
+          tool: 'testcases',
+          prompt: 'JWT Refresh Auth Token',
+          output: `### Test Cases: JWT Auth Refresh Flow\n\n1. **TC-001**: Verify token exchange succeeds with valid refresh token.\n2. **TC-002**: Verify request gets HTTP 401 when refresh token is expired.`,
+          timestamp: new Date(Date.now() - 3600000).toLocaleString()
+        }
+      ];
+      setHistory(defaults);
+      localStorage.setItem('sp_ai_history', JSON.stringify(defaults));
+    }
+  }, []);
+
+  // Save history helper
+  const saveHistory = (updated: AIHistoryItem[]) => {
+    setHistory(updated);
+    localStorage.setItem('sp_ai_history', JSON.stringify(updated));
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setGenerating(true);
+    setIsEditing(false);
     setOutput('');
+    const currentPrompt = prompt || (activeTool === 'cost' ? costScope : activeTool === 'email' ? emailScenario : 'General Scenario');
+    
     try {
+      let resultText = '';
       if (activeTool === 'testcases') {
-        const text = await API.ai.generate('testcases', prompt || 'User Authentication Module');
-        setOutput(text);
+        resultText = await API.ai.generate('testcases', prompt || 'User Authentication Module');
       } else if (activeTool === 'bugreport') {
-        const text = await API.ai.generate('bugreport', prompt || 'Unhandled exception in compiler pipeline');
-        setOutput(text);
+        resultText = await API.ai.generate('bugreport', prompt || 'Unhandled exception in compiler pipeline');
       } else if (activeTool === 'cost') {
-        // Cost estimation simulation
         await new Promise(r => setTimeout(r, 1000));
-        const costStr = `# Cost & Budget Estimates: "${costScope}"
+        resultText = `# Cost & Budget Estimates: "${costScope}"
 
 ### 1. Scope Breakdown
-- **Mobile UI & Integration**: $15,000 (80 hours dev)
-- **Payment Gateway**: $8,500 (40 hours dev)
-- **Quality Assurance**: $4,500 (30 hours QA)
+- **Mobile UI & Integration**: ₹1,50,000 (80 hours dev)
+- **Payment Gateway**: ₹85,000 (40 hours dev)
+- **Quality Assurance**: ₹45,000 (30 hours QA)
 
 ### 2. Allocation Roster
-- **Senior Developer**: $90/hr (80 hours) = $7,200
-- **Lead QA Engineer**: $60/hr (30 hours) = $1,800
-- **Project Strategy PM**: $75/hr (25 hours) = $1,875
+- **Senior Developer**: ₹900/hr (80 hours) = ₹72,000
+- **Lead QA Engineer**: ₹600/hr (30 hours) = ₹18,000
+- **Project Strategy PM**: ₹750/hr (25 hours) = ₹18,750
 
-**Total Internal Labor Cost**: $10,875
-**Client Proposal Value**: $28,000
+**Total Internal Labor Cost**: ₹1,08,750
+**Client Proposal Value**: ₹2,80,000
 **Projected Margin Profit**: 61.15% (Healthy)
 `;
-        setOutput(costStr);
       } else if (activeTool === 'email') {
         await new Promise(r => setTimeout(r, 800));
-        const emailStr = `Subject: Quick updates: StackPilot AI [${emailScenario}]
+        resultText = `Subject: Quick updates: StackPilot AI [${emailScenario}]
 
 Dear Client Team,
 
@@ -62,8 +122,24 @@ Please let us know if you require any specific alterations.
 Best regards,
 StackPilot Operations Admin
 `;
-        setOutput(emailStr);
       }
+
+      setOutput(resultText);
+      setEditedOutput(resultText);
+
+      // Append to history
+      const newHistoryItem: AIHistoryItem = {
+        id: `hist-${Date.now()}`,
+        tool: activeTool,
+        prompt: currentPrompt,
+        output: resultText,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      const updatedHistory = [newHistoryItem, ...history];
+      saveHistory(updatedHistory);
+      setActiveHistoryId(newHistoryItem.id);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -72,9 +148,55 @@ StackPilot Operations Admin
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(output);
+    navigator.clipboard.writeText(isEditing ? editedOutput : output);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSaveChanges = () => {
+    setOutput(editedOutput);
+    setIsEditing(false);
+    // Update active history item if exists
+    if (activeHistoryId) {
+      const updated = history.map(item => 
+        item.id === activeHistoryId ? { ...item, output: editedOutput } : item
+      );
+      saveHistory(updated);
+    }
+  };
+
+  const handleDeleteHistory = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = history.filter(item => item.id !== id);
+    saveHistory(updated);
+    if (activeHistoryId === id) {
+      setOutput('');
+      setEditedOutput('');
+      setActiveHistoryId(null);
+    }
+  };
+
+  const handleSelectHistoryItem = (item: AIHistoryItem) => {
+    setActiveTool(item.tool as any);
+    setPrompt(item.prompt);
+    setOutput(item.output);
+    setEditedOutput(item.output);
+    setActiveHistoryId(item.id);
+    setIsEditing(false);
+  };
+
+  const triggerExport = (format: 'PDF' | 'DOCX') => {
+    const textToExport = isEditing ? editedOutput : output;
+    if (!textToExport) return;
+    
+    // Simulate real file download trigger
+    const blob = new Blob([textToExport], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ai_${activeTool}_export.${format.toLowerCase()}`;
+    link.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const tools = [
@@ -88,7 +210,7 @@ StackPilot Operations Admin
     <div className="space-y-8">
       {/* Heading */}
       <div>
-        <h1 className="text-3xl font-black font-display text-white tracking-tight">AI Tools</h1>
+        <h1 className="text-3xl font-black font-display text-white tracking-tight">AI Tools Workspace</h1>
         <p className="text-xs text-slate-400 mt-1">Use pre-configured AI templates to write emails, estimate project costs, and draft reports.</p>
       </div>
 
@@ -101,7 +223,14 @@ StackPilot Operations Admin
               {tools.map((t) => (
                 <button
                   key={t.key}
-                  onClick={() => { setActiveTool(t.key); setOutput(''); setPrompt(''); }}
+                  onClick={() => { 
+                    setActiveTool(t.key); 
+                    setOutput(''); 
+                    setEditedOutput('');
+                    setPrompt(''); 
+                    setActiveHistoryId(null);
+                    setIsEditing(false);
+                  }}
                   className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                     activeTool === t.key 
                       ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25 shadow-inner' 
@@ -181,28 +310,102 @@ StackPilot Operations Admin
               </Button>
             </form>
           </Card>
+
+          {/* History log panel */}
+          <Card>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Past Runs History</h3>
+            <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+              {history.length === 0 ? (
+                <p className="text-[10px] text-slate-600 italic">No past runs in cache</p>
+              ) : (
+                history.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => handleSelectHistoryItem(item)}
+                    className={`flex items-start justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      activeHistoryId === item.id 
+                        ? 'bg-[#22C55E]/5 border-[#22C55E]/20 text-slate-200' 
+                        : 'bg-slate-950/40 border-slate-850 hover:bg-slate-900/40 text-slate-400'
+                    }`}
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[8px] font-black uppercase text-emerald-450">{item.tool}</span>
+                        <span className="text-[8px] text-slate-500">{item.timestamp}</span>
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-350 truncate mt-0.5">{item.prompt}</p>
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteHistory(item.id, e)}
+                      className="text-slate-650 hover:text-red-400 p-0.5"
+                    >
+                      <IoTrashOutline size={12} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
         </div>
 
-        {/* Right Side: Output Visualizer */}
+        {/* Right Side: Output Visualizer and Editor */}
         <div className="lg:col-span-2">
-          <Card className="min-h-[460px] flex flex-col justify-between">
+          <Card className="min-h-[500px] flex flex-col justify-between">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-200">AI Output</h3>
+                <h3 className="text-sm font-bold text-slate-200">AI Workspace Output</h3>
                 <Badge variant="primary">{activeTool.toUpperCase()}</Badge>
               </div>
+
               {output && (
-                <button 
-                  onClick={handleCopy}
-                  className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px]"
-                >
-                  {copied ? <span className="text-[9px] font-bold text-emerald-400">Copied!</span> : <IoCopyOutline size={14} />}
-                  Copy Output
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* Export Options */}
+                  <button 
+                    onClick={() => triggerExport('PDF')}
+                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-0.5 text-[9px] font-bold border border-slate-850 px-2 py-1"
+                    title="Export as PDF"
+                  >
+                    <IoDownloadOutline size={11} /> PDF
+                  </button>
+                  <button 
+                    onClick={() => triggerExport('DOCX')}
+                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-0.5 text-[9px] font-bold border border-slate-850 px-2 py-1"
+                    title="Export as DOCX"
+                  >
+                    <IoDownloadOutline size={11} /> DOCX
+                  </button>
+
+                  <div className="h-4 w-px bg-slate-800" />
+
+                  {/* Toggle Preview / Edit modes */}
+                  {isEditing ? (
+                    <button
+                      onClick={handleSaveChanges}
+                      className="text-emerald-450 hover:text-emerald-400 p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                    >
+                      <IoSaveOutline size={13} /> Save Edits
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                    >
+                      <IoCreateOutline size={13} /> Edit Output
+                    </button>
+                  )}
+
+                  <button 
+                    onClick={handleCopy}
+                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                  >
+                    {copied ? <span className="text-[9px] font-bold text-emerald-400">Copied!</span> : <IoCopyOutline size={13} />}
+                    Copy
+                  </button>
+                </div>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto mt-4 p-4 bg-slate-950/40 rounded-xl border border-slate-850/80 font-mono text-[10px] leading-relaxed text-slate-300">
+            <div className="flex-1 overflow-y-auto mt-4 p-4 bg-slate-950/40 rounded-xl border border-slate-850/80 font-sans text-xs leading-relaxed text-slate-300">
               {generating ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-3">
                   <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
@@ -211,11 +414,17 @@ StackPilot Operations Admin
                   </svg>
                   <p className="text-slate-500 text-[10px] animate-pulse">StackPilot AI is generating...</p>
                 </div>
+              ) : isEditing ? (
+                <textarea
+                  className="w-full h-80 bg-transparent text-slate-200 outline-none font-mono text-[10px] leading-relaxed resize-none"
+                  value={editedOutput}
+                  onChange={(e) => setEditedOutput(e.target.value)}
+                />
               ) : output ? (
-                <pre className="whitespace-pre-wrap">{output}</pre>
+                <pre className="whitespace-pre-wrap font-mono text-[10px]">{output}</pre>
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-600 text-center px-6">
-                  Select a tool and enter parameters to generate content.
+                  Select a tool and enter parameters to generate content. Past runs will appear in history.
                 </div>
               )}
             </div>
@@ -225,4 +434,5 @@ StackPilot Operations Admin
     </div>
   );
 };
+
 export default AIScripts;

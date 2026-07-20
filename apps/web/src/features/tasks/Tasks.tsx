@@ -29,6 +29,10 @@ export const Tasks: React.FC = () => {
   const [taskPriority, setTaskPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
   const [taskDueDate, setTaskDueDate] = useState<string>('');
   const [taskLabels, setTaskLabels] = useState<string>('Engineering');
+  const [taskEstimatedTime, setTaskEstimatedTime] = useState<number>(0);
+
+  // Drag and drop tracking
+  const [activeDragCol, setActiveDragCol] = useState<Task['status'] | null>(null);
 
   // Comment Form State
   const [commentText, setCommentText] = useState<string>('');
@@ -64,6 +68,7 @@ export const Tasks: React.FC = () => {
         priority: taskPriority,
         dueDate: taskDueDate || new Date().toISOString().split('T')[0],
         labels: taskLabels.split(',').map(l => l.trim()),
+        estimatedTime: taskEstimatedTime,
         status: 'Todo'
       });
       // Reset
@@ -72,7 +77,17 @@ export const Tasks: React.FC = () => {
       setTaskPriority('Medium');
       setTaskDueDate('');
       setTaskLabels('Engineering');
+      setTaskEstimatedTime(0);
       setAddModalOpen(false);
+      loadTasksAndProjects();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCardDrop = async (taskId: string, targetStatus: Task['status']) => {
+    try {
+      await API.tasks.update(taskId, { status: targetStatus });
       loadTasksAndProjects();
     } catch (err) {
       console.error(err);
@@ -220,7 +235,27 @@ export const Tasks: React.FC = () => {
           const colTasks = tasks.filter(t => t.projectId === selectedProject && t.status === col.key);
 
           return (
-            <div key={col.key} className="glass rounded-2xl p-4 flex flex-col min-w-[240px] min-h-[460px] border border-slate-800/40">
+            <div 
+              key={col.key} 
+              onDragOver={(e) => {
+                e.preventDefault();
+                setActiveDragCol(col.key);
+              }}
+              onDragLeave={() => setActiveDragCol(null)}
+              onDrop={async (e) => {
+                e.preventDefault();
+                setActiveDragCol(null);
+                const taskId = e.dataTransfer.getData('text/plain');
+                if (taskId) {
+                  await handleCardDrop(taskId, col.key);
+                }
+              }}
+              className={`glass rounded-2xl p-4 flex flex-col min-w-[240px] min-h-[460px] border transition-all duration-200 ${
+                activeDragCol === col.key
+                  ? 'border-[#22C55E] bg-[#22C55E]/5 shadow-lg shadow-[#22C55E]/5 scale-[1.01]'
+                  : 'border-slate-800/40'
+              }`}
+            >
               {/* Header */}
               <div className="flex items-center justify-between mb-4 border-b border-slate-850 pb-2">
                 <h3 className={`text-[10px] font-black uppercase tracking-wider ${col.color.split(' ')[1]}`}>{col.title}</h3>
@@ -237,7 +272,11 @@ export const Tasks: React.FC = () => {
                   colTasks.map((t) => (
                     <div 
                       key={t._id} 
-                      className="p-3.5 bg-slate-900/90 border border-slate-850 hover:border-slate-700/80 rounded-xl space-y-2.5 transition-all shadow-sm"
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', t._id);
+                      }}
+                      className="p-3.5 bg-slate-900/90 border border-slate-850 hover:border-slate-700/80 rounded-xl space-y-2.5 transition-all shadow-sm cursor-grab active:cursor-grabbing hover:scale-[1.01] hover:bg-slate-900"
                     >
                       <div className="flex items-start justify-between gap-1">
                         <button 
@@ -250,13 +289,18 @@ export const Tasks: React.FC = () => {
 
                       {t.description && <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">{t.description}</p>}
 
-                      {/* Labels */}
-                      <div className="flex flex-wrap gap-1">
+                      {/* Labels & Estimates */}
+                      <div className="flex flex-wrap gap-1 items-center">
                         {t.labels?.map(lbl => (
                           <span key={lbl} className="px-1.5 py-0.5 bg-slate-800 border border-slate-750 text-[8px] text-slate-300 font-bold rounded">
                             {lbl}
                           </span>
                         ))}
+                        {t.estimatedTime !== undefined && t.estimatedTime > 0 && (
+                          <span className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/25 text-[8px] text-emerald-400 font-mono font-bold rounded flex items-center gap-0.5" title="Estimated Time">
+                            ⏱ {t.estimatedTime}h
+                          </span>
+                        )}
                       </div>
 
                       {/* Card Footer controls */}
@@ -332,7 +376,7 @@ export const Tasks: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Priority</label>
               <select
@@ -353,6 +397,17 @@ export const Tasks: React.FC = () => {
                 value={taskDueDate}
                 onChange={(e) => setTaskDueDate(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Estimated (Hours)</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="e.g. 8"
+                value={taskEstimatedTime || ''}
+                onChange={(e) => setTaskEstimatedTime(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
               />
             </div>
             <div>
@@ -485,6 +540,15 @@ export const Tasks: React.FC = () => {
                   <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                     <IoCalendarOutline size={12} />
                     {new Date(selectedTask.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+
+              {selectedTask.estimatedTime !== undefined && selectedTask.estimatedTime > 0 && (
+                <div>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Estimated Time</span>
+                  <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 font-mono">
+                    ⏱ {selectedTask.estimatedTime} hours
                   </span>
                 </div>
               )}
