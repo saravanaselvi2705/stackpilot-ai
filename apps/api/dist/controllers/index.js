@@ -230,7 +230,7 @@ const getTasks = async (req, res) => {
 exports.getTasks = getTasks;
 const createTask = async (req, res) => {
     try {
-        const { projectId, title, description, priority, assigneeId, dueDate, labels } = req.body;
+        const { projectId, title, description, priority, assigneeId, dueDate, labels, estimatedTime } = req.body;
         const task = new db.Task({
             projectId,
             title,
@@ -239,7 +239,8 @@ const createTask = async (req, res) => {
             status: 'Todo',
             assigneeId,
             dueDate,
-            labels: labels || []
+            labels: labels || [],
+            estimatedTime: estimatedTime || 0
         });
         await task.save();
         res.status(201).json(task);

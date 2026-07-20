@@ -257,7 +257,13 @@ export const TeamCalendar: React.FC = () => {
                   <div key={e.id} className="p-4 bg-slate-900/40 border border-slate-850 rounded-2xl space-y-2 hover:border-slate-700 transition-all">
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="text-xs font-bold text-slate-200 leading-snug">{e.title}</h4>
-                      <Badge variant={e.type === 'Meeting' ? 'primary' : e.type === 'Invoice' ? 'success' : e.type === 'Deadline' ? 'danger' : 'purple'}>
+                      <Badge variant={
+                        e.type === 'Meeting' ? 'primary' : 
+                        e.type === 'Invoice' ? 'success' : 
+                        e.type === 'Deadline' ? 'danger' : 
+                        e.type === 'Leave' ? 'purple' : 
+                        e.type === 'Task' ? 'warning' : 'secondary'
+                      }>
                         {e.type}
                       </Badge>
                     </div>

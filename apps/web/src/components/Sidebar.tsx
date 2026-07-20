@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCustomization } from '../context/CustomizationContext';
 import { 
   IoSpeedometerOutline, 
   IoPeopleOutline, 
   IoFolderOpenOutline, 
   IoListOutline, 
-  IoDocumentTextOutline, 
   IoSparklesOutline, 
-  IoBookOutline, 
   IoGlobeOutline, 
   IoPeopleCircleOutline, 
   IoCashOutline, 
@@ -16,78 +15,99 @@ import {
   IoSettingsOutline,
   IoChevronBackOutline,
   IoChevronForwardOutline,
-  IoLogOutOutline,
-  IoNotificationsOutline
+  IoChevronDownOutline,
+  IoChevronUpOutline,
+  IoLogOutOutline
 } from 'react-icons/io5';
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { settings, hasPermission } = useCustomization();
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
+    'Dashboard': true,
+    'Project Management': true,
+    'AI Workspace': false,
+    'Finance': false,
+    'Reports': false,
+    'Team': false,
+    'Productivity': true,
+    'Administration': false
+  });
   const location = useLocation();
   const currentPathWithSearch = location.pathname + location.search;
+
+  const toggleCategory = (catTitle: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [catTitle]: !prev[catTitle]
+    }));
+  };
 
   const navigationGroups = [
     {
       title: 'Dashboard',
       items: [
-        { name: 'Overview', path: '/dashboard', icon: <IoSpeedometerOutline size={18} /> }
-      ]
-    },
-    {
-      title: 'CRM',
-      items: [
-        { name: 'Clients', path: '/crm', icon: <IoPeopleOutline size={18} /> },
-        { name: 'Leads', path: '/crm?tab=leads', icon: <IoPeopleOutline size={18} /> },
-        { name: 'Contacts', path: '/crm?tab=contacts', icon: <IoPeopleOutline size={18} /> }
+        ...(settings.sidebarMenu.dashboard ? [{ name: 'Overview', path: '/dashboard', icon: <IoSpeedometerOutline size={18} /> }] : []),
+        ...(settings.sidebarMenu.crm && hasPermission('CRM', 'view') ? [{ name: 'Clients', path: '/crm', icon: <IoPeopleOutline size={18} /> }] : [])
       ]
     },
     {
       title: 'Project Management',
       items: [
-        { name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={18} /> },
-        { name: 'Tasks', path: '/tasks', icon: <IoListOutline size={18} /> },
-        { name: 'Requirements', path: '/documentation?tab=requirements', icon: <IoDocumentTextOutline size={18} /> },
-        { name: 'Documents', path: '/documentation', icon: <IoBookOutline size={18} /> }
+        ...(settings.sidebarMenu.projects && hasPermission('PM', 'view') ? [{ name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={18} /> }] : []),
+        ...(settings.sidebarMenu.tasks && hasPermission('PM', 'view') ? [{ name: 'Tasks', path: '/tasks', icon: <IoListOutline size={18} /> }] : [])
       ]
     },
     {
       title: 'AI Workspace',
       items: [
-        { name: 'AI Tools', path: '/ai-studio', icon: <IoSparklesOutline size={18} /> }
+        ...(settings.sidebarMenu.documentation ? [{ name: 'AI Tools', path: '/ai-studio', icon: <IoSparklesOutline size={18} /> }] : [])
       ]
     },
     {
       title: 'Finance',
       items: [
-        { name: 'Billing', path: '/finance?tab=billing', icon: <IoCashOutline size={18} /> },
-        { name: 'Invoices', path: '/finance?tab=invoices', icon: <IoCashOutline size={18} /> },
-        { name: 'Reports', path: '/finance?tab=reports', icon: <IoCashOutline size={18} /> }
+        ...(settings.sidebarMenu.finance && hasPermission('Finance', 'view') ? [{ name: 'Invoice & Billing', path: '/finance', icon: <IoCashOutline size={18} /> }] : [])
       ]
     },
     {
       title: 'Reports',
       items: [
-        { name: 'Reports', path: '/seo', icon: <IoGlobeOutline size={18} /> }
+        ...(settings.sidebarMenu.reports && hasPermission('SEO', 'view') ? [
+          { name: 'SEO Reports', path: '/seo?tab=seo', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Project Reports', path: '/seo?tab=projects', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Project Test Reports', path: '/seo?tab=tests', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Revenue Reports', path: '/seo?tab=revenue', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Employee Performance Reports', path: '/seo?tab=employee', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Team Performance Reports', path: '/seo?tab=team', icon: <IoGlobeOutline size={18} /> },
+          { name: 'Task Reports', path: '/seo?tab=tasks', icon: <IoGlobeOutline size={18} /> }
+        ] : [])
       ]
     },
     {
       title: 'Team',
       items: [
-        { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> },
-        { name: 'Leave Requests', path: '/team?tab=leaves', icon: <IoCalendarOutline size={18} /> }
+        ...(settings.sidebarMenu.team ? [
+          { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> },
+          { name: 'Leave Requests', path: '/team?tab=leaves', icon: <IoCalendarOutline size={18} /> }
+        ] : [])
       ]
     },
     {
       title: 'Productivity',
       items: [
-        { name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={18} /> },
-        { name: 'Notifications', path: '/dashboard?tab=notifications', icon: <IoNotificationsOutline size={18} /> }
+        ...(settings.sidebarMenu.calendar ? [{ name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={18} /> }] : [])
       ]
     },
     {
       title: 'Administration',
       items: [
-        { name: 'Settings', path: '/settings', icon: <IoSettingsOutline size={18} /> }
+        ...(user?.role === 'Admin' || user?.role === 'Super Admin' ? [
+          { name: 'User Management', path: '/settings?tab=users', icon: <IoPeopleCircleOutline size={18} /> }
+        ] : []),
+        { name: 'Settings', path: '/settings', icon: <IoSettingsOutline size={18} /> },
+        { name: 'Profile Settings', path: '/settings?tab=profile', icon: <IoSettingsOutline size={18} /> }
       ]
     }
   ];
@@ -95,10 +115,10 @@ export const Sidebar: React.FC = () => {
   const isActive = (itemPath: string) => {
     if (currentPathWithSearch === itemPath) return true;
     if (itemPath === '/crm' && location.pathname === '/crm' && !location.search) return true;
-    if (itemPath === '/documentation' && location.pathname === '/documentation' && !location.search) return true;
-    if (itemPath === '/finance?tab=billing' && location.pathname === '/finance' && (!location.search || location.search === '?tab=billing')) return true;
+    if (itemPath === '/finance' && location.pathname === '/finance' && !location.search) return true;
     if (itemPath === '/team' && location.pathname === '/team' && !location.search) return true;
     if (itemPath === '/dashboard' && location.pathname === '/dashboard' && !location.search) return true;
+    if (itemPath === '/settings' && location.pathname === '/settings' && !location.search) return true;
     return location.pathname === itemPath.split('?')[0] && itemPath.indexOf('?') === -1;
   };
 
@@ -112,12 +132,19 @@ export const Sidebar: React.FC = () => {
       <div>
         <div className="flex items-center justify-between px-5 py-6 border-b border-slate-800/60 h-[73px]">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#22C55E] to-emerald-600 flex items-center justify-center font-display font-black text-slate-950 shadow-md shadow-[#22C55E]/10 shrink-0">
-              S
-            </div>
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
+            ) : (
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-display font-black text-white shadow-md shrink-0 text-xs"
+                style={{ backgroundColor: settings.brandColor }}
+              >
+                {settings.logoText}
+              </div>
+            )}
             {!collapsed && (
-              <span className="font-display font-black text-lg tracking-wider text-white select-none">
-                StackPilot<span className="text-xs font-bold text-[#22C55E] align-super ml-0.5">AI</span>
+              <span className="font-display font-black text-sm tracking-wider text-slate-200 select-none truncate">
+                {settings.companyName}
               </span>
             )}
           </div>
@@ -131,55 +158,83 @@ export const Sidebar: React.FC = () => {
           </button>
         </div>
  
-         {/* Navigation list */}
-         <nav className="p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
-           {navigationGroups.map((group) => (
-             <div key={group.title} className="space-y-0.5">
-               {!collapsed && (
-                 <h5 className="px-4 text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 mt-2">
-                   {group.title}
-                 </h5>
-               )}
-               {group.items.map((item) => {
-                 const active = isActive(item.path);
-                 return (
-                   <NavLink
-                     key={item.name}
-                     to={item.path}
-                     className={
-                       `flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border ${
-                         active 
-                           ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20 shadow-inner' 
-                           : 'text-slate-400 hover:text-white hover:bg-slate-800/40 border-transparent'
-                       }`
-                     }
-                   >
-                     <div className="shrink-0">{item.icon}</div>
-                     {!collapsed && <span className="truncate">{item.name}</span>}
-                   </NavLink>
-                 );
-               })}
-             </div>
-           ))}
-         </nav>
-       </div>
+        {/* Navigation list */}
+        <nav className="p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)]">
+          {navigationGroups.map((group) => {
+            const isExpanded = expandedCategories[group.title];
+            
+            // Skip displaying empty groups (e.g. if Admin-only items are filtered out)
+            if (group.items.length === 0) return null;
+
+            return (
+              <div key={group.title} className="space-y-1">
+                {/* Expandable Category Header */}
+                {!collapsed ? (
+                  <button
+                    onClick={() => toggleCategory(group.title)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-slate-500 hover:text-slate-350 uppercase tracking-widest cursor-pointer select-none"
+                  >
+                    <span>{group.title}</span>
+                    <span className="text-slate-500">
+                      {isExpanded ? <IoChevronUpOutline size={10} /> : <IoChevronDownOutline size={10} />}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="border-b border-slate-800/40 my-1" />
+                )}
+
+                {/* Category Items */}
+                {(isExpanded || collapsed) && (
+                  <div className="space-y-0.5 transition-all duration-300">
+                    {group.items.map((item) => {
+                      const active = isActive(item.path);
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.path}
+                          style={
+                            active 
+                              ? { 
+                                  color: settings.brandColor, 
+                                  backgroundColor: `${settings.brandColor}15`, 
+                                  borderColor: `${settings.brandColor}30` 
+                                } 
+                              : {}
+                          }
+                          className={
+                            `flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/10`
+                          }
+                          title={collapsed ? item.name : undefined}
+                        >
+                          <div className="shrink-0">{item.icon}</div>
+                          {!collapsed && <span className="truncate">{item.name}</span>}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+      </div>
  
-       {/* User Footer Panel */}
-       <div className="p-3 border-t border-slate-800/60 bg-slate-900/10">
-         <div className={`flex items-center gap-3 rounded-xl p-2 bg-slate-900/30 border border-slate-800/30 overflow-hidden ${
-           collapsed ? 'justify-center' : ''
-         }`}>
-           <img 
-             src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'} 
-             alt="User Avatar" 
-             className="w-9 h-9 rounded-lg border border-slate-800 shrink-0 bg-slate-900"
-           />
-           {!collapsed && (
-             <div className="flex-1 min-w-0">
-               <h4 className="text-xs font-bold text-slate-200 truncate">{user?.name}</h4>
-               <p className="text-[10px] text-[#22C55E] font-semibold uppercase tracking-wider truncate">{user?.role}</p>
-             </div>
-           )}
+      {/* User Footer Panel */}
+      <div className="p-3 border-t border-slate-800/60 bg-slate-900/10">
+        <div className={`flex items-center gap-3 rounded-xl p-2 bg-slate-900/30 border border-slate-800/30 overflow-hidden ${
+          collapsed ? 'justify-center' : ''
+        }`}>
+          <img 
+            src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'} 
+            alt="User Avatar" 
+            className="w-9 h-9 rounded-lg border border-slate-800 shrink-0 bg-slate-900"
+          />
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xs font-bold text-slate-200 truncate">{user?.name}</h4>
+              <p className="text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: settings.brandColor }}>{user?.role}</p>
+            </div>
+          )}
           {!collapsed && (
             <button 
               onClick={logout}
@@ -194,4 +249,5 @@ export const Sidebar: React.FC = () => {
     </aside>
   );
 };
+
 export default Sidebar;

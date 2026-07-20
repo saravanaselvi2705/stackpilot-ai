@@ -78,6 +78,7 @@ const TaskSchema = new mongoose_1.Schema({
     assigneeId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
     labels: [{ type: String }],
+    estimatedTime: { type: Number, default: 0 },
     checklist: [{
             text: { type: String, required: true },
             done: { type: Boolean, default: false }

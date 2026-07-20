@@ -3,12 +3,14 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { Modal } from './UI';
-import { IoSearchOutline, IoFolderOpenOutline, IoListOutline, IoPeopleOutline, IoCashOutline, IoDocumentTextOutline } from 'react-icons/io5';
+import { IoSearchOutline, IoFolderOpenOutline, IoListOutline, IoPeopleOutline, IoCashOutline } from 'react-icons/io5';
+import { useCustomization } from '../context/CustomizationContext';
 import API from '../services/api';
 
 export const Layout: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const { hasPermission } = useCustomization();
   const [results, setResults] = useState<{
     projects: any[];
     tasks: any[];
@@ -30,7 +32,7 @@ export const Layout: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Search logic
+  // Search logic with role permission filters
   useEffect(() => {
     if (!searchQuery.trim()) {
       setResults({ projects: [], tasks: [], leads: [], invoices: [] });
@@ -42,10 +44,10 @@ export const Layout: React.FC = () => {
     const fetchSearchData = async () => {
       try {
         const [projs, ts, ls, invs] = await Promise.all([
-          API.projects.list(),
-          API.tasks.list(),
-          API.crm.listLeads(),
-          API.finance.listInvoices()
+          hasPermission('PM', 'view') ? API.projects.list() : Promise.resolve([]),
+          hasPermission('PM', 'view') ? API.tasks.list() : Promise.resolve([]),
+          hasPermission('CRM', 'view') ? API.crm.listLeads() : Promise.resolve([]),
+          hasPermission('Finance', 'view') ? API.finance.listInvoices() : Promise.resolve([])
         ]);
 
         const filteredProjs = projs.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
@@ -65,7 +67,7 @@ export const Layout: React.FC = () => {
     };
 
     fetchSearchData();
-  }, [searchQuery]);
+  }, [searchQuery, hasPermission]);
 
   const handleNavigate = (path: string) => {
     setSearchOpen(false);

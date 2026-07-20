@@ -13,7 +13,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stackpilot';
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Public Auth routes
@@ -55,10 +60,26 @@ const seedDatabase = async () => {
     const userCount = await db.User.countDocuments();
     if (userCount > 0) return; // DB already seeded
 
-    console.log('Seeding initial data...');
-
     // Seed default users (with password 'password123')
     const passwordHash = await bcrypt.hash('password123', 10);
+
+    if (process.env.SEED_DEMO_DATA === 'false') {
+      const adminUser = new db.User({
+        name: 'Admin User',
+        email: 'admin@stackpilot.ai',
+        password: passwordHash,
+        role: 'Super Admin',
+        avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=Admin`,
+        department: 'Engineering',
+        skills: ['React', 'TypeScript', 'Project Strategy', 'Automation'],
+        experience: '5+ years in Enterprise SaaS',
+        availability: 'Available',
+        twoFAEnabled: false
+      });
+      await adminUser.save();
+      console.log('Seeded only Admin User (SEED_DEMO_DATA=false).');
+      return;
+    }
 
     const rolesList = ['Super Admin', 'Admin', 'Project Manager', 'Business Analyst', 'Developer', 'Tester', 'SEO Executive', 'Finance', 'Client'] as const;
 

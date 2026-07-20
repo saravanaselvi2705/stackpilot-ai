@@ -269,8 +269,13 @@ class LocalDatabase {
   private get<T>(key: string, defaults: T[]): T[] {
     const data = localStorage.getItem(`sp_${key}`);
     if (!data) {
-      localStorage.setItem(`sp_${key}`, JSON.stringify(defaults));
-      return defaults;
+      if (localStorage.getItem('sp_demo_mode') === null) {
+        localStorage.setItem('sp_demo_mode', 'false');
+      }
+      const isDemoMode = localStorage.getItem('sp_demo_mode') === 'true';
+      const actualDefaults = (isDemoMode || key === 'users') ? defaults : [];
+      localStorage.setItem(`sp_${key}`, JSON.stringify(actualDefaults));
+      return actualDefaults;
     }
     return JSON.parse(data);
   }

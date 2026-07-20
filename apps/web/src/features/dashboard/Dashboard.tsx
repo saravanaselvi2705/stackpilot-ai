@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useCustomization } from '../../context/CustomizationContext';
 import { Card, Badge, ProgressBar, Drawer } from '../../components/UI';
 import { 
   IoFolderOpenOutline, 
@@ -17,6 +18,7 @@ import API from '../../services/api';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { settings, formatCurrency } = useCustomization();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     projects: 0,
@@ -83,171 +85,180 @@ export const Dashboard: React.FC = () => {
             Dashboard
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Overview of your workspace and role: <span className="text-[#22C55E] font-bold uppercase tracking-wider">{user?.role}</span>
+            Overview of your workspace and role: <span className="font-bold uppercase tracking-wider" style={{ color: settings.brandColor }}>{user?.role}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2 self-start md:self-auto">
-          <IoCalendarOutline className="text-[#22C55E]" size={14} />
+          <IoCalendarOutline style={{ color: settings.brandColor }} size={14} />
           <span className="font-semibold">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card 
-          onClick={() => navigate('/finance')}
-          className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Revenue (Paid)</span>
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl">
-              <IoCashOutline size={18} />
+      {settings.dashboardWidgets.metrics && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <Card 
+            onClick={() => navigate('/finance')}
+            className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Revenue (Paid)</span>
+              <div className="p-2 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded-xl" style={{ color: settings.brandColor }}>
+                <IoCashOutline size={18} />
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-black font-display text-white">₹{stats.revenue.toLocaleString()}</h3>
-            <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 mt-1">
-              +14.2% <span className="text-slate-500">vs last month</span>
-            </span>
-          </div>
-        </Card>
+            <div>
+              <h3 className="text-2xl font-black font-display text-white">{formatCurrency(stats.revenue)}</h3>
+              <span className="text-[10px] font-semibold flex items-center gap-1 mt-1 text-emerald-400">
+                +14.2% <span className="text-slate-500">vs last month</span>
+              </span>
+            </div>
+          </Card>
 
-        <Card 
-          onClick={() => navigate('/projects')}
-          className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Projects</span>
-            <div className="p-2 bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20 rounded-xl">
-              <IoFolderOpenOutline size={18} />
+          <Card 
+            onClick={() => navigate('/projects')}
+            className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Projects</span>
+              <div className="p-2 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded-xl" style={{ color: settings.brandColor }}>
+                <IoFolderOpenOutline size={18} />
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-black font-display text-white">{stats.projects}</h3>
-            <span className="text-[10px] text-[#22C55E] font-semibold flex items-center gap-1 mt-1">
-              {stats.projects > 1 ? 'Healthy Operations' : 'Planning phase'}
-            </span>
-          </div>
-        </Card>
+            <div>
+              <h3 className="text-2xl font-black font-display text-white">{stats.projects}</h3>
+              <span className="text-[10px] font-semibold flex items-center gap-1 mt-1 animate-pulse" style={{ color: settings.brandColor }}>
+                {stats.projects > 1 ? 'Healthy Operations' : 'Planning phase'}
+              </span>
+            </div>
+          </Card>
 
-        <Card 
-          onClick={() => navigate('/tasks')}
-          className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasks</span>
-            <div className="p-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
-              <IoLayersOutline size={18} />
+          <Card 
+            onClick={() => navigate('/tasks')}
+            className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tasks</span>
+              <div className="p-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl">
+                <IoLayersOutline size={18} />
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-black font-display text-white">{stats.tasks}</h3>
-            <span className="text-[10px] text-indigo-400 font-semibold flex items-center gap-1 mt-1">
-              {stats.issues} High Priority
-            </span>
-          </div>
-        </Card>
+            <div>
+              <h3 className="text-2xl font-black font-display text-white">{stats.tasks}</h3>
+              <span className="text-[10px] text-indigo-400 font-semibold flex items-center gap-1 mt-1">
+                {stats.issues} High Priority
+              </span>
+            </div>
+          </Card>
 
-        <Card 
-          onClick={() => navigate('/ai-studio')}
-          className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Usage</span>
-            <div className="p-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
-              <IoSparklesOutline size={18} />
+          <Card 
+            onClick={() => navigate('/ai-studio')}
+            className="flex flex-col justify-between cursor-pointer hover:border-[#22C55E]/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Usage</span>
+              <div className="p-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl">
+                <IoSparklesOutline size={18} />
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-black font-display text-white">{stats.tokens}</h3>
-            <span className="text-[10px] text-purple-400 font-semibold flex items-center gap-1 mt-1">
-              Tokens Seeded
-            </span>
-          </div>
-        </Card>
-      </div>
+            <div>
+              <h3 className="text-2xl font-black font-display text-white">{stats.tokens}</h3>
+              <span className="text-[10px] text-purple-400 font-semibold flex items-center gap-1 mt-1">
+                Tokens Seeded
+              </span>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Main Charts & Activities Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Analytics Chart */}
-        <Card className="lg:col-span-2 flex flex-col justify-between h-[360px]">
-          <div className="flex items-center justify-between border-b border-slate-800/40 pb-4">
-            <div>
-              <h3 className="text-sm font-bold text-slate-200">Revenue</h3>
-              <p className="text-[10px] text-slate-400">Total monthly invoices.</p>
-            </div>
-            <Badge variant="success">Stripe Live</Badge>
-          </div>
-
-          {/* SVG Custom Area Chart */}
-          <div className="flex-1 w-full mt-6 relative flex items-end">
-            <svg className="w-full h-full max-h-[180px]" viewBox="0 0 500 150" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22C55E" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#22C55E" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              {/* Grid Lines */}
-              <line x1="0" y1="37" x2="500" y2="37" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
-              <line x1="0" y1="75" x2="500" y2="75" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
-              <line x1="0" y1="112" x2="500" y2="112" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
-
-              {/* Area Fill */}
-              <path
-                d="M 0 130 C 50 110, 100 120, 150 90 C 200 60, 250 80, 300 40 C 350 20, 400 30, 500 10 L 500 150 L 0 150 Z"
-                fill="url(#chartGlow)"
-              />
-              {/* Line path */}
-              <path
-                d="M 0 130 C 50 110, 100 120, 150 90 C 200 60, 250 80, 300 40 C 350 20, 400 30, 500 10"
-                fill="none"
-                stroke="#22C55E"
-                strokeWidth="2.5"
-              />
-
-              {/* Hover nodes */}
-              <circle cx="10" cy="130" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '2%', yPx: 80, month: 'January', value: 15000 })} onMouseLeave={() => setHoveredPoint(null)} />
-              <circle cx="100" cy="115" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '20%', yPx: 65, month: 'February', value: 22000 })} onMouseLeave={() => setHoveredPoint(null)} />
-              <circle cx="190" cy="80" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '38%', yPx: 30, month: 'March', value: 19000 })} onMouseLeave={() => setHoveredPoint(null)} />
-              <circle cx="290" cy="50" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '58%', yPx: 10, month: 'April', value: 35000 })} onMouseLeave={() => setHoveredPoint(null)} />
-              <circle cx="390" cy="25" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '78%', yPx: -10, month: 'May', value: 28000 })} onMouseLeave={() => setHoveredPoint(null)} />
-              <circle cx="490" cy="10" r="5" className="fill-[#22C55E] stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '88%', yPx: -20, month: 'June', value: 45000 })} onMouseLeave={() => setHoveredPoint(null)} />
-            </svg>
-
-            {hoveredPoint && (
-              <div 
-                className="absolute z-10 bg-slate-900 border border-[#22C55E]/40 px-3 py-2 rounded-xl text-[10px] text-slate-200 font-bold shadow-xl pointer-events-none -translate-x-1/2 transition-all duration-150"
-                style={{ left: hoveredPoint.xPercent, top: `${hoveredPoint.yPx}px` }}
-              >
-                <div className="text-slate-500 font-normal uppercase text-[8px] tracking-wider">{hoveredPoint.month}</div>
-                <div className="text-white text-xs font-black mt-0.5">₹{hoveredPoint.value.toLocaleString()}</div>
+        {settings.dashboardWidgets.invoicesSummary ? (
+          <Card className="lg:col-span-2 flex flex-col justify-between h-[360px]">
+            <div className="flex items-center justify-between border-b border-slate-800/40 pb-4">
+              <div>
+                <h3 className="text-sm font-bold text-slate-200">Revenue</h3>
+                <p className="text-[10px] text-slate-400">Total monthly invoices.</p>
               </div>
-            )}
-          </div>
+              <Badge variant="success">Stripe Live</Badge>
+            </div>
 
-          <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold border-t border-slate-800/40 pt-4 mt-2">
-            <span>JAN</span>
-            <span>FEB</span>
-            <span>MAR</span>
-            <span>APR</span>
-            <span>MAY</span>
-            <span>JUN</span>
+            {/* SVG Custom Area Chart */}
+            <div className="flex-1 w-full mt-6 relative flex items-end">
+              <svg className="w-full h-full max-h-[180px]" viewBox="0 0 500 150" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={settings.brandColor} stopOpacity="0.25" />
+                    <stop offset="100%" stopColor={settings.brandColor} stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                {/* Grid Lines */}
+                <line x1="0" y1="37" x2="500" y2="37" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
+                <line x1="0" y1="75" x2="500" y2="75" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
+                <line x1="0" y1="112" x2="500" y2="112" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="5,5" />
+
+                {/* Area Fill */}
+                <path
+                  d="M 0 130 C 50 110, 100 120, 150 90 C 200 60, 250 80, 300 40 C 350 20, 400 30, 500 10 L 500 150 L 0 150 Z"
+                  fill="url(#chartGlow)"
+                />
+                {/* Line path */}
+                <path
+                  d="M 0 130 C 50 110, 100 120, 150 90 C 200 60, 250 80, 300 40 C 350 20, 400 30, 500 10"
+                  fill="none"
+                  stroke={settings.brandColor}
+                  strokeWidth="2.5"
+                />
+
+                {/* Hover nodes */}
+                <circle cx="10" cy="130" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '2%', yPx: 80, month: 'January', value: 15000 })} onMouseLeave={() => setHoveredPoint(null)} />
+                <circle cx="100" cy="115" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '20%', yPx: 65, month: 'February', value: 22000 })} onMouseLeave={() => setHoveredPoint(null)} />
+                <circle cx="190" cy="80" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '38%', yPx: 30, month: 'March', value: 19000 })} onMouseLeave={() => setHoveredPoint(null)} />
+                <circle cx="290" cy="50" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '58%', yPx: 10, month: 'April', value: 35000 })} onMouseLeave={() => setHoveredPoint(null)} />
+                <circle cx="390" cy="25" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '78%', yPx: -10, month: 'May', value: 28000 })} onMouseLeave={() => setHoveredPoint(null)} />
+                <circle cx="490" cy="10" r="5" style={{ fill: settings.brandColor }} className="stroke-slate-950 stroke-2 cursor-pointer hover:r-7 transition-all" onMouseEnter={() => setHoveredPoint({ xPercent: '88%', yPx: -20, month: 'June', value: 45000 })} onMouseLeave={() => setHoveredPoint(null)} />
+              </svg>
+
+              {hoveredPoint && (
+                <div 
+                  className="absolute z-10 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-[10px] text-slate-200 font-bold shadow-xl pointer-events-none -translate-x-1/2 transition-all duration-150"
+                  style={{ left: hoveredPoint.xPercent, top: `${hoveredPoint.yPx}px`, borderColor: `${settings.brandColor}60` }}
+                >
+                  <div className="text-slate-500 font-normal uppercase text-[8px] tracking-wider">{hoveredPoint.month}</div>
+                  <div className="text-white text-xs font-black mt-0.5">{formatCurrency(hoveredPoint.value)}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold border-t border-slate-800/40 pt-4 mt-2">
+              <span>JAN</span>
+              <span>FEB</span>
+              <span>MAR</span>
+              <span>APR</span>
+              <span>MAY</span>
+              <span>JUN</span>
+            </div>
+          </Card>
+        ) : (
+          <div className="lg:col-span-2 bg-slate-900/10 border border-slate-800/40 rounded-3xl h-[360px] flex items-center justify-center text-xs text-slate-500 font-bold">
+            Analytics widget disabled
           </div>
-        </Card>
+        )}
 
         {/* Recent Audit Activity log */}
-        <Card className="flex flex-col justify-between h-[360px]">
-          <div>
-            <div className="border-b border-slate-800/40 pb-4 mb-4">
-              <h3 className="text-sm font-bold text-slate-200">Activity Log</h3>
-              <p className="text-[10px] text-slate-400">Recent changes in your workspace.</p>
-            </div>
-            
-            <div className="space-y-4 overflow-y-auto max-h-[220px] pr-1">
-              {activities.map((act) => (
-                <div key={act._id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-800/20 pb-3">
+        {settings.dashboardWidgets.recentActivities ? (
+          <Card className="flex flex-col justify-between h-[360px]">
+            <div>
+              <div className="border-b border-slate-800/40 pb-4 mb-4">
+                <h3 className="text-sm font-bold text-slate-200">Activity Log</h3>
+                <p className="text-[10px] text-slate-400">Recent changes in your workspace.</p>
+              </div>
+              
+              <div className="space-y-4 overflow-y-auto max-h-[220px] pr-1">
+                {activities.map((act) => (
+                  <div key={act._id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-800/20 pb-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shrink-0 mt-1.5" />
                   <div className="min-w-0">
                     <p className="text-slate-300 font-medium">
@@ -267,7 +278,12 @@ export const Dashboard: React.FC = () => {
             View full log <IoChevronForwardOutline size={12} />
           </button>
         </Card>
-      </div>
+      ) : (
+        <div className="bg-slate-900/10 border border-slate-800/40 rounded-3xl h-[360px] flex items-center justify-center text-xs text-slate-500 font-bold">
+          Activities widget disabled
+        </div>
+      )}
+    </div>
 
       {/* Role Focused Dashboards Area */}
       <Card className="border border-[#22C55E]/10">
