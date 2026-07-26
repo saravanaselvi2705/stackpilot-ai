@@ -15,6 +15,9 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 var __importStar = (this && this.__importStar) || (function () {
     var ownKeys = function(o) {
         ownKeys = Object.getOwnPropertyNames || function (o) {
@@ -32,270 +35,20 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.aiGenerateBugReport = exports.aiGenerateTestCases = exports.aiGenerateRequirements = exports.getSEOReport = exports.createInvoice = exports.getInvoices = exports.createLead = exports.getLeads = exports.updateTask = exports.createTask = exports.getTasks = exports.createProject = exports.getProjects = exports.updateProfile = exports.getProfile = exports.login = exports.register = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+exports.aiGenerateBugReport = exports.aiGenerateTestCases = exports.aiGenerateRequirements = exports.getSEOReport = exports.createInvoice = exports.getInvoices = void 0;
+__exportStar(require("./authController"), exports);
+__exportStar(require("./userController"), exports);
+__exportStar(require("./roleController"), exports);
+__exportStar(require("./profileController"), exports);
+__exportStar(require("./auditController"), exports);
+__exportStar(require("./crmController"), exports);
+__exportStar(require("./projectController"), exports);
+__exportStar(require("./taskController"), exports);
+__exportStar(require("./teamController"), exports);
+__exportStar(require("./notificationController"), exports);
+__exportStar(require("./dashboardController"), exports);
 const db = __importStar(require("../models"));
-const JWT_SECRET = process.env.JWT_SECRET || 'stackpilot_secret_key_12345';
-// AUTH CONTROLLERS
-const register = async (req, res) => {
-    try {
-        const { name, email, password, role } = req.body;
-        const existingUser = await db.User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ error: 'User with this email already exists' });
-        }
-        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
-        const newUser = new db.User({
-            name,
-            email,
-            password: hashedPassword,
-            role: role || 'Developer',
-            avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`,
-            availability: 'Available',
-            twoFAEnabled: false
-        });
-        await newUser.save();
-        // Log Activity
-        const activity = new db.ActivityLog({
-            userId: newUser._id,
-            userName: newUser.name,
-            userRole: newUser.role,
-            action: 'Register',
-            details: `User registered with role ${newUser.role}`
-        });
-        await activity.save();
-        const token = jsonwebtoken_1.default.sign({ id: newUser._id, email: newUser.email, role: newUser.role }, JWT_SECRET, { expiresIn: '24h' });
-        res.status(201).json({
-            token,
-            user: {
-                id: newUser._id,
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser.role,
-                avatarUrl: newUser.avatarUrl,
-                availability: newUser.availability,
-                twoFAEnabled: newUser.twoFAEnabled,
-                createdAt: newUser.createdAt
-            }
-        });
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.register = register;
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await db.User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        const isMatch = await bcryptjs_1.default.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        const token = jsonwebtoken_1.default.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
-        // Log Activity
-        const activity = new db.ActivityLog({
-            userId: user._id,
-            userName: user.name,
-            userRole: user.role,
-            action: 'Login',
-            details: 'User logged in successfully'
-        });
-        await activity.save();
-        res.status(200).json({
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                avatarUrl: user.avatarUrl,
-                availability: user.availability,
-                twoFAEnabled: user.twoFAEnabled,
-                createdAt: user.createdAt
-            }
-        });
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.login = login;
-const getProfile = async (req, res) => {
-    try {
-        if (!req.user)
-            return res.status(401).json({ error: 'Unauthorized' });
-        const user = await db.User.findById(req.user.id).select('-password');
-        if (!user)
-            return res.status(404).json({ error: 'User not found' });
-        res.status(200).json(user);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.getProfile = getProfile;
-const updateProfile = async (req, res) => {
-    try {
-        if (!req.user)
-            return res.status(401).json({ error: 'Unauthorized' });
-        const { name, department, skills, experience, availability, twoFAEnabled } = req.body;
-        const user = await db.User.findById(req.user.id);
-        if (!user)
-            return res.status(404).json({ error: 'User not found' });
-        if (name)
-            user.name = name;
-        if (department)
-            user.department = department;
-        if (skills)
-            user.skills = skills;
-        if (experience)
-            user.experience = experience;
-        if (availability)
-            user.availability = availability;
-        if (twoFAEnabled !== undefined)
-            user.twoFAEnabled = twoFAEnabled;
-        await user.save();
-        res.status(200).json(user);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.updateProfile = updateProfile;
-// PROJECTS CONTROLLERS
-const getProjects = async (req, res) => {
-    try {
-        const projects = await db.Project.find();
-        res.status(200).json(projects);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.getProjects = getProjects;
-const createProject = async (req, res) => {
-    try {
-        const { name, description, priority, budget, startDate, endDate, client } = req.body;
-        const newProject = new db.Project({
-            name,
-            description,
-            priority: priority || 'Medium',
-            budget: budget || 0,
-            spent: 0,
-            startDate,
-            endDate,
-            status: 'Planning',
-            health: 'Healthy',
-            client,
-            team: req.user ? [{ userId: req.user.id, role: 'Owner' }] : []
-        });
-        await newProject.save();
-        if (req.user) {
-            await new db.ActivityLog({
-                userId: req.user.id,
-                userName: req.user.email,
-                userRole: req.user.role,
-                action: 'Create Project',
-                details: `Project "${name}" was created`
-            }).save();
-        }
-        res.status(201).json(newProject);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.createProject = createProject;
-// TASKS CONTROLLERS
-const getTasks = async (req, res) => {
-    try {
-        const { projectId } = req.query;
-        const filter = projectId ? { projectId } : {};
-        const tasks = await db.Task.find(filter);
-        res.status(200).json(tasks);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.getTasks = getTasks;
-const createTask = async (req, res) => {
-    try {
-        const { projectId, title, description, priority, assigneeId, dueDate, labels, estimatedTime } = req.body;
-        const task = new db.Task({
-            projectId,
-            title,
-            description,
-            priority: priority || 'Medium',
-            status: 'Todo',
-            assigneeId,
-            dueDate,
-            labels: labels || [],
-            estimatedTime: estimatedTime || 0
-        });
-        await task.save();
-        res.status(201).json(task);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.createTask = createTask;
-const updateTask = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updates = req.body;
-        const task = await db.Task.findByIdAndUpdate(id, updates, { new: true });
-        if (!task)
-            return res.status(404).json({ error: 'Task not found' });
-        res.status(200).json(task);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.updateTask = updateTask;
-// CRM CONTROLLERS
-const getLeads = async (req, res) => {
-    try {
-        const leads = await db.Client.find();
-        res.status(200).json(leads);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.getLeads = getLeads;
-const createLead = async (req, res) => {
-    try {
-        const { name, email, companyName, phone, value, status, tags, notes } = req.body;
-        const lead = new db.Client({
-            name,
-            email,
-            companyName,
-            phone,
-            value: value || 0,
-            status: status || 'Lead',
-            tags: tags || [],
-            notes
-        });
-        await lead.save();
-        res.status(201).json(lead);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.createLead = createLead;
 // FINANCE CONTROLLERS
 const getInvoices = async (req, res) => {
     try {
@@ -341,7 +94,6 @@ exports.createInvoice = createInvoice;
 // SEO CONTROLLERS
 const getSEOReport = async (req, res) => {
     try {
-        // Return latest SEO metrics
         const reports = await db.SEOReport.find().sort({ date: -1 }).limit(10);
         res.status(200).json(reports);
     }
@@ -350,12 +102,11 @@ const getSEOReport = async (req, res) => {
     }
 };
 exports.getSEOReport = getSEOReport;
-// AI CONTROLLERS (MOCKS WITH SMART LLM SIMULATORS)
+// AI CONTROLLERS
 const aiGenerateRequirements = (req, res) => {
     const { prompt } = req.body;
     if (!prompt)
         return res.status(400).json({ error: 'Prompt is required' });
-    // Generate dynamic-looking software requirement list
     const text = `# Business and Functional Requirements for "${prompt}"
   
 ## 1. Overview

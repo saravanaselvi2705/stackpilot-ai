@@ -1,4 +1,13 @@
 {
+  "name": "stackpilot-ai",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --prefix apps/api",
+    "build": "npm run build --prefix apps/api && npm run build --prefix apps/web"
+  },
   "dependencies": {
     "validator": "^13.15.35"
   },

@@ -3,131 +3,16 @@ export * from './userController';
 export * from './roleController';
 export * from './profileController';
 export * from './auditController';
+export * from './crmController';
+export * from './projectController';
+export * from './taskController';
+export * from './teamController';
+export * from './notificationController';
+export * from './dashboardController';
 
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import * as db from '../models';
-
-// PROJECTS CONTROLLERS
-export const getProjects = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const projects = await db.Project.find();
-    res.status(200).json(projects);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const createProject = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { name, description, priority, budget, startDate, endDate, client } = req.body;
-    const newProject = new db.Project({
-      name,
-      description,
-      priority: priority || 'Medium',
-      budget: budget || 0,
-      spent: 0,
-      startDate,
-      endDate,
-      status: 'Planning',
-      health: 'Healthy',
-      client,
-      team: req.user ? [{ userId: req.user.id, role: 'Owner' }] : []
-    });
-
-    await newProject.save();
-
-    if (req.user) {
-      await new db.ActivityLog({
-        userId: req.user.id,
-        userName: req.user.email,
-        userRole: req.user.role,
-        action: 'Create Project',
-        details: `Project "${name}" was created`
-      }).save();
-    }
-
-    res.status(201).json(newProject);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// TASKS CONTROLLERS
-export const getTasks = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { projectId } = req.query;
-    const filter = projectId ? { projectId } : {};
-    const tasks = await db.Task.find(filter);
-    res.status(200).json(tasks);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const createTask = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { projectId, title, description, priority, assigneeId, dueDate, labels, estimatedTime } = req.body;
-    const task = new db.Task({
-      projectId,
-      title,
-      description,
-      priority: priority || 'Medium',
-      status: 'Todo',
-      assigneeId,
-      dueDate,
-      labels: labels || [],
-      estimatedTime: estimatedTime || 0
-    });
-
-    await task.save();
-    res.status(201).json(task);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const updateTask = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-    const task = await db.Task.findByIdAndUpdate(id, updates, { new: true });
-    if (!task) return res.status(404).json({ error: 'Task not found' });
-    res.status(200).json(task);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// CRM CONTROLLERS
-export const getLeads = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const leads = await db.Client.find();
-    res.status(200).json(leads);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const createLead = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { name, email, companyName, phone, value, status, tags, notes } = req.body;
-    const lead = new db.Client({
-      name,
-      email,
-      companyName,
-      phone,
-      value: value || 0,
-      status: status || 'Lead',
-      tags: tags || [],
-      notes
-    });
-    await lead.save();
-    res.status(201).json(lead);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // FINANCE CONTROLLERS
 export const getInvoices = async (req: AuthenticatedRequest, res: Response) => {

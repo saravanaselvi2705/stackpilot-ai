@@ -40,23 +40,33 @@ const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const path_1 = __importDefault(require("path"));
 const auth_1 = require("./middleware/auth");
+const security_1 = require("./middleware/security");
 const ctrl = __importStar(require("./controllers"));
-const db = __importStar(require("./models"));
+const routes_1 = __importDefault(require("./routes"));
+const seed_1 = require("./utils/seed");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stackpilot';
+// Security Middleware
+app.use(security_1.helmetSecurity);
+app.use((0, security_1.rateLimiter)({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(security_1.sanitizeInputs);
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || '*',
     credentials: true,
 }));
 app.use(express_1.default.json());
-// Public Auth routes
-app.post('/api/auth/register', ctrl.register);
+// Serve static file uploads (avatars)
+app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
+// Modular API Router
+app.use('/api', routes_1.default);
+// Legacy Route Compatibility Endpoints
 app.post('/api/auth/login', ctrl.login);
-// Protected Auth routes
+app.post('/api/auth/forgot-password', ctrl.forgotPassword);
+app.post('/api/auth/reset-password', ctrl.resetPassword);
 app.get('/api/auth/profile', auth_1.authenticateJWT, ctrl.getProfile);
 app.put('/api/auth/profile', auth_1.authenticateJWT, ctrl.updateProfile);
 // Project routes
@@ -78,204 +88,20 @@ app.get('/api/seo/reports', auth_1.authenticateJWT, ctrl.getSEOReport);
 app.post('/api/ai/requirements', auth_1.authenticateJWT, ctrl.aiGenerateRequirements);
 app.post('/api/ai/testcases', auth_1.authenticateJWT, ctrl.aiGenerateTestCases);
 app.post('/api/ai/bugreport', auth_1.authenticateJWT, ctrl.aiGenerateBugReport);
-// Seeding function
-const seedDatabase = async () => {
-    try {
-        const userCount = await db.User.countDocuments();
-        if (userCount > 0)
-            return; // DB already seeded
-        // Seed default users (with password 'password123')
-        const passwordHash = await bcryptjs_1.default.hash('password123', 10);
-        if (process.env.SEED_DEMO_DATA === 'false') {
-            const adminUser = new db.User({
-                name: 'Admin User',
-                email: 'admin@stackpilot.ai',
-                password: passwordHash,
-                role: 'Super Admin',
-                avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=Admin`,
-                department: 'Engineering',
-                skills: ['React', 'TypeScript', 'Project Strategy', 'Automation'],
-                experience: '5+ years in Enterprise SaaS',
-                availability: 'Available',
-                twoFAEnabled: false
-            });
-            await adminUser.save();
-            console.log('Seeded only Admin User (SEED_DEMO_DATA=false).');
-            return;
-        }
-        const rolesList = ['Super Admin', 'Admin', 'Project Manager', 'Business Analyst', 'Developer', 'Tester', 'SEO Executive', 'Finance', 'Client'];
-        const seededUsers = [];
-        for (const role of rolesList) {
-            const name = role.replace(' ', '');
-            const user = new db.User({
-                name: `${role} User`,
-                email: `${name.toLowerCase()}@stackpilot.ai`,
-                password: passwordHash,
-                role: role,
-                avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(role)}`,
-                department: role === 'Finance' ? 'Accounting' : role === 'SEO Executive' ? 'Marketing' : 'Engineering',
-                skills: ['React', 'TypeScript', 'Project Strategy', 'Automation'],
-                experience: '5+ years in Enterprise SaaS',
-                availability: 'Available',
-                twoFAEnabled: false
-            });
-            await user.save();
-            seededUsers.push(user);
-        }
-        console.log('Seeded Users successfully.');
-        // Seed Companies
-        const company = new db.Company({
-            name: 'Vercel Inc',
-            domain: 'vercel.com',
-            industry: 'Cloud Infrastructure',
-            size: '500-1000',
-            address: 'San Francisco, CA'
-        });
-        await company.save();
-        // Seed Clients
-        const client = new db.Client({
-            name: 'Guillermo Rauch',
-            email: 'guillermo@vercel.com',
-            companyId: company._id,
-            companyName: company.name,
-            phone: '+1 (555) 019-2834',
-            status: 'Active',
-            value: 120000,
-            tags: ['Enterprise', 'Key Client'],
-            notes: 'Interested in implementing advanced AI workflow engines.'
-        });
-        await client.save();
-        // Seed Projects
-        const project1 = new db.Project({
-            name: 'Next.js 16 Optimization Suite',
-            description: 'Build automated performance instrumentation dashboards for Next.js app compiler.',
-            status: 'Active',
-            priority: 'High',
-            budget: 85000,
-            spent: 34000,
-            startDate: new Date('2026-06-01'),
-            endDate: new Date('2026-09-30'),
-            health: 'Healthy',
-            client: company.name,
-            team: [
-                { userId: seededUsers[2]._id, role: 'Project Manager' },
-                { userId: seededUsers[4]._id, role: 'Developer' }
-            ]
-        });
-        await project1.save();
-        const project2 = new db.Project({
-            name: 'Enterprise CRM Migration',
-            description: 'Migrating legacy client operations pipelines from HubSpot to StackPilot.',
-            status: 'Planning',
-            priority: 'Medium',
-            budget: 45000,
-            spent: 0,
-            startDate: new Date('2026-07-15'),
-            endDate: new Date('2026-11-30'),
-            health: 'Healthy',
-            client: company.name,
-            team: [
-                { userId: seededUsers[2]._id, role: 'Project Manager' }
-            ]
-        });
-        await project2.save();
-        // Seed Tasks
-        const tasks = [
-            {
-                projectId: project1._id,
-                title: 'Draft technical specifications for performance hooks',
-                description: 'Provide a breakdown of custom compiler hooks required by client analytics layers.',
-                status: 'In Progress',
-                priority: 'High',
-                assigneeId: seededUsers[4]._id,
-                dueDate: new Date('2026-07-10'),
-                labels: ['Engineering', 'Architecture']
-            },
-            {
-                projectId: project1._id,
-                title: 'Review user story acceptance criteria',
-                description: 'Validate functional coverage of requirements before final engineering review.',
-                status: 'Todo',
-                priority: 'Medium',
-                assigneeId: seededUsers[3]._id,
-                dueDate: new Date('2026-07-20'),
-                labels: ['Analysis']
-            },
-            {
-                projectId: project1._id,
-                title: 'Implement unit tests for compiler optimizations',
-                description: 'Integrate custom test runner suites to verify sub-millisecond bundler load times.',
-                status: 'Backlog',
-                priority: 'Critical',
-                assigneeId: seededUsers[5]._id,
-                dueDate: new Date('2026-08-01'),
-                labels: ['Testing']
-            }
-        ];
-        for (const t of tasks) {
-            await new db.Task(t).save();
-        }
-        // Seed SEO Report data
-        const seoReport = new db.SEOReport({
-            clicks: 14200,
-            impressions: 489000,
-            ctr: 2.9,
-            avgPosition: 12.4,
-            healthScore: 92,
-            checklist: [
-                { task: 'Optimized Meta tags for SEO', done: true },
-                { task: 'Cleaned trailing slashes URLs', done: true },
-                { task: 'Generated automated sitemap', done: false },
-                { task: 'Audit Google Business Profile details', done: false }
-            ],
-            competitors: [
-                { name: 'Monday.com', visibility: 42.1, rank: 1 },
-                { name: 'Jira Software', visibility: 38.5, rank: 2 },
-                { name: 'StackPilot AI', visibility: 18.2, rank: 5 }
-            ]
-        });
-        await seoReport.save();
-        // Seed Invoice
-        const invoice = new db.Invoice({
-            invoiceNumber: 'INV-2026-001',
-            clientId: client._id,
-            clientName: client.name,
-            clientEmail: client.email,
-            projectId: project1._id,
-            projectName: project1.name,
-            issueDate: new Date('2026-06-15'),
-            dueDate: new Date('2026-07-15'),
-            items: [
-                { description: 'Initial Architecture Planning Phase', quantity: 1, rate: 15000, amount: 15000 },
-                { description: 'Vite and Tailwind Template Setup', quantity: 1, rate: 8000, amount: 8000 }
-            ],
-            subtotal: 23000,
-            taxRate: 18,
-            taxAmount: 4140,
-            discount: 1000,
-            total: 26140,
-            status: 'Sent'
-        });
-        await invoice.save();
-        console.log('Seeded database with default collections successfully.');
-    }
-    catch (error) {
-        console.error('Error seeding database:', error);
-    }
-};
+// Centralized error handler
+app.use(security_1.errorHandler);
 // Connect to MongoDB & start server
 mongoose_1.default.connect(MONGODB_URI)
     .then(() => {
     console.log('Connected to MongoDB.');
-    seedDatabase();
+    (0, seed_1.seedDatabase)();
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
 })
     .catch(err => {
-    console.warn('MongoDB connection failed. Continuing in offline mode (seeding bypassed)...');
+    console.warn('MongoDB connection failed. Continuing in fallback mode...');
     console.error(err);
-    // Even if MongoDB fails, we start the Express server so endpoints can respond (with mock logic if DB queries fail)
     app.listen(PORT, () => {
         console.log(`Server running in fallback mode on port ${PORT}`);
     });
