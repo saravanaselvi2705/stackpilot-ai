@@ -1,138 +1,12 @@
+export * from './authController';
+export * from './userController';
+export * from './roleController';
+export * from './profileController';
+export * from './auditController';
+
 import { Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { AuthenticatedRequest } from '../middleware/auth';
 import * as db from '../models';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'stackpilot_secret_key_12345';
-
-// AUTH CONTROLLERS
-export const register = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { name, email, password, role } = req.body;
-    const existingUser = await db.User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'User with this email already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new db.User({
-      name,
-      email,
-      password: hashedPassword,
-      role: role || 'Developer',
-      avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`,
-      availability: 'Available',
-      twoFAEnabled: false
-    });
-
-    await newUser.save();
-
-    // Log Activity
-    const activity = new db.ActivityLog({
-      userId: newUser._id,
-      userName: newUser.name,
-      userRole: newUser.role,
-      action: 'Register',
-      details: `User registered with role ${newUser.role}`
-    });
-    await activity.save();
-
-    const token = jwt.sign({ id: newUser._id, email: newUser.email, role: newUser.role }, JWT_SECRET, { expiresIn: '24h' });
-
-    res.status(201).json({
-      token,
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        avatarUrl: newUser.avatarUrl,
-        availability: newUser.availability,
-        twoFAEnabled: newUser.twoFAEnabled,
-        createdAt: newUser.createdAt
-      }
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const login = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const user = await db.User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
-
-    // Log Activity
-    const activity = new db.ActivityLog({
-      userId: user._id,
-      userName: user.name,
-      userRole: user.role,
-      action: 'Login',
-      details: 'User logged in successfully'
-    });
-    await activity.save();
-
-    res.status(200).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatarUrl: user.avatarUrl,
-        availability: user.availability,
-        twoFAEnabled: user.twoFAEnabled,
-        createdAt: user.createdAt
-      }
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
-    const user = await db.User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.status(200).json(user);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const updateProfile = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
-    const { name, department, skills, experience, availability, twoFAEnabled } = req.body;
-
-    const user = await db.User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    if (name) user.name = name;
-    if (department) user.department = department;
-    if (skills) user.skills = skills;
-    if (experience) user.experience = experience;
-    if (availability) user.availability = availability;
-    if (twoFAEnabled !== undefined) user.twoFAEnabled = twoFAEnabled;
-
-    await user.save();
-    res.status(200).json(user);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // PROJECTS CONTROLLERS
 export const getProjects = async (req: AuthenticatedRequest, res: Response) => {
@@ -302,7 +176,6 @@ export const createInvoice = async (req: AuthenticatedRequest, res: Response) =>
 // SEO CONTROLLERS
 export const getSEOReport = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Return latest SEO metrics
     const reports = await db.SEOReport.find().sort({ date: -1 }).limit(10);
     res.status(200).json(reports);
   } catch (error: any) {
@@ -310,12 +183,11 @@ export const getSEOReport = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-// AI CONTROLLERS (MOCKS WITH SMART LLM SIMULATORS)
+// AI CONTROLLERS
 export const aiGenerateRequirements = (req: AuthenticatedRequest, res: Response) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
-  // Generate dynamic-looking software requirement list
   const text = `# Business and Functional Requirements for "${prompt}"
   
 ## 1. Overview

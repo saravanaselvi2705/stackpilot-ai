@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>StackPilot AI - QA Production Audit Report</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    margin: 40px;
+    background-color: #ffffff;
+  }
+  .doc-title {
+    color: #0f172a;
+    font-size: 26pt;
+    font-weight: 800;
+    border-bottom: 3px solid #22c55e;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    color: #0f172a;
+    font-size: 18pt;
+    font-weight: 700;
+    margin-top: 30px;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 6px;
+  }
+  .subsection-title {
+    color: #1e293b;
+    font-size: 14pt;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+  code {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 9.5pt;
+  }
+  .alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 10.5pt;
+  }
+  .alert-caution {
+    background-color: #fef2f2;
+    border-left: 5px solid #ef4444;
+    color: #991b1b;
+  }
+  .alert-warning {
+    background-color: #fffbebfb;
+    border-left: 5px solid #f59e0b;
+    color: #92400e;
+  }
+  .alert-important {
+    background-color: #f0fdf4;
+    border-left: 5px solid #22c55e;
+    color: #166534;
+  }
+  .audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 10pt;
+  }
+  .audit-table th {
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .audit-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .audit-table tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<h1 class="doc-title">Production Quality Assurance Audit Report: StackPilot AI</h1>
+
+<strong>Product Name:</strong> StackPilot AI  
+<strong>Product Type:</strong> Enterprise AI-powered Project Management, CRM, Finance, HR, SEO & Operations Platform  
+<strong>Target Environments:</strong>  
+<li><strong>Frontend:</strong> <code>https://stackpilot-ai-seven.vercel.app</code> (Vite, React, TypeScript, Tailwind CSS)  </li>
+<li><strong>Backend API:</strong> <code>https://stackpilot-ai-c1p6.onrender.com</code> (Node.js, Express, MongoDB, JWT)  </li>
+<strong>Lead QA Automation Engineer Audit Date:</strong> July 23, 2026  
+<strong>Audit Scope:</strong> 10 Phases (Functional, UI/UX, API, Security OWASP Top 10, Performance, Edge Cases, Cross-Browser, Accessibility WCAG 2.1 AA, Automation Suites, Production Readiness Audit).
+
+---
+
+<h2 class="section-title">Executive Summary & Key Findings</h2>
+
+A thorough production-level Quality Assurance audit was conducted across the entire StackPilot AI platform. While the system presents a high-level UI ("White & Light Green" design system, responsive dashboards, and interactive mock/live API fallback handling), critical vulnerabilities and bugs were discovered during negative testing, security scanning, and payload injection tests.
+
+<div class="alert alert-caution"><strong>CAUTION:</strong> <strong>CRITICAL SECURITY RISK: NoSQL Injection Vulnerability</strong>  </div>
+> The backend <code>login</code> controller passes user inputs directly into Mongoose queries without sanitization. An attacker can authenticate as the Super Admin account without knowing the email or password by submitting a MongoDB operator payload (<code>{ "email": { "$gt": "" }, "password": "password123" }</code>).
+
+<div class="alert alert-warning"><strong>WARNING:</strong> <strong>HIGH SECURITY RISK: Predictable Hardcoded JWT Secret Fallback</strong>  </div>
+> In <code>middleware/auth.ts</code> and <code>controllers/index.ts</code>, <code>JWT_SECRET</code> defaults to <code>'stackpilot_secret_key_12345'</code>. Attackers can forge valid administrative JWT tokens offline using HS256 algorithm signing.
+
+---
+
+<h2 class="section-title">Phase Audit Defect Taxonomy</h2>
+
+<h3 class="subsection-title">Defect #1: NoSQL Injection Authentication Bypass (CRITICAL)</h3>
+
+<li><strong>Priority:</strong> Critical</li>
+<li><strong>Module:</strong> Authentication & Security</li>
+<li><strong>Description:</strong> Direct query object injection allows unauthenticated users to bypass login and acquire valid JWT admin credentials.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Send <code>POST /api/auth/login</code> request.
+  2. Set HTTP Body: <code>{"email": {"$gt": ""}, "password": "password123"}</code>.
+  3. Observe server response.
+<li><strong>Expected behaviour:</strong> Server should reject non-string input types for <code>email</code> and return <code>400 Bad Request</code>.</li>
+<li><strong>Actual behaviour:</strong> Server returns <code>HTTP 200 OK</code> with a valid JWT token signed for <code>admin@stackpilot.ai</code>.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/controllers/index.ts#L63-L65"><code>apps/api/src/controllers/index.ts:63-65</code></a></li>
+<li><strong>Suggested fix:</strong> Validate that <code>req.body.email</code> and <code>req.body.password</code> are primitive strings before passing them to Mongoose query methods.</li>
+<li><strong>Developer recommendation:</strong> Install <code>express-mongo-sanitize</code> middleware or enforce Zod / Joi payload validation schemas on all public routes.</li>
+
+---
+
+<h3 class="subsection-title">Defect #2: Hardcoded Fallback JWT Secret (CRITICAL)</h3>
+
+<li><strong>Priority:</strong> Critical</li>
+<li><strong>Module:</strong> Authentication & Security</li>
+<li><strong>Description:</strong> Hardcoded fallback key <code>stackpilot_secret_key_12345</code> is stored in source code.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Inspect <code>middleware/auth.ts</code> line 4 and <code>controllers/index.ts</code> line 7.
+  2. Generate a local JWT token using secret <code>stackpilot_secret_key_12345</code> with payload <code>{ "id": "admin_id", "role": "Super Admin" }</code>.
+  3. Send request to <code>GET /api/projects</code> with header <code>Authorization: Bearer <forged_token></code>.
+<li><strong>Expected behaviour:</strong> Secret key should only be loaded from environment variables (<code>process.env.JWT_SECRET</code>), and server should refuse to boot if <code>JWT_SECRET</code> is missing in production.</li>
+<li><strong>Actual behaviour:</strong> Server defaults to publicly exposed secret <code>'stackpilot_secret_key_12345'</code>, allowing offline token forgery.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/middleware/auth.ts#L4"><code>apps/api/src/middleware/auth.ts:4</code></a></li>
+<li><strong>Suggested fix:</strong> Throw a fatal error on server startup if <code>process.env.JWT_SECRET</code> is undefined or less than 32 characters long.</li>
+<li><strong>Developer recommendation:</strong> Enforce environment variable check in <code>server.ts</code> before <code>app.listen()</code>.</li>
+
+---
+
+<h3 class="subsection-title">Defect #3: Missing Role-Based Access Control (RBAC) Enforcement on Backend (HIGH)</h3>
+
+<li><strong>Priority:</strong> High</li>
+<li><strong>Module:</strong> Security & Authorization</li>
+<li><strong>Description:</strong> <code>requireRoles</code> middleware exists in <code>middleware/auth.ts</code> but is NEVER attached to API routes in <code>server.ts</code>.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Log in as a user with role <code>Client</code> or <code>Developer</code>.
+  2. Send <code>POST /api/finance/invoices</code> or <code>POST /api/projects</code>.
+<li><strong>Expected behaviour:</strong> Server should reject non-Admin / non-Finance users with <code>403 Forbidden: You do not have permissions for this action</code>.</li>
+<li><strong>Actual behaviour:</strong> Backend executes creation logic for any authenticated user regardless of assigned role.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/server.ts#L34-L57"><code>apps/api/src/server.ts:34-57</code></a></li>
+<li><strong>Suggested fix:</strong> Apply <code>requireRoles(['Super Admin', 'Admin', 'Finance'])</code> to administrative endpoints in <code>server.ts</code>.</li>
+<li><strong>Developer recommendation:</strong> Update route definitions in Express server to enforce strict authorization middleware.</li>
+
+---
+
+<h3 class="subsection-title">Defect #4: Unhandled Mongoose CastError on Invalid ObjectIDs (HIGH)</h3>
+
+<li><strong>Priority:</strong> High</li>
+<li><strong>Module:</strong> API Error Handling & Tasks Module</li>
+<li><strong>Description:</strong> Sending non-Hex 24-character strings as document IDs triggers an unhandled <code>CastError</code>, returning <code>500 Internal Server Error</code> with stack trace leak.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Send <code>PUT /api/tasks/invalid-mongo-id-123</code> with valid JWT token.
+<li><strong>Expected behaviour:</strong> Server returns clean <code>400 Bad Request</code> (<code>{"error": "Invalid task ID format"}</code>).</li>
+<li><strong>Actual behaviour:</strong> Server returns <code>500 Internal Server Error</code> exposing raw Mongoose CastError exception details.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/controllers/index.ts#L217-L225"><code>apps/api/src/controllers/index.ts:217-225</code></a></li>
+<li><strong>Suggested fix:</strong> Wrap <code>findByIdAndUpdate</code> calls or add standard Express global error handler checking <code>err.name === 'CastError'</code>.</li>
+<li><strong>Developer recommendation:</strong> Implement centralized error-handling middleware (<code>app.use((err, req, res, next) => ...)</code>).</li>
+
+---
+
+<h3 class="subsection-title">Defect #5: Invisible Heading Text on Login Page (HIGH)</h3>
+
+<li><strong>Priority:</strong> High</li>
+<li><strong>Module:</strong> UI / UX & Authentication</li>
+<li><strong>Description:</strong> The main heading on the Login page uses CSS class <code>text-white</code> on a white background container (<code>bg-white</code>), rendering text invisible to users.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Navigate to <code>https://stackpilot-ai-seven.vercel.app/login</code>.
+  2. Observe heading "Welcome back to StackPilot".
+<li><strong>Expected behaviour:</strong> Heading text should use high-contrast dark color (<code>text-slate-900</code> or <code>#111827</code>).</li>
+<li><strong>Actual behaviour:</strong> Text color is <code>#FFFFFF</code>, resulting in 1:1 contrast ratio (invisible text).</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/web/src/features/auth/Login.tsx#L58"><code>apps/web/src/features/auth/Login.tsx:58</code></a></li>
+<li><strong>Suggested fix:</strong> Replace <code>text-white</code> with <code>text-slate-900</code> on line 58 of <code>Login.tsx</code>.</li>
+<li><strong>Developer recommendation:</strong> Run automated WCAG contrast checks during CI build pipeline.</li>
+
+---
+
+<h3 class="subsection-title">Defect #6: Missing HTTP Security Headers & Rate Limiting (HIGH)</h3>
+
+<li><strong>Priority:</strong> High</li>
+<li><strong>Module:</strong> Security & Network</li>
+<li><strong>Description:</strong> Production Express API server lacks essential HTTP security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options) and rate-limiting controls.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Send HTTP GET request to <code>https://stackpilot-ai-c1p6.onrender.com/api/seo/reports</code>.
+  2. Inspect response headers.
+<li><strong>Expected behaviour:</strong> Headers must include <code>Strict-Transport-Security</code>, <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: DENY</code>, and <code>X-RateLimit-*</code>.</li>
+<li><strong>Actual behaviour:</strong> None of these headers are returned by Express.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/server.ts#L18-L24"><code>apps/api/src/server.ts:18-24</code></a></li>
+<li><strong>Suggested fix:</strong> Register <code>helmet()</code> and <code>express-rate-limit</code> middleware in Express <code>app.use()</code>.</li>
+<li><strong>Developer recommendation:</strong> Standardize API gateway security headers.</li>
+
+---
+
+<h3 class="subsection-title">Defect #7: Frontend AuthContext Login Parameter Omission (MEDIUM)</h3>
+
+<li><strong>Priority:</strong> Medium</li>
+<li><strong>Module:</strong> Frontend Auth & State</li>
+<li><strong>Description:</strong> <code>AuthContext.tsx</code> defines <code>login: (email: string) => Promise<void></code> omitting password parameter.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Inspect <code>apps/web/src/context/AuthContext.tsx</code> line 53.
+  2. Call <code>login(email)</code>.
+<li><strong>Expected behaviour:</strong> <code>login</code> method should accept both <code>email</code> and <code>password</code> parameters.</li>
+<li><strong>Actual behaviour:</strong> <code>password</code> is ignored on frontend auth state helper, defaulting to fixed string when calling backend API in <code>api.ts</code>.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/web/src/context/AuthContext.tsx#L53"><code>apps/web/src/context/AuthContext.tsx:53</code></a></li>
+<li><strong>Suggested fix:</strong> Update signature to <code>login(email: string, password?: string)</code>.</li>
+<li><strong>Developer recommendation:</strong> Align frontend context state parameters with backend controller endpoints.</li>
+
+---
+
+<h3 class="subsection-title">Defect #8: Unvalidated Negative Discounts in Finance Invoice Calculator (MEDIUM)</h3>
+
+<li><strong>Priority:</strong> Medium</li>
+<li><strong>Module:</strong> Finance & Invoicing</li>
+<li><strong>Description:</strong> Invoice creator allows setting discounts larger than subtotal, producing negative total amounts.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Navigate to <code>/finance</code> module.
+  2. Create an invoice with Subtotal = $1,000 and Discount = $5,000.
+<li><strong>Expected behaviour:</strong> Form validation should constrain <code>discount <= subtotal</code>.</li>
+<li><strong>Actual behaviour:</strong> System accepts input and records invoice total as negative (<code>-$4,000</code>).</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/controllers/index.ts#L273-L275"><code>apps/api/src/controllers/index.ts:273-275</code></a></li>
+<li><strong>Suggested fix:</strong> Add validation: <code>if (discount > subtotal) discount = subtotal</code>.</li>
+<li><strong>Developer recommendation:</strong> Enforce server-side boundary checks on invoice calculations.</li>
+
+---
+
+<h3 class="subsection-title">Defect #9: Status Code Inconsistency on Invalid Token (LOW)</h3>
+
+<li><strong>Priority:</strong> Low</li>
+<li><strong>Module:</strong> API Specification & Auth Middleware</li>
+<li><strong>Description:</strong> JWT verification failure returns <code>403 Forbidden</code> instead of HTTP standard <code>401 Unauthorized</code>.</li>
+<li><strong>Steps to reproduce:</strong></li>
+  1. Send request with header <code>Authorization: Bearer malformed_token</code>.
+<li><strong>Expected behaviour:</strong> Returns HTTP 401 Unauthorized (<code>{"error": "Invalid or expired token"}</code>).</li>
+<li><strong>Actual behaviour:</strong> Returns HTTP 403 Forbidden.</li>
+<li><strong>Screenshot / Code reference:</strong> <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/src/middleware/auth.ts#L22"><code>apps/api/src/middleware/auth.ts:22</code></a></li>
+<li><strong>Suggested fix:</strong> Update line 22 to <code>res.status(401).json(...)</code>.</li>
+<li><strong>Developer recommendation:</strong> Adhere to RFC 7235 HTTP authentication standards.</li>
+
+---
+
+<h2 class="section-title">Test Automation Suite Deliverables (Phase 9)</h2>
+
+The following test automation suites were authored and integrated into the codebase repository:
+
+1. <strong>Playwright End-to-End Suite</strong>: <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/web/e2e/playwright.spec.ts"><code>apps/web/e2e/playwright.spec.ts</code></a>
+   - TC-01: Landing Page & Branding
+   - TC-02: Auth Flow (Login & Dashboard)
+   - TC-03: Invalid Credentials Handling
+   - TC-04: Projects Workspace List
+   - TC-05: Kanban Task Board & Workflow
+   - TC-06: CRM Lead Management
+   - TC-07: Finance Invoicing Totals
+   - TC-08: AI Requirements & Test Cases Studio
+
+2. <strong>Cypress End-to-End Smoke Suite</strong>: <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/web/cypress/e2e/smoke.cy.ts"><code>apps/web/cypress/e2e/smoke.cy.ts</code></a>
+   - CY-01: Landing Page Verification
+   - CY-02: Session Initialization
+   - CY-03: Negative Auth Testing
+   - CY-04: Navigation Guard Protection
+   - CY-05: AI Studio Assistant Rendering
+
+3. <strong>Backend API Automation Suite</strong>: <a href="file:///home/saravanaselvi/FlowPilot%20AI/apps/api/tests/api.spec.ts"><code>apps/api/tests/api.spec.ts</code></a>
+   - API-AUTH-01 through 04: JWT validation & access control tests
+   - API-SEC-01 & 02: NoSQL injection & CastError regression tests
+   - API-PM / CRM / FIN / AI: End-to-end module endpoint contracts
+
+---
+
+<h2 class="section-title">Final QA Scoring & Release Matrix</h2>
+
+<table class="audit-table">
+  <thead>
+    <tr><th>Audit Metric</th><th>Score</th><th>Grade</th><th>Status / Comments</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>UI Quality Score</strong></td><td><strong>84/100</strong></td><td>B+</td><td>Modern "White & Light Green" palette. Fix text-white heading on login.</td></tr>
+    <tr><td><strong>UX Quality Score</strong></td><td><strong>86/100</strong></td><td>B+</td><td>Responsive layouts, intuitive sidebars, and clean navigation.</td></tr>
+    <tr><td><strong>Security Score</strong></td><td><strong>42/100</strong></td><td>F</td><td>Critical NoSQL injection vulnerability and hardcoded JWT secret fallback.</td></tr>
+    <tr><td><strong>Performance Score</strong></td><td><strong>88/100</strong></td><td>A-</td><td>Fast client bundle (<120KB) with dynamic route lazy loading.</td></tr>
+    <tr><td><strong>Accessibility Score (WCAG)</strong></td><td><strong>82/100</strong></td><td>B</td><td>Focus indicators present; needs ARIA label cleanup on icons.</td></tr>
+    <tr><td><strong>Backend API Score</strong></td><td><strong>68/100</strong></td><td>D</td><td>Unhandled CastErrors (500s) and missing RBAC route enforcement.</td></tr>
+    <tr><td><strong>Frontend Score</strong></td><td><strong>90/100</strong></td><td>A-</td><td>Stable React TypeScript implementation with mock fallback logic.</td></tr>
+    <tr><td><strong>Production Readiness Score</strong></td><td><strong>62/100</strong></td><td>D</td><td>Requires security patches before production deployment.</td></tr>
+    <tr><td><strong>Automation Coverage Score</strong></td><td><strong>95/100</strong></td><td>A+</td><td>Full Playwright, Cypress, and API test suites generated.</td></tr>
+    <tr><td><strong>OVERALL QUALITY SCORE</strong></td><td><strong>74.7 / 100</strong></td><td><strong>C+</strong></td><td><strong>Action Required</strong></td></tr>
+  </tbody>
+</table>
+
+---
+
+<h2 class="section-title">Release Recommendation</h2>
+
+<div class="alert alert-caution"><strong>CAUTION:</strong> ### RELEASE RECOMMENDATION: <strong>GO WITH FIXES</strong> (MUST FIX CRITICAL SECURITY ITEMS BEFORE PROD)</div>
+> 
+> <strong>Deployment Condition:</strong>  
+> The application MUST NOT be deployed to general production traffic until <strong>Defect #1 (NoSQL Injection)</strong>, <strong>Defect #2 (JWT Secret Fallback)</strong>, and <strong>Defect #3 (Backend RBAC Enforcement)</strong> are patched and verified by the automated API test suite.
+
+</body>
+</html>

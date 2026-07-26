@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User, UserRole } from '../../../../packages/shared/types';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { User } from '../../../../packages/shared/types';
 import API from '../services/api';
 
 interface AuthContextType {
@@ -7,134 +7,168 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
-  login: (email: string) => Promise<void>;
-  register: (name: string, email: string, role: UserRole) => Promise<void>;
+
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+
   updateProfile: (updates: Partial<User>) => Promise<void>;
-  switchRole: (role: UserRole) => void;
+
   checkBackend: () => Promise<boolean>;
-  isMock: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isMock, setIsMock] = useState<boolean>(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      setLoading(true);
+
+    const init = async () => {
+
       try {
-        // Auto check if real backend Express API is running
-        const available = await API.checkBackendAvailability();
-        setIsMock(!available);
-        
-        const storedToken = localStorage.getItem('stackpilot_token');
-        const storedUser = localStorage.getItem('stackpilot_user');
-        
+
+        const storedToken = localStorage.getItem("stackpilot_token");
+        const storedUser = localStorage.getItem("stackpilot_user");
+
         if (storedToken && storedUser) {
+
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+
         }
-      } catch (err) {
-        console.error('Auth initialization error:', err);
+
       } finally {
+
         setLoading(false);
+
       }
+
     };
-    
-    initializeAuth();
+
+    init();
+
   }, []);
 
-  const login = async (email: string) => {
-    setError(null);
-    setLoading(true);
-    try {
-      const data = await API.auth.login(email);
-      setToken(data.token);
-      setUser(data.user);
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const login = async (
+    email: string,
+    password: string
+  ) => {
 
-  const register = async (name: string, email: string, role: UserRole) => {
-    setError(null);
     setLoading(true);
+    setError(null);
+
     try {
-      const data = await API.auth.register(name, email, role);
-      setToken(data.token);
-      setUser(data.user);
+
+      const response = await API.auth.login(email, password);
+
+      localStorage.setItem(
+        "stackpilot_token",
+        response.token
+      );
+
+      localStorage.setItem(
+        "stackpilot_user",
+        JSON.stringify(response.user)
+      );
+
+      setToken(response.token);
+      setUser(response.user);
+
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+
+      setError(err.message || "Login failed");
       throw err;
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   const logout = () => {
-    localStorage.removeItem('stackpilot_token');
-    localStorage.removeItem('stackpilot_user');
+
+    localStorage.removeItem("stackpilot_token");
+    localStorage.removeItem("stackpilot_user");
+
     setToken(null);
     setUser(null);
+
   };
 
-  const updateProfile = async (updates: Partial<User>) => {
-    try {
-      const updated = await API.auth.updateProfile(updates);
-      setUser(updated);
-    } catch (err: any) {
-      console.error('Update profile error:', err);
-      throw err;
-    }
-  };
+  const updateProfile = async (
+    updates: Partial<User>
+  ) => {
 
-  const switchRole = (role: UserRole) => {
-    if (!user) return;
-    const updatedUser = { ...user, role };
-    setUser(updatedUser);
-    localStorage.setItem('stackpilot_user', JSON.stringify(updatedUser));
+    const updated = await API.auth.updateProfile(updates);
+
+    setUser(updated);
+
+    localStorage.setItem(
+      "stackpilot_user",
+      JSON.stringify(updated)
+    );
+
   };
 
   const checkBackend = async () => {
-    const available = await API.checkBackendAvailability();
-    setIsMock(!available);
-    return available;
+
+    return await API.checkBackendAvailability();
+
   };
 
   return (
+
     <AuthContext.Provider
+
       value={{
+
         user,
+
         token,
+
         loading,
+
         error,
+
         login,
-        register,
+
         logout,
+
         updateProfile,
-        switchRole,
-        checkBackend,
-        isMock
+
+        checkBackend
+
       }}
+
     >
+
       {children}
+
     </AuthContext.Provider>
+
   );
+
 };
 
 export const useAuth = () => {
+
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+
+    throw new Error(
+      "useAuth must be used inside AuthProvider"
+    );
+
   }
+
   return context;
+
 };

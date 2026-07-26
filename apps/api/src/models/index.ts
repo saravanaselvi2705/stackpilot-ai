@@ -3,33 +3,80 @@ import { Schema, model } from 'mongoose';
 // User Schema
 const UserSchema = new Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['Super Admin', 'Admin', 'Project Manager', 'Business Analyst', 'Developer', 'Tester', 'SEO Executive', 'Finance', 'Client'],
+    enum: ['Super Admin', 'Admin', 'Project Manager', 'Business Analyst', 'Developer', 'QA/Tester', 'SEO Executive', 'Finance', 'Client'],
     default: 'Developer'
   },
+  customPermissions: [{ type: String }],
   avatarUrl: { type: String },
-  department: { type: String },
+  department: { type: String, default: 'General' },
   skills: [{ type: String }],
   experience: { type: String },
-  availability: { type: String, enum: ['Available', 'Busy', 'On Leave'], default: 'Available' },
-  twoFAEnabled: { type: Boolean, default: false },
+  availability: {
+    type: String,
+    enum: ['Available', 'Busy', 'On Leave'],
+    default: 'Available'
+  },
+
+  twoFAEnabled: {
+    type: Boolean,
+    default: false
+  },
+
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+
+  mustChangePassword: {
+    type: Boolean,
+    default: false
+  },
+
+  lastLogin: {
+    type: Date
+  },
+
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
+
+  passwordResetToken: {
+    type: String,
+    default: null
+  },
+
+  passwordResetExpires: {
+    type: Date,
+    default: null
+  },
+
+  invited: {
+    type: Boolean,
+    default: false
+  },
 }, { timestamps: true });
+
+UserSchema.index({ role: 1 });
+UserSchema.index({ isActive: 1 });
+UserSchema.index({ department: 1 });
 
 // Role Schema
 const RoleSchema = new Schema({
   name: { type: String, required: true, unique: true },
   description: { type: String },
-  permissions: [{ type: String }] // string permission keys
+  permissions: [{ type: String }] // array of permission keys
 }, { timestamps: true });
 
 // Permission Schema
 const PermissionSchema = new Schema({
   name: { type: String, required: true, unique: true },
   description: { type: String },
-  module: { type: String }
+  module: { type: String, required: true }
 }, { timestamps: true });
 
 // Company Schema
@@ -244,14 +291,19 @@ const SEOReportSchema = new Schema({
   }]
 }, { timestamps: true });
 
-// ActivityLog Schema
+// ActivityLog / AuditLog Schema
 const ActivityLogSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
   userName: { type: String, required: true },
   userRole: { type: String, required: true },
   action: { type: String, required: true },
-  details: { type: String }
+  details: { type: String },
+  ipAddress: { type: String },
+  userAgent: { type: String }
 }, { timestamps: true });
+
+ActivityLogSchema.index({ userId: 1, createdAt: -1 });
+ActivityLogSchema.index({ action: 1 });
 
 // Exports
 export const User = model('User', UserSchema);
@@ -272,3 +324,4 @@ export const BlogPost = model('BlogPost', BlogPostSchema);
 export const Keyword = model('Keyword', KeywordSchema);
 export const SEOReport = model('SEOReport', SEOReportSchema);
 export const ActivityLog = model('ActivityLog', ActivityLogSchema);
+export const AuditLog = ActivityLog; // Alias for consistency
