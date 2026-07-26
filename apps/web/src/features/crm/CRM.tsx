@@ -129,8 +129,8 @@ export const CRM: React.FC = () => {
           {/* CRM Heading */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-black font-display text-white tracking-tight">Clients Directory</h1>
-              <p className="text-xs text-slate-400 mt-1">Manage and track your active accounts, proposals, and partners.</p>
+              <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Clients Directory</h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Manage and track your active accounts, proposals, and partners.</p>
             </div>
             {hasPermission('CRM', 'create') && (
               <Button onClick={() => setModalOpen(true)} className="text-xs flex items-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white">
@@ -146,30 +146,30 @@ export const CRM: React.FC = () => {
               const stageTotalValue = stageClients.reduce((acc, curr) => acc + (curr.value || 0), 0);
               
               return (
-                <div key={stageKey} className="rounded-2xl border border-slate-800 bg-slate-900/10 p-5 flex flex-col min-h-[350px]">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/40">
+                <div key={stageKey} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/10 p-5 flex flex-col min-h-[350px]">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800/40">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-200 tracking-wider uppercase">
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 tracking-wider uppercase">
                         {stageKey === 'Active' ? 'Active Clients' : stageKey === 'Lead' ? 'Leads / Prospects' : 'Archived / Inactive'}
                       </h3>
-                      <span className="text-[10px] text-slate-500">{stageClients.length} accounts</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">{stageClients.length} accounts</span>
                     </div>
-                    <span className="text-xs font-black text-slate-350">{formatCurrency(stageTotalValue)}</span>
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-350">{formatCurrency(stageTotalValue)}</span>
                   </div>
 
                   <div className="space-y-3 flex-1 overflow-y-auto max-h-[360px] pr-1">
                     {stageClients.length === 0 ? (
-                      <div className="text-center py-10 text-[10px] text-slate-600">No accounts in this phase</div>
+                      <div className="text-center py-10 text-[10px] text-slate-500">No accounts in this phase</div>
                     ) : (
                       stageClients.map((c) => (
                         <div 
                           key={c._id} 
                           onClick={() => setSelectedClient(c)}
-                          className="p-4 bg-slate-950/40 border border-slate-850 hover:border-slate-700 rounded-xl space-y-3 transition-all cursor-pointer hover:scale-[1.01]"
+                          className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 hover:border-[#22C55E]/40 rounded-xl space-y-3 transition-all cursor-pointer hover:scale-[1.01]"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h4 className="text-xs font-bold text-slate-100 hover:text-[#22C55E] transition-colors">{c.name}</h4>
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 hover:text-[#22C55E] transition-colors">{c.name}</h4>
                               <span className="text-[9px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
                                 <IoBusinessOutline size={10} /> {c.companyName}
                               </span>

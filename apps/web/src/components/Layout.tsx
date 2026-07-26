@@ -78,9 +78,9 @@ export const Layout: React.FC = () => {
   const hasResults = results.projects.length > 0 || results.tasks.length > 0 || results.leads.length > 0 || results.invoices.length > 0;
 
   return (
-    <div className="flex bg-white text-[#111827] min-h-screen relative overflow-hidden font-sans">
+    <div className="flex bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 min-h-screen relative overflow-hidden font-sans transition-colors">
       {/* Decorative Glow Background Lights */}
-      <div className="glow-orb bg-cyan-500/10 top-[-200px] left-[-200px] animate-glow" />
+      <div className="glow-orb bg-emerald-500/5 top-[-200px] left-[-200px] animate-glow" />
       <div className="glow-orb bg-indigo-500/5 bottom-[-100px] right-[-100px] animate-glow" style={{ animationDelay: '-6s' }} />
 
       {/* Collapsible Sidebar */}
@@ -89,7 +89,7 @@ export const Layout: React.FC = () => {
       {/* Main Panel */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden z-10">
         <Navbar onSearchOpen={() => setSearchOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950/20">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-100/60 dark:bg-slate-950/40 transition-colors">
           <Outlet />
         </main>
       </div>

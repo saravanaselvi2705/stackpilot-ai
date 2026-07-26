@@ -166,8 +166,8 @@ Specifications summary successfully mapped to requirements directory.`);
           {/* Main Gallery List */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-black font-display text-white tracking-tight">Projects Workspace</h1>
-              <p className="text-xs text-slate-400 mt-1">Manage project timelines, budgets, and milestones.</p>
+              <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Projects Workspace</h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Manage project timelines, budgets, and milestones.</p>
             </div>
             {hasPermission('PM', 'create') && (
               <Button onClick={() => setModalOpen(true)} className="text-xs flex items-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white">
@@ -204,21 +204,21 @@ Specifications summary successfully mapped to requirements directory.`);
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">
                       {p.description}
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 font-bold">
                         <span>Spent vs Budget</span>
                         <span>{formatCurrency(p.spent)} / {formatCurrency(p.budget)} ({percentSpent}%)</span>
                       </div>
                       <ProgressBar value={percentSpent} color={percentSpent > 80 ? 'bg-red-500' : 'bg-[#22C55E]'} />
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-800/40 pt-3 text-[10px] text-slate-500">
+                    <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800/40 pt-3 text-[10px] text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <IoCalendarOutline size={12} className="text-slate-400" />
                         {new Date(p.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(p.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -233,9 +233,9 @@ Specifications summary successfully mapped to requirements directory.`);
 
           {/* Gantt Timeline */}
           <Card>
-            <div className="border-b border-slate-800 pb-4 mb-6">
-              <h3 className="text-sm font-bold text-slate-200">Project Timeline</h3>
-              <p className="text-[10px] text-slate-400">Visual schedule of all active projects.</p>
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Project Timeline</h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">Visual schedule of all active projects.</p>
             </div>
             <div className="space-y-6">
               <div className="grid grid-cols-12 text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-850 pb-2">

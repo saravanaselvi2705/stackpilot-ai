@@ -144,8 +144,8 @@ export const TeamCalendar: React.FC = () => {
       {/* Heading */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black font-display text-white tracking-tight">Calendar Hub</h1>
-          <p className="text-xs text-slate-400 mt-1">Schedule and coordinate team meetings, client check-ins, and deadlines.</p>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Calendar Hub</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Schedule and coordinate team meetings, client check-ins, and deadlines.</p>
         </div>
         <Button onClick={() => setModalOpen(true)} className="text-xs flex items-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white">
           <IoAdd size={16} /> Schedule Event
@@ -153,13 +153,13 @@ export const TeamCalendar: React.FC = () => {
       </div>
 
       {/* Legend Badges */}
-      <Card className="py-3 px-4 flex flex-wrap gap-4 items-center justify-between bg-slate-900/20 border-slate-850">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category Legend:</span>
+      <Card className="py-3 px-4 flex flex-wrap gap-4 items-center justify-between bg-white dark:bg-slate-900/20 border-slate-200 dark:border-slate-800">
+        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Category Legend:</span>
         <div className="flex flex-wrap gap-3">
           {(['Meeting', 'Task', 'Deadline', 'Leave', 'Invoice', 'Milestone'] as const).map(cat => (
             <div key={cat} className="flex items-center gap-1.5">
               <span className={`w-2.5 h-2.5 rounded-full ${getCategoryColor(cat)}`} />
-              <span className="text-[10px] font-bold text-slate-350">{cat}</span>
+              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{cat}</span>
             </div>
           ))}
         </div>
@@ -168,20 +168,20 @@ export const TeamCalendar: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative">
         {/* Calendar Grid */}
         <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
-            <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+            <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
               {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
             </h3>
             <div className="flex items-center gap-2">
               <button 
                 onClick={handlePrevMonth}
-                className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-all"
+                className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-all"
               >
                 <IoChevronBackOutline size={14} />
               </button>
               <button 
                 onClick={handleNextMonth}
-                className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer transition-all"
+                className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-all"
               >
                 <IoChevronForwardOutline size={14} />
               </button>

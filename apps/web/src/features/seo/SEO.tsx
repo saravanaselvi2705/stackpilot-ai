@@ -133,40 +133,40 @@ End of Certified Operational Audit Report.
   return (
     <div className="space-y-8">
       {/* Header controls & date-range selectors */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-800 pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h1 className="text-3xl font-black font-display text-white tracking-tight">Reports Suite</h1>
-          <p className="text-xs text-slate-400 mt-1">Unified analytics engine for SEO, project, finance, QA, and team performance.</p>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Reports Suite</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Unified analytics engine for SEO, project, finance, QA, and team performance.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Search report metrics */}
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
-            <IoSearchOutline className="text-slate-450" />
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white">
+            <IoSearchOutline className="text-slate-400" />
             <input 
               type="text" 
               placeholder="Search reports..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent border-none outline-none text-slate-200 placeholder-slate-500 w-32 focus:w-44 transition-all"
+              className="bg-transparent border-none outline-none text-slate-900 dark:text-slate-200 placeholder-slate-400 w-32 focus:w-44 transition-all"
             />
           </div>
 
           {/* Date range pickers */}
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-350">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
             <IoCalendarOutline />
             <input 
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent border-none outline-none text-slate-200 cursor-pointer"
+              className="bg-transparent border-none outline-none text-slate-900 dark:text-slate-200 cursor-pointer"
             />
-            <span className="text-slate-500">-</span>
+            <span className="text-slate-400">-</span>
             <input 
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent border-none outline-none text-slate-200 cursor-pointer"
+              className="bg-transparent border-none outline-none text-slate-900 dark:text-slate-200 cursor-pointer"
             />
           </div>
 
@@ -196,7 +196,7 @@ End of Certified Operational Audit Report.
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 gap-1 overflow-x-auto pb-px">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto pb-px">
         {[
           { key: 'seo', label: 'SEO Visibility', icon: <IoGlobeOutline size={13} /> },
           { key: 'project', label: 'Project Delivery', icon: <IoBriefcaseOutline size={13} /> },

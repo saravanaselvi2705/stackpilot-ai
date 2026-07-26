@@ -128,13 +128,13 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside 
-      className={`glass h-screen flex flex-col justify-between transition-all duration-300 border-r border-slate-800/80 relative z-30 ${
+      className={`bg-[#0B0F17] h-screen flex flex-col justify-between transition-all duration-300 border-r border-slate-800 relative z-30 ${
         collapsed ? 'w-[78px]' : 'w-[260px]'
       }`}
     >
       {/* Top Brand Logo */}
       <div>
-        <div className="flex items-center justify-between px-5 py-6 border-b border-slate-800/60 h-[73px]">
+        <div className="flex items-center justify-between px-5 py-6 border-b border-slate-800 h-[73px]">
           <div className="flex items-center gap-3 overflow-hidden">
             {settings.logoUrl ? (
               <img src={settings.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
@@ -147,7 +147,7 @@ export const Sidebar: React.FC = () => {
               </div>
             )}
             {!collapsed && (
-              <span className="font-display font-black text-sm tracking-wider text-slate-200 select-none truncate">
+              <span className="font-display font-black text-sm tracking-wider text-white select-none truncate">
                 {settings.companyName}
               </span>
             )}
@@ -156,40 +156,39 @@ export const Sidebar: React.FC = () => {
           {/* Collapse Toggle */}
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-900/30 border border-slate-800/50 hover:bg-slate-800/60 cursor-pointer hidden md:block shrink-0"
+            className="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 cursor-pointer hidden md:block shrink-0 transition-colors"
           >
             {collapsed ? <IoChevronForwardOutline size={16} /> : <IoChevronBackOutline size={16} />}
           </button>
         </div>
  
         {/* Navigation list */}
-        <nav className="p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)]">
+        <nav className="p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)] scrollbar-none">
           {navigationGroups.map((group) => {
             const isExpanded = expandedCategories[group.title];
             
-            // Skip displaying empty groups (e.g. if Admin-only items are filtered out)
             if (group.items.length === 0) return null;
 
             return (
               <div key={group.title} className="space-y-1">
-                {/* Expandable Category Header */}
+                {/* Category Header */}
                 {!collapsed ? (
                   <button
                     onClick={() => toggleCategory(group.title)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-slate-500 hover:text-slate-350 uppercase tracking-widest cursor-pointer select-none"
+                    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-slate-200 uppercase tracking-widest cursor-pointer select-none"
                   >
                     <span>{group.title}</span>
-                    <span className="text-slate-500">
+                    <span className="text-slate-400">
                       {isExpanded ? <IoChevronUpOutline size={10} /> : <IoChevronDownOutline size={10} />}
                     </span>
                   </button>
                 ) : (
-                  <div className="border-b border-slate-800/40 my-1" />
+                  <div className="border-b border-slate-800/60 my-1" />
                 )}
 
                 {/* Category Items */}
                 {(isExpanded || collapsed) && (
-                  <div className="space-y-0.5 transition-all duration-300">
+                  <div className="space-y-1 transition-all duration-300">
                     {group.items.map((item) => {
                       const active = isActive(item.path);
                       return (
@@ -200,13 +199,15 @@ export const Sidebar: React.FC = () => {
                             active 
                               ? { 
                                   color: settings.brandColor, 
-                                  backgroundColor: `${settings.brandColor}15`, 
-                                  borderColor: `${settings.brandColor}30` 
+                                  backgroundColor: `${settings.brandColor}18`, 
+                                  borderColor: `${settings.brandColor}40` 
                                 } 
                               : {}
                           }
                           className={
-                            `flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/10`
+                            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border border-transparent ${
+                              active ? '' : 'text-slate-300 hover:text-white hover:bg-slate-900/80'
+                            }`
                           }
                           title={collapsed ? item.name : undefined}
                         >
@@ -224,25 +225,25 @@ export const Sidebar: React.FC = () => {
       </div>
  
       {/* User Footer Panel */}
-      <div className="p-3 border-t border-slate-800/60 bg-slate-900/10">
-        <div className={`flex items-center gap-3 rounded-xl p-2 bg-slate-900/30 border border-slate-800/30 overflow-hidden ${
+      <div className="p-3 border-t border-slate-800 bg-slate-950/80">
+        <div className={`flex items-center gap-3 rounded-xl p-2 bg-slate-900/80 border border-slate-800 overflow-hidden ${
           collapsed ? 'justify-center' : ''
         }`}>
           <img 
             src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'} 
             alt="User Avatar" 
-            className="w-9 h-9 rounded-lg border border-slate-800 shrink-0 bg-slate-900"
+            className="w-9 h-9 rounded-lg border border-slate-800 shrink-0 bg-slate-950"
           />
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-bold text-slate-200 truncate">{user?.name}</h4>
+              <h4 className="text-xs font-bold text-white truncate">{user?.name}</h4>
               <p className="text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: settings.brandColor }}>{user?.role}</p>
             </div>
           )}
           {!collapsed && (
             <button 
               onClick={logout}
-              className="text-slate-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800/50 cursor-pointer shrink-0"
+              className="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 cursor-pointer shrink-0 transition-colors"
               title="Logout"
             >
               <IoLogOutOutline size={18} />

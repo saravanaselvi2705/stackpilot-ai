@@ -307,18 +307,18 @@ export const Tasks: React.FC = () => {
         onDragStart={(e) => {
           e.dataTransfer.setData('text/plain', t._id);
         }}
-        className="p-4 bg-slate-900/90 border border-slate-850 hover:border-slate-700/80 rounded-xl space-y-3 transition-all shadow-sm cursor-grab active:cursor-grabbing hover:scale-[1.01] hover:bg-slate-900"
+        className="p-4 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-[#22C55E]/40 rounded-xl space-y-3 transition-all shadow-xs cursor-grab active:cursor-grabbing hover:scale-[1.01]"
       >
         <div className="flex items-start justify-between gap-1">
           <button 
             onClick={() => handleInspectTask(t)}
-            className="text-xs font-bold text-slate-200 text-left hover:text-white cursor-pointer line-clamp-2 truncate"
+            className="text-xs font-bold text-slate-900 dark:text-white text-left hover:text-[#22C55E] cursor-pointer line-clamp-2 truncate"
           >
             {t.title}
           </button>
         </div>
 
-        {t.description && <p className="text-[10px] text-slate-450 leading-relaxed line-clamp-2">{t.description}</p>}
+        {t.description && <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">{t.description}</p>}
 
         {/* Labels & Estimates */}
         <div className="flex flex-wrap gap-1 items-center">
@@ -441,8 +441,8 @@ export const Tasks: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black font-display text-white tracking-tight">Jira Tasks Board</h1>
-          <p className="text-xs text-slate-400 mt-1">Organize team workloads, prioritize issues, and review checklist logs.</p>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Jira Tasks Board</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Organize team workloads, prioritize issues, and review checklist logs.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

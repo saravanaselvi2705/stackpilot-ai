@@ -185,8 +185,8 @@ Status: ${selectedInvoice.status}
       {/* Heading */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black font-display text-white tracking-tight">Invoice & Billing</h1>
-          <p className="text-xs text-slate-400 mt-1">Manage client invoices, check payment records, and monitor revenue stats.</p>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Invoice & Billing</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Manage client invoices, check payment records, and monitor revenue stats.</p>
         </div>
         {hasPermission('Finance', 'create') && (
           <Button onClick={() => setModalOpen(true)} className="text-xs flex items-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white">
@@ -196,13 +196,13 @@ Status: ${selectedInvoice.status}
       </div>
 
       {/* Tabs list */}
-      <div className="flex border-b border-slate-800 gap-1 pb-px overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('directory')}
           className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'directory'
               ? 'border-[#22C55E] text-[#22C55E]'
-              : 'border-transparent text-slate-450 hover:text-slate-200'
+              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
           <IoCashOutline size={14} /> Invoices Directory

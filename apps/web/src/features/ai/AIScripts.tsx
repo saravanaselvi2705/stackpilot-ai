@@ -210,15 +210,15 @@ StackPilot Operations Admin
     <div className="space-y-8">
       {/* Heading */}
       <div>
-        <h1 className="text-3xl font-black font-display text-white tracking-tight">AI Tools Workspace</h1>
-        <p className="text-xs text-slate-400 mt-1">Use pre-configured AI templates to write emails, estimate project costs, and draft reports.</p>
+        <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">AI Tools Workspace</h1>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Use pre-configured AI templates to write emails, estimate project costs, and draft reports.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left Side: Selectors & Inputs */}
         <div className="space-y-6 lg:col-span-1">
           <Card>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Select AI Tool</h3>
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Select AI Tool</h3>
             <div className="space-y-2">
               {tools.map((t) => (
                 <button
@@ -234,13 +234,13 @@ StackPilot Operations Admin
                   className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                     activeTool === t.key 
                       ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25 shadow-inner' 
-                      : 'bg-slate-900/40 border-slate-850 hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
+                      : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800/40 text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <div className="shrink-0">{t.icon}</div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-200 truncate">{t.title}</h4>
-                    <p className="text-[9px] text-slate-500 truncate">{t.desc}</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200 truncate">{t.title}</h4>
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{t.desc}</p>
                   </div>
                 </button>
               ))}
@@ -248,58 +248,58 @@ StackPilot Operations Admin
           </Card>
 
           <Card>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Parameters</h3>
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Parameters</h3>
             <form onSubmit={handleGenerate} className="space-y-4">
               {activeTool === 'testcases' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Feature Details</label>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Feature Details</label>
                   <textarea
                     rows={4}
                     required
                     placeholder="e.g. JWT Token refresh flow with authorization header validation..."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50 resize-none"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]/50 resize-none"
                   />
                 </div>
               )}
 
               {activeTool === 'bugreport' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Issue Details</label>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Issue Details</label>
                   <textarea
                     rows={4}
                     required
                     placeholder="e.g. Unhandled ReferenceError map property is undefined in sidebar components..."
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50 resize-none"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]/50 resize-none"
                   />
                 </div>
               )}
 
               {activeTool === 'cost' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Project Scope</label>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Project Scope</label>
                   <input
                     type="text"
                     required
                     value={costScope}
                     onChange={(e) => setCostScope(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]/50"
                   />
                 </div>
               )}
 
               {activeTool === 'email' && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Email Topic</label>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Email Topic</label>
                   <input
                     type="text"
                     required
                     value={emailScenario}
                     onChange={(e) => setEmailScenario(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]/50"
                   />
                 </div>
               )}
