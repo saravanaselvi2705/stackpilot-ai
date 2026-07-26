@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/UI';
-import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { IoEyeOutline, IoEyeOffOutline, IoArrowBackOutline } from 'react-icons/io5';
 
 const Login: React.FC = () => {
   const { login, error } = useAuth();
@@ -40,21 +40,32 @@ const Login: React.FC = () => {
 
       <div className="w-full max-w-md relative z-10">
 
+        {/* Back to Home Button */}
+        <div className="flex justify-between items-center mb-6">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-sm border border-slate-200"
+          >
+            <IoArrowBackOutline size={16} /> Back to Home
+          </button>
+        </div>
+
         {/* Logo */}
         <div className="text-center mb-8">
 
           <div
             onClick={() => navigate('/')}
-            className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold cursor-pointer shadow-lg"
+            className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[#22C55E] to-emerald-600 flex items-center justify-center text-white text-2xl font-black cursor-pointer shadow-lg shadow-[#22C55E]/20"
           >
             S
           </div>
 
-          <h1 className="mt-5 text-3xl font-bold text-slate-900">
+          <h1 className="mt-5 text-3xl font-black font-display tracking-tight text-slate-900">
             Welcome Back
           </h1>
 
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-sm font-medium text-slate-500 mt-2">
             Sign in using your registered office email.
           </p>
 

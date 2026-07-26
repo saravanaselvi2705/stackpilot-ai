@@ -62,8 +62,9 @@ export const CRM: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'add' && hasPermission('CRM', 'create')) {
       setModalOpen(true);
+      window.history.replaceState(null, '', window.location.pathname);
     }
-  }, [window.location.search, hasPermission]);
+  }, [hasPermission]);
 
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();

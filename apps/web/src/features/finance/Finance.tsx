@@ -58,8 +58,9 @@ export const Finance: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'add' && hasPermission('Finance', 'create')) {
       setModalOpen(true);
+      window.history.replaceState(null, '', window.location.pathname);
     }
-  }, [window.location.search, hasPermission]);
+  }, [hasPermission]);
 
   const handleAddItemRow = () => {
     setItems([...items, { desc: '', qty: 1, rate: 500 }]);

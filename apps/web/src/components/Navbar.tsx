@@ -158,25 +158,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
           <span className="hidden sm:inline">Home</span>
         </button>
 
-        {/* Role Simulator Switcher */}
-        <div className="flex items-center gap-2 bg-slate-900/30 border border-slate-800/50 rounded-xl px-3 py-1.5">
-          <div className="flex items-center gap-1.5 animate-pulse" style={{ color: settings.brandColor }}>
-            <IoTerminalOutline size={14} />
-            <span className="text-[10px] font-bold tracking-widest uppercase hidden md:inline">Select Role:</span>
-          </div>
-          <select
-            value={user?.role || 'Developer'}
-            onChange={(e) => switchRole(e.target.value as UserRole)}
-            className="bg-transparent text-xs font-bold text-slate-100 outline-none cursor-pointer pr-2 border-none"
-          >
-            {customRoles.map((r) => (
-              <option key={r.name} value={r.name} className="bg-slate-950 text-slate-100 font-semibold">
-                {r.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Notifications Dropdown Container */}
         <div className="relative" ref={notifRef}>
           <button 
@@ -239,7 +220,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
         </div>
 
         {/* User profile Badge in header */}
-        <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+        <button
+          onClick={() => navigate('/settings')}
+          className="flex items-center gap-2 pl-2 border-l border-slate-800 cursor-pointer hover:opacity-80 transition-opacity"
+          title="View Profile Settings"
+        >
           <img 
             src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'} 
             alt="Profile Avatar"
@@ -249,7 +234,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
             <h4 className="text-xs font-bold text-slate-200 truncate max-w-[100px]">{user?.name}</h4>
             <span className="text-[9px] text-slate-500 font-semibold truncate block">{user?.role}</span>
           </div>
-        </div>
+        </button>
       </div>
     </header>
   );

@@ -217,3 +217,26 @@ export interface ActivityLog {
   details?: string;
   createdAt: string;
 }
+
+export interface Enquiry {
+  _id: string;
+  name: string;
+  companyName: string;
+  email: string;
+  phone: string;
+  businessType: string;
+  employees: string;
+  message?: string;
+  status: 'New' | 'Contacted' | 'Closed';
+  createdAt: string;
+}
+
+export interface PresentationRequest {
+  _id: string;
+  name: string;
+  companyName: string;
+  email: string;
+  phone: string;
+  status: 'Pending' | 'Sent';
+  createdAt: string;
+}

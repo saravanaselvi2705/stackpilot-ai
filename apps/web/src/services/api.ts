@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Project, Task, Client, Invoice, Document, SEOReport, BlogPost, Keyword, ActivityLog, Notification, UserRole } from '../../../../packages/shared/types';
+import type { User, Project, Task, Client, Invoice, Document, SEOReport, BlogPost, Keyword, ActivityLog, Notification, UserRole, Enquiry, PresentationRequest } from '../../../../packages/shared/types';
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -20,249 +20,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Standard mock data seeding
+// System Super Admin User
 const DEFAULT_USERS: User[] = [
-  { _id: 'u-1', name: 'Alexander Wright', email: 'alex@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex', department: 'Executive', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-2', name: 'Sarah Connor', email: 'sarah@stackpilot.ai', role: 'Project Manager', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sarah', department: 'Management', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-3', name: 'Marcus Aurelius', email: 'marcus@stackpilot.ai', role: 'Developer', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Marcus', department: 'Engineering', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-4', name: 'Diana Prince', email: 'diana@stackpilot.ai', role: 'Tester', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Diana', department: 'QA', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-5', name: 'Bruce Wayne', email: 'bruce@stackpilot.ai', role: 'Business Analyst', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Bruce', department: 'Strategy', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-6', name: 'Peter Parker', email: 'peter@stackpilot.ai', role: 'SEO Executive', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Peter', department: 'Marketing', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-7', name: 'Tony Stark', email: 'tony@stackpilot.ai', role: 'Finance', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tony', department: 'Finance', availability: 'Available', twoFAEnabled: true, createdAt: new Date().toISOString() },
-  { _id: 'u-8', name: 'Guillermo Rauch', email: 'guillermo@vercel.com', role: 'Client', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Guillermo', department: 'Vercel', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
+  { _id: 'u-1', name: 'Super Admin', email: 'admin@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin', department: 'Administration', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
+  { _id: 'u-2', name: 'Alexander Wright', email: 'alex@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex', department: 'Executive', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() }
 ];
 
-const DEFAULT_PROJECTS: Project[] = [
-  {
-    _id: 'p-1',
-    name: 'Next.js 16 Optimization Suite',
-    description: 'Build performance analytics and instrumentation dashboard for core React Server Components compiler.',
-    status: 'Active',
-    priority: 'High',
-    budget: 95000,
-    spent: 34000,
-    startDate: '2026-06-01',
-    endDate: '2026-09-30',
-    health: 'Healthy',
-    client: 'Vercel Inc.',
-    team: [
-      { userId: 'u-2', role: 'Project Manager' },
-      { userId: 'u-3', role: 'Lead Developer' },
-      { userId: 'u-4', role: 'Senior QA' }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'p-2',
-    name: 'Enterprise CRM Migration',
-    description: 'Migrating global customer pipelines and interactions history from HubSpot CRM to corporate nodes.',
-    status: 'Planning',
-    priority: 'Medium',
-    budget: 45000,
-    spent: 0,
-    startDate: '2026-07-15',
-    endDate: '2026-11-30',
-    health: 'Healthy',
-    client: 'Stripe Inc.',
-    team: [
-      { userId: 'u-2', role: 'Project Manager' },
-      { userId: 'u-5', role: 'Business Analyst' }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'p-3',
-    name: 'SEO & Search Indexing Engine',
-    description: 'Optimize search positioning, automate GBP review templates, and build keyword intelligence graphs.',
-    status: 'Active',
-    priority: 'Low',
-    budget: 30000,
-    spent: 12000,
-    startDate: '2026-05-10',
-    endDate: '2026-08-30',
-    health: 'Healthy',
-    client: 'Acme Corp',
-    team: [
-      { userId: 'u-6', role: 'SEO Lead' }
-    ],
-    createdAt: new Date().toISOString()
-  }
-];
-
-const DEFAULT_TASKS: Task[] = [
-  {
-    _id: 't-1',
-    projectId: 'p-1',
-    title: 'Configure Webpack/Turbopack custom instrumentation hooks',
-    description: 'Inject compiler hooks to capture performance timings during Server Component static assembly.',
-    status: 'In Progress',
-    priority: 'High',
-    assigneeId: 'u-3',
-    dueDate: '2026-07-12',
-    labels: ['Engineering', 'Compiler'],
-    checklist: [
-      { id: 'c-1', text: 'Define hook hooks in webpack.ts config', done: true },
-      { id: 'c-2', text: 'Register metric receivers', done: false },
-      { id: 'c-3', text: 'Add unit tests for output outputs', done: false }
-    ],
-    comments: [
-      { id: 'm-1', userId: 'u-2', userName: 'Sarah Connor', text: 'Please ensure this is backwards compatible with Next 15.', createdAt: new Date().toISOString() }
-    ],
-    attachments: [
-      { id: 'a-1', name: 'webpack_hooks_v2.pdf', url: '#', size: '2.4 MB', createdAt: new Date().toISOString() }
-    ],
-    estimatedTime: 12,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 't-2',
-    projectId: 'p-1',
-    title: 'Draft requirement specification for BA review',
-    description: 'Detailed user flows and specifications for performance metrics widgets.',
-    status: 'Todo',
-    priority: 'Medium',
-    assigneeId: 'u-5',
-    dueDate: '2026-07-18',
-    labels: ['Requirements'],
-    checklist: [],
-    comments: [],
-    estimatedTime: 4,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 't-3',
-    projectId: 'p-1',
-    title: 'Validate telemetry pipeline outputs',
-    description: 'Ensure compiler outputs correctly publish via API telemetry client to backend database.',
-    status: 'Backlog',
-    priority: 'Critical',
-    assigneeId: 'u-4',
-    dueDate: '2026-08-05',
-    labels: ['QA', 'Integration'],
-    checklist: [],
-    comments: [],
-    estimatedTime: 16,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 't-4',
-    projectId: 'p-2',
-    title: 'Database schema mapping from HubSpot entities',
-    description: 'Extract lead tables and map them to Mongoose models defined in StackPilot.',
-    status: 'Todo',
-    priority: 'High',
-    assigneeId: 'u-3',
-    dueDate: '2026-07-25',
-    labels: ['Database', 'Migration'],
-    checklist: [],
-    comments: [],
-    estimatedTime: 6,
-    createdAt: new Date().toISOString()
-  }
-];
-
-const DEFAULT_LEADS: Client[] = [
-  { _id: 'l-1', name: 'Elon Musk', email: 'elon@tesla.com', companyName: 'Tesla Motors', phone: '+1 (555) 420-6969', status: 'Lead', value: 850000, tags: ['Enterprise', 'Automotive'], notes: 'Interested in AI-driven task dispatch scheduler integration.', createdAt: new Date().toISOString() },
-  { _id: 'l-2', name: 'Guillermo Rauch', email: 'guillermo@vercel.com', companyName: 'Vercel Inc.', phone: '+1 (555) 019-2834', status: 'Active', value: 120000, tags: ['Enterprise', 'Key Client'], notes: 'Already signed. Standard next.js optimizer contract active.', createdAt: new Date().toISOString() },
-  { _id: 'l-3', name: 'Patrick Collison', email: 'patrick@stripe.com', companyName: 'Stripe Inc.', phone: '+1 (555) 987-6543', status: 'Lead', value: 340000, tags: ['Fintech', 'Prospect'], notes: 'Evaluating CRM module against internal tools.', createdAt: new Date().toISOString() },
-  { _id: 'l-4', name: 'Sam Altman', email: 'sam@openai.com', companyName: 'OpenAI', phone: '+1 (555) 111-2222', status: 'Inactive', value: 500000, tags: ['AI Partner'], notes: 'Requires high SLA compliance details before renewal.', createdAt: new Date().toISOString() }
-];
-
-const DEFAULT_INVOICES: Invoice[] = [
-  {
-    _id: 'i-1',
-    invoiceNumber: 'INV-2026-001',
-    clientId: 'l-2',
-    clientName: 'Guillermo Rauch',
-    clientEmail: 'guillermo@vercel.com',
-    projectId: 'p-1',
-    projectName: 'Next.js 16 Optimization Suite',
-    issueDate: '2026-06-15',
-    dueDate: '2026-07-15',
-    items: [
-      { description: 'Initial Architecture Planning Phase', quantity: 1, rate: 15000, amount: 15000 },
-      { description: 'Vite and Tailwind Template Setup', quantity: 1, rate: 8000, amount: 8000 }
-    ],
-    subtotal: 23000,
-    taxRate: 18,
-    taxAmount: 4140,
-    discount: 1000,
-    total: 26140,
-    status: 'Sent',
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'i-2',
-    invoiceNumber: 'INV-2026-002',
-    clientId: 'l-2',
-    clientName: 'Guillermo Rauch',
-    clientEmail: 'guillermo@vercel.com',
-    projectId: 'p-1',
-    projectName: 'Next.js 16 Optimization Suite',
-    issueDate: '2026-07-01',
-    dueDate: '2026-08-01',
-    items: [
-      { description: 'Milestone 1 Developer Deliverables', quantity: 1, rate: 25000, amount: 25000 }
-    ],
-    subtotal: 25000,
-    taxRate: 18,
-    taxAmount: 4500,
-    discount: 0,
-    total: 29500,
-    status: 'Paid',
-    createdAt: new Date().toISOString()
-  }
-];
-
-const DEFAULT_SEO_REPORTS: SEOReport[] = [
-  {
-    _id: 's-1',
-    date: new Date().toISOString(),
-    clicks: 14850,
-    impressions: 492000,
-    ctr: 3.02,
-    avgPosition: 11.8,
-    healthScore: 94,
-    checklist: [
-      { id: 'sc-1', task: 'Add structured JSON-LD schema to landing page', done: true },
-      { id: 'sc-2', task: 'Verify Google Business Profile setup', done: true },
-      { id: 'sc-3', task: 'Index blog post URLs manually via search console', done: true },
-      { id: 'sc-4', task: 'Resolve 404 broken links on documentation page', done: false }
-    ],
-    competitors: [
-      { name: 'Monday.com', visibility: 41.2, rank: 1 },
-      { name: 'Jira Software', visibility: 37.8, rank: 2 },
-      { name: 'Linear.app', visibility: 28.5, rank: 3 },
-      { name: 'StackPilot AI', visibility: 22.4, rank: 4 }
-    ],
-    createdAt: new Date().toISOString()
-  }
-];
-
-const DEFAULT_DOCUMENTS: Document[] = [
-  {
-    _id: 'd-1',
-    title: 'StackPilot AI SRS (Software Requirement Specification)',
-    content: `# Software Requirement Specification for StackPilot AI
-## 1. Introduction
-This document lists system requirements for the StackPilot AI unified platform.
-
-## 2. Overall Description
-StackPilot AI is a multi-tenant business hub containing CRM, Sprint boards, SEO index trackers, and AI helper utilities.
-
-## 3. System Features
-- **Client Pipeline**: Multi-phase pipeline board containing dragging cards.
-- **AI Workspace**: Generation templates for software requirements, bug descriptions, and test logs.`,
-    type: 'SRS',
-    projectId: 'p-1',
-    createdBy: 'u-5',
-    version: 1,
-    history: [
-      { version: 1, updatedBy: 'Bruce Wayne', updatedAt: new Date().toISOString(), changeLog: 'Initial System Document Draft' }
-    ],
-    createdAt: new Date().toISOString()
-  }
-];
+const DEFAULT_PROJECTS: Project[] = [];
+const DEFAULT_TASKS: Task[] = [];
+const DEFAULT_LEADS: Client[] = [];
+const DEFAULT_INVOICES: Invoice[] = [];
+const DEFAULT_SEO_REPORTS: SEOReport[] = [];
+const DEFAULT_DOCUMENTS: Document[] = [];
+const DEFAULT_ENQUIRIES: Enquiry[] = [];
+const DEFAULT_PRESENTATION_REQUESTS: PresentationRequest[] = [];
 
 // Helper to load/save mock database to localStorage
 class LocalDatabase {
@@ -305,23 +76,19 @@ class LocalDatabase {
   getDocs() { return this.get('docs', DEFAULT_DOCUMENTS); }
   saveDocs(d: Document[]) { this.save('docs', d); }
 
-  getNotifications() {
-    const key = 'notifications';
-    const defaults: Notification[] = [
-      { _id: 'n-1', userId: 'u-1', title: 'Sprint planning initialized', message: 'Sarah Connor scheduled Sprint Planning 3 meetings.', type: 'info', read: false, createdAt: new Date().toISOString() },
-      { _id: 'n-2', userId: 'u-1', title: 'Invoice Paid', message: 'Invoice INV-2026-002 was paid by Guillermo Rauch.', type: 'success', read: false, createdAt: new Date().toISOString() }
-    ];
-    return this.get(key, defaults);
+  getEnquiries(): Enquiry[] { return this.get<Enquiry>('enquiries', DEFAULT_ENQUIRIES); }
+  saveEnquiries(d: Enquiry[]) { this.save('enquiries', d); }
+
+  getPresentationRequests(): PresentationRequest[] { return this.get<PresentationRequest>('presentation_requests', DEFAULT_PRESENTATION_REQUESTS); }
+  savePresentationRequests(d: PresentationRequest[]) { this.save('presentation_requests', d); }
+
+  getNotifications(): Notification[] {
+    return this.get<Notification>('notifications', []);
   }
   saveNotifications(d: Notification[]) { this.save('notifications', d); }
 
-  getActivities() {
-    const key = 'activities';
-    const defaults: ActivityLog[] = [
-      { _id: 'act-1', userId: 'u-2', userName: 'Sarah Connor', userRole: 'Project Manager', action: 'Update Task status', details: 'Changed task t-1 to In Progress', createdAt: new Date().toISOString() },
-      { _id: 'act-2', userId: 'u-7', userName: 'Tony Stark', userRole: 'Finance', action: 'Approve Invoice', details: 'Paid status marked for invoice INV-2026-002', createdAt: new Date().toISOString() }
-    ];
-    return this.get(key, defaults);
+  getActivities(): ActivityLog[] {
+    return this.get<ActivityLog>('activities', []);
   }
   saveActivities(d: ActivityLog[]) { this.save('activities', d); }
 }
@@ -803,6 +570,92 @@ export const API = {
     async list(): Promise<ActivityLog[]> {
       return mockDB.getActivities();
     }
+  },
+
+  enquiries: {
+    async create(data: Omit<Enquiry, '_id' | 'status' | 'createdAt'>): Promise<Enquiry> {
+      const enquiries = mockDB.getEnquiries();
+      const newEnquiry: Enquiry = {
+        _id: `enq-${Date.now()}`,
+        ...data,
+        status: 'New',
+        createdAt: new Date().toISOString()
+      };
+      enquiries.push(newEnquiry);
+      mockDB.saveEnquiries(enquiries);
+
+      // Log activity
+      const activities = mockDB.getActivities();
+      activities.unshift({
+        _id: `act-${Date.now()}`,
+        userId: 'u-system',
+        userName: data.name,
+        userRole: 'Client',
+        action: 'New Lead Enquiry Submitted',
+        details: `Enquiry from ${data.email} (${data.companyName}) sent to creovixstack@gmail.com`,
+        createdAt: new Date().toISOString()
+      });
+      mockDB.saveActivities(activities);
+
+      return newEnquiry;
+    },
+    async list(): Promise<Enquiry[]> {
+      return mockDB.getEnquiries();
+    },
+    async delete(id: string): Promise<void> {
+      const list = mockDB.getEnquiries().filter(e => e._id !== id);
+      mockDB.saveEnquiries(list);
+    }
+  },
+
+  presentationRequests: {
+    async create(data: Omit<PresentationRequest, '_id' | 'status' | 'createdAt'>): Promise<PresentationRequest> {
+      const requests = mockDB.getPresentationRequests();
+      const newReq: PresentationRequest = {
+        _id: `pr-${Date.now()}`,
+        ...data,
+        status: 'Pending',
+        createdAt: new Date().toISOString()
+      };
+      requests.push(newReq);
+      mockDB.savePresentationRequests(requests);
+
+      // Log activity
+      const activities = mockDB.getActivities();
+      activities.unshift({
+        _id: `act-${Date.now()}`,
+        userId: 'u-system',
+        userName: data.name,
+        userRole: 'Client',
+        action: 'Presentation Requested',
+        details: `Presentation request from ${data.email} (${data.companyName}) sent to creovixstack@gmail.com`,
+        createdAt: new Date().toISOString()
+      });
+      mockDB.saveActivities(activities);
+
+      return newReq;
+    },
+    async list(): Promise<PresentationRequest[]> {
+      return mockDB.getPresentationRequests();
+    },
+    async delete(id: string): Promise<void> {
+      const list = mockDB.getPresentationRequests().filter(r => r._id !== id);
+      mockDB.savePresentationRequests(list);
+    }
+  },
+
+  adminDelete: async (module: string, recordId: string, performerName = 'Super Admin'): Promise<void> => {
+    const activities = mockDB.getActivities();
+    activities.unshift({
+      _id: `act-${Date.now()}`,
+      userId: 'u-1',
+      userName: performerName,
+      userRole: 'Super Admin',
+      action: `Permanent Delete: ${module}`,
+      details: `Record ID ${recordId} was permanently deleted from module ${module}.`,
+      createdAt: new Date().toISOString()
+    });
+    mockDB.saveActivities(activities);
   },
 
   ai: {

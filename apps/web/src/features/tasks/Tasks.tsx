@@ -80,8 +80,9 @@ export const Tasks: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'add' && hasPermission('PM', 'create')) {
       setAddModalOpen(true);
+      window.history.replaceState(null, '', window.location.pathname);
     }
-  }, [window.location.search, hasPermission]);
+  }, [hasPermission]);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
