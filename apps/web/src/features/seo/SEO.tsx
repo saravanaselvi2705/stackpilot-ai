@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge, Button, ProgressBar } from '../../components/UI';
+import { Card, Badge, Button, ProgressBar, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoGlobeOutline, 
   IoWalletOutline, 
@@ -11,15 +12,18 @@ import {
   IoPrintOutline,
   IoSearchOutline,
   IoCalendarOutline,
-  IoSparklesOutline
+  IoSparklesOutline,
+  IoTrashOutline
 } from 'react-icons/io5';
 import API from '../../services/api';
 import type { SEOReport } from '../../../../../packages/shared/types';
 
 export const SEO: React.FC = () => {
+  const { user } = useAuth();
   const { settings, formatCurrency, hasPermission } = useCustomization();
   const [activeTab, setActiveTab] = useState<'seo' | 'project' | 'testing' | 'revenue' | 'team'>('seo');
   const [report, setReport] = useState<SEOReport | null>(null);
+  const [reportToDelete, setReportToDelete] = useState<boolean>(false);
   const [keywords, setKeywords] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('2026-07-01');
@@ -168,17 +172,26 @@ End of Certified Operational Audit Report.
 
           <Button 
             onClick={handleExportPDF}
-            className="text-xs flex items-center gap-1.5 bg-[#22C55E] hover:bg-[#1db053] text-white"
+            className="text-xs flex items-center gap-1.5"
           >
             <IoDownloadOutline size={15} /> Export PDF
           </Button>
           <Button 
             onClick={() => window.print()}
             variant="secondary"
-            className="text-xs flex items-center gap-1.5 border border-[#22C55E] text-white hover:bg-slate-850"
+            className="text-xs flex items-center gap-1.5"
           >
             <IoPrintOutline size={15} /> Print
           </Button>
+          {user?.role === 'Super Admin' && (
+            <Button
+              onClick={() => setReportToDelete(true)}
+              variant="danger"
+              className="text-xs flex items-center gap-1.5"
+            >
+              <IoTrashOutline size={15} /> Delete Report
+            </Button>
+          )}
         </div>
       </div>
 
@@ -426,6 +439,40 @@ End of Certified Operational Audit Report.
             </table>
           </div>
         </Card>
+      )}
+
+      {/* Super Admin Delete Report Modal */}
+      {reportToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setReportToDelete(false)}
+          title="Confirm Report Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete this report data? This will record an audit log entry.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setReportToDelete(false)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={async () => {
+                  if (report) {
+                    await API.seo.deleteReport(report._id);
+                    setReport(null);
+                  }
+                  setReportToDelete(false);
+                }} 
+                className="text-xs"
+              >
+                Permanently Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

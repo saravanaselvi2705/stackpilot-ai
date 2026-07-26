@@ -31,6 +31,7 @@ export const Sidebar: React.FC = () => {
     'Finance': false,
     'Reports': false,
     'Team': false,
+    'Leave Management': false,
     'Productivity': true,
     'Administration': false
   });
@@ -89,8 +90,15 @@ export const Sidebar: React.FC = () => {
       title: 'Team',
       items: [
         ...(settings.sidebarMenu.team ? [
-          { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> },
-          { name: 'Leave Requests', path: '/team?tab=leaves', icon: <IoCalendarOutline size={18} /> }
+          { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> }
+        ] : [])
+      ]
+    },
+    {
+      title: 'Leave Management',
+      items: [
+        ...(settings.sidebarMenu.team ? [
+          { name: 'Leave Requests', path: '/leave-requests', icon: <IoCalendarOutline size={18} /> }
         ] : [])
       ]
     },
@@ -103,11 +111,7 @@ export const Sidebar: React.FC = () => {
     {
       title: 'Administration',
       items: [
-        ...(user?.role === 'Admin' || user?.role === 'Super Admin' ? [
-          { name: 'User Management', path: '/settings?tab=users', icon: <IoPeopleCircleOutline size={18} /> }
-        ] : []),
-        { name: 'Settings', path: '/settings', icon: <IoSettingsOutline size={18} /> },
-        { name: 'Profile Settings', path: '/settings?tab=profile', icon: <IoSettingsOutline size={18} /> }
+        { name: 'Administration', path: '/settings', icon: <IoSettingsOutline size={18} /> }
       ]
     }
   ];

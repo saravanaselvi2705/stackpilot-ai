@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Badge, Button, Modal } from '../../components/UI';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoAdd, 
   IoChevronBackOutline, 
@@ -7,8 +8,10 @@ import {
   IoTimeOutline, 
   IoCalendarOutline,
   IoLocationOutline,
-  IoBookmarkOutline
+  IoBookmarkOutline,
+  IoTrashOutline
 } from 'react-icons/io5';
+import API from '../../services/api';
 
 interface CalendarEvent {
   id: string;
@@ -20,8 +23,10 @@ interface CalendarEvent {
 }
 
 export const TeamCalendar: React.FC = () => {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 6, 1)); // Default starting month: July 2026
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([
     { id: '1', title: 'Project Review Meeting', date: '2026-07-05', time: '10:00 AM', type: 'Meeting', desc: 'Showcase recent project features and progress.' },
     { id: '2', title: 'Client Check-in', date: '2026-07-08', time: '02:30 PM', type: 'Invoice', desc: 'Discuss invoice clearance and payment gateways.' },
@@ -256,16 +261,27 @@ export const TeamCalendar: React.FC = () => {
                 .map((e) => (
                   <div key={e.id} className="p-4 bg-slate-900/40 border border-slate-850 rounded-2xl space-y-2 hover:border-slate-700 transition-all">
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-xs font-bold text-slate-200 leading-snug">{e.title}</h4>
-                      <Badge variant={
-                        e.type === 'Meeting' ? 'primary' : 
-                        e.type === 'Invoice' ? 'success' : 
-                        e.type === 'Deadline' ? 'danger' : 
-                        e.type === 'Leave' ? 'purple' : 
-                        e.type === 'Task' ? 'warning' : 'secondary'
-                      }>
-                        {e.type}
-                      </Badge>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-slate-200 leading-snug">{e.title}</h4>
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant={
+                          e.type === 'Meeting' ? 'primary' : 
+                          e.type === 'Invoice' ? 'success' : 
+                          e.type === 'Deadline' ? 'danger' : 
+                          e.type === 'Leave' ? 'purple' : 
+                          e.type === 'Task' ? 'warning' : 'secondary'
+                        }>
+                          {e.type}
+                        </Badge>
+                        {user?.role === 'Super Admin' && (
+                          <button
+                            onClick={() => setEventToDelete(e)}
+                            title="Delete Event (Super Admin)"
+                            className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                          >
+                            <IoTrashOutline size={14} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {e.desc && <p className="text-[10px] text-slate-400 leading-relaxed">{e.desc}</p>}
                     <div className="flex items-center justify-between text-[9px] text-slate-500 pt-2 border-t border-slate-850/50">
@@ -396,6 +412,38 @@ export const TeamCalendar: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Super Admin Delete Event Modal */}
+      {eventToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setEventToDelete(null)}
+          title="Confirm Event Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete event <strong className="text-slate-900 dark:text-white">"{eventToDelete.title}"</strong>? This will record an audit log entry.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setEventToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={async () => {
+                  await API.calendar.deleteEvent(eventToDelete.id);
+                  setEvents(events.filter(ev => ev.id !== eventToDelete.id));
+                  setEventToDelete(null);
+                }} 
+                className="text-xs"
+              >
+                Permanently Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

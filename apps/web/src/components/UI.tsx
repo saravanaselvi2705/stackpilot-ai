@@ -16,14 +16,14 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyle = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyle = 'inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#22C55E] disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    primary: 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-md shadow-cyan-500/20 active:scale-[0.98]',
-    secondary: 'bg-cyan-50/50 text-cyan-600 hover:bg-cyan-100/60 hover:text-cyan-700 border border-cyan-100 active:scale-[0.98]',
-    success: 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20 active:scale-[0.98]',
-    danger: 'bg-red-500 text-white hover:bg-red-400 shadow-md shadow-red-500/20 active:scale-[0.98]',
-    ghost: 'text-slate-400 hover:text-white hover:bg-slate-800/50 active:scale-[0.98]'
+    primary: 'bg-[#22C55E] text-white hover:bg-[#1db053] shadow-md shadow-[#22C55E]/20 active:scale-[0.98]',
+    secondary: 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white hover:bg-emerald-50 dark:hover:bg-slate-800 border border-[#22C55E] active:scale-[0.98]',
+    success: 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-md shadow-emerald-500/20 active:scale-[0.98]',
+    danger: 'bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-500/20 active:scale-[0.98]',
+    ghost: 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98]'
   };
 
   const sizes = {
@@ -60,12 +60,12 @@ export const Card: React.FC<CardProps> = ({ children, className = '', hoverEffec
   return (
     <div
       onClick={onClick}
-      className={`glass rounded-2xl p-6 transition-all duration-300 relative overflow-hidden group ${
-        hoverEffect ? 'hover:translate-y-[-4px] hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/5 cursor-pointer' : ''
+      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden group shadow-sm ${
+        hoverEffect ? 'hover:translate-y-[-2px] hover:border-[#22C55E]/40 hover:shadow-md cursor-pointer' : ''
       } ${className}`}
     >
       {hoverEffect && (
-        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#22C55E]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       )}
       {children}
     </div>
@@ -80,12 +80,12 @@ interface BadgeProps {
 }
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'secondary', className = '' }) => {
   const styles = {
-    primary: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
-    secondary: 'bg-slate-800 text-slate-300 border border-slate-700',
-    success: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    warning: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    danger: 'bg-red-500/10 text-red-400 border border-red-500/20',
-    purple: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+    primary: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+    secondary: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+    success: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20',
+    warning: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20',
+    danger: 'bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20',
+    purple: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20'
   };
 
   return (
@@ -121,7 +121,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/30 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
           />
 
           {/* Modal Container */}
@@ -130,12 +130,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.4 }}
-            className={`w-full ${sizes[size]} glass rounded-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-800`}
+            className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-200 dark:border-slate-800`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
-              <h3 className="text-lg font-bold font-display text-white">{title}</h3>
-              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850">
+              <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">{title}</h3>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
                 <IoClose size={22} />
               </button>
             </div>
@@ -169,7 +169,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/30 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
           />
 
           {/* Drawer Panel */}
@@ -178,12 +178,12 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="w-full max-w-md h-full bg-white border-l border-slate-200 shadow-2xl z-10 flex flex-col"
+            className="w-full max-w-md h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-10 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
-              <h3 className="text-lg font-bold font-display text-white">{title}</h3>
-              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850">
+              <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">{title}</h3>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
                 <IoClose size={22} />
               </button>
             </div>
@@ -205,10 +205,10 @@ interface ProgressBarProps {
   color?: string;
   className?: string;
 }
-export const ProgressBar: React.FC<ProgressBarProps> = ({ value, color = 'bg-cyan-500', className = '' }) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({ value, color = 'bg-[#22C55E]', className = '' }) => {
   const clampedVal = Math.min(Math.max(value, 0), 100);
   return (
-    <div className={`w-full bg-slate-800 rounded-full h-2 overflow-hidden ${className}`}>
+    <div className={`w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden ${className}`}>
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${clampedVal}%` }}
@@ -222,7 +222,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ value, color = 'bg-cya
 // LOADING SKELETON
 export const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
-    <div className={`animate-pulse bg-slate-800 rounded-xl ${className}`} />
+    <div className={`animate-pulse bg-slate-200 dark:bg-slate-800 rounded-xl ${className}`} />
   );
 };
 
@@ -235,10 +235,10 @@ interface EmptyStateProps {
 }
 export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, icon, actionButton }) => {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 glass rounded-2xl border border-dashed border-slate-800 max-w-lg mx-auto">
-      {icon && <div className="text-slate-600 mb-4 text-4xl">{icon}</div>}
-      <h3 className="text-lg font-bold text-slate-200 mb-1">{title}</h3>
-      {description && <p className="text-sm text-slate-400 max-w-sm mb-6 leading-relaxed">{description}</p>}
+    <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 max-w-lg mx-auto">
+      {icon && <div className="text-[#22C55E] mb-4 text-4xl">{icon}</div>}
+      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">{title}</h3>
+      {description && <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">{description}</p>}
       {actionButton}
     </div>
   );

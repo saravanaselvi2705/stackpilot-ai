@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, ProgressBar, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoAdd, 
   IoCalendarOutline, 
@@ -12,16 +13,19 @@ import {
   IoSparklesOutline,
   IoTimeOutline,
   IoBriefcaseOutline,
-  IoAlertCircleOutline
+  IoAlertCircleOutline,
+  IoTrashOutline
 } from 'react-icons/io5';
 import API from '../../services/api';
 import type { Project, Task } from '../../../../../packages/shared/types';
 
 export const Projects: React.FC = () => {
+  const { user } = useAuth();
   const { settings, formatCurrency, hasPermission } = useCustomization();
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'overview' | 'tasks' | 'documents' | 'testing' | 'deliverables' | 'ai' | 'timeline'>('overview');
   
   const [hoveredProject, setHoveredProject] = useState<Project | null>(null);
@@ -183,8 +187,22 @@ Specifications summary successfully mapped to requirements directory.`);
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-bold text-white truncate max-w-[150px]">{p.name}</h3>
-                      {getHealthBadge(p.health)}
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{p.name}</h3>
+                      <div className="flex items-center gap-2">
+                        {getHealthBadge(p.health)}
+                        {user?.role === 'Super Admin' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProjectToDelete(p);
+                            }}
+                            title="Delete Project (Super Admin)"
+                            className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                          >
+                            <IoTrashOutline size={16} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-slate-400 leading-relaxed mb-6 line-clamp-3">
                       {p.description}
@@ -658,6 +676,38 @@ Specifications summary successfully mapped to requirements directory.`);
           </div>
         </form>
       </Modal>
+
+      {/* Super Admin Delete Project Modal */}
+      {projectToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setProjectToDelete(null)}
+          title="Confirm Permanent Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete project <strong className="text-slate-900 dark:text-white">"{projectToDelete.name}"</strong>? This action will purge the project and record an audit log entry.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setProjectToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={async () => {
+                  await API.projects.delete(projectToDelete._id);
+                  setProjectToDelete(null);
+                  loadProjectsAndTasks();
+                }} 
+                className="text-xs"
+              >
+                Permanently Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

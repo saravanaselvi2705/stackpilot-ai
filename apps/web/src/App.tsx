@@ -17,6 +17,7 @@ const AIScripts = lazy(() => import('./features/ai/AIScripts'));
 const Documentation = lazy(() => import('./features/docs/Documentation'));
 const SEO = lazy(() => import('./features/seo/SEO'));
 const Team = lazy(() => import('./features/team/Team'));
+const LeaveManagement = lazy(() => import('./features/team/LeaveManagement'));
 const Finance = lazy(() => import('./features/finance/Finance'));
 const TeamCalendar = lazy(() => import('./features/calendar/TeamCalendar'));
 const Settings = lazy(() => import('./features/settings/Settings'));
@@ -96,6 +97,7 @@ export const App: React.FC = () => {
                   </GuardedRoute>
                 } />
                 <Route path="/team" element={<Team />} />
+                <Route path="/leave-requests" element={<LeaveManagement />} />
                 <Route path="/finance" element={
                   <GuardedRoute module="Finance">
                     <Finance />

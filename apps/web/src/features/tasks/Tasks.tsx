@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, ProgressBar } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoAdd, 
   IoChatbubbleOutline, 
@@ -17,11 +18,13 @@ import API from '../../services/api';
 import type { Task, Project } from '../../../../../packages/shared/types';
 
 export const Tasks: React.FC = () => {
+  const { user } = useAuth();
   const { settings, hasPermission } = useCustomization();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   
   // Modals / forms
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
@@ -838,6 +841,51 @@ export const Tasks: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {user?.role === 'Super Admin' && (
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-end">
+                  <Button 
+                    variant="danger" 
+                    onClick={() => setTaskToDelete(selectedTask)}
+                    className="text-xs flex items-center gap-1"
+                  >
+                    <IoTrashOutline size={14} /> Delete Task (Super Admin)
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Super Admin Delete Task Modal */}
+      {taskToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setTaskToDelete(null)}
+          title="Confirm Task Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete task <strong className="text-slate-900 dark:text-white">"{taskToDelete.title}"</strong>? This will record an audit log entry in Activity Log.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setTaskToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={async () => {
+                  await API.tasks.delete(taskToDelete._id);
+                  setTaskToDelete(null);
+                  setInspectModalOpen(false);
+                  loadTasksAndProjects();
+                }} 
+                className="text-xs"
+              >
+                Permanently Delete
+              </Button>
             </div>
           </div>
         </Modal>

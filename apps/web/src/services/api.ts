@@ -299,6 +299,17 @@ export const API = {
       }
 
       return newProj;
+    },
+
+    async delete(id: string): Promise<void> {
+      try {
+        if (!API.isMockMode) {
+          await apiClient.delete(`/projects/${id}`);
+        }
+      } catch { }
+      const list = mockDB.getProjects().filter(p => p._id !== id);
+      mockDB.saveProjects(list);
+      await API.adminDelete('Projects', id);
     }
   },
 
@@ -387,6 +398,17 @@ export const API = {
       }
 
       return updated;
+    },
+
+    async delete(id: string): Promise<void> {
+      try {
+        if (!API.isMockMode) {
+          await apiClient.delete(`/tasks/${id}`);
+        }
+      } catch { }
+      const list = mockDB.getTasks().filter(t => t._id !== id);
+      mockDB.saveTasks(list);
+      await API.adminDelete('Tasks', id);
     }
   },
 
@@ -520,6 +542,18 @@ export const API = {
       if (check) check.done = done;
       mockDB.saveSEOs(reports);
       return report;
+    },
+
+    async deleteReport(reportId: string): Promise<void> {
+      const reports = mockDB.getSEOs().filter(r => r._id !== reportId);
+      mockDB.saveSEOs(reports);
+      await API.adminDelete('Reports', reportId);
+    }
+  },
+
+  calendar: {
+    async deleteEvent(eventId: string): Promise<void> {
+      await API.adminDelete('Calendar', eventId);
     }
   },
 
