@@ -10,6 +10,7 @@ const UserSchema = new Schema({
     enum: ['Super Admin', 'Admin', 'Project Manager', 'Business Analyst', 'Developer', 'QA/Tester', 'SEO Executive', 'Finance', 'Client'],
     default: 'Developer'
   },
+  tenantId: { type: String, default: 'default-tenant' },
   customPermissions: [{ type: String }],
   avatarUrl: { type: String },
   department: { type: String, default: 'General' },
@@ -20,8 +21,8 @@ const UserSchema = new Schema({
     enum: ['Available', 'Busy', 'On Leave'],
     default: 'Available'
   },
-  workload: { type: Number, default: 0 }, // Hours assigned per week
-  capacity: { type: Number, default: 40 }, // Total available hours per week
+  workload: { type: Number, default: 0 },
+  capacity: { type: Number, default: 40 },
   leaveStatus: { type: String, enum: ['Active', 'On Leave', 'Vacation'], default: 'Active' },
   onlineStatus: { type: String, enum: ['Online', 'Offline', 'Away'], default: 'Offline' },
 
@@ -39,8 +40,7 @@ const UserSchema = new Schema({
 
 UserSchema.index({ role: 1 });
 UserSchema.index({ isActive: 1 });
-UserSchema.index({ department: 1 });
-UserSchema.index({ isDeleted: 1 });
+UserSchema.index({ tenantId: 1 });
 
 // Role Schema
 const RoleSchema = new Schema({
@@ -65,11 +65,10 @@ const CompanySchema = new Schema({
   address: { type: String },
   phone: { type: String },
   email: { type: String },
+  tenantId: { type: String, default: 'default-tenant' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });
-
-CompanySchema.index({ isDeleted: 1 });
 
 // Client Schema
 const ClientSchema = new Schema({
@@ -82,12 +81,10 @@ const ClientSchema = new Schema({
   value: { type: Number, default: 0 },
   tags: [{ type: String }],
   notes: { type: String },
+  tenantId: { type: String, default: 'default-tenant' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });
-
-ClientSchema.index({ status: 1 });
-ClientSchema.index({ isDeleted: 1 });
 
 // Contact Schema
 const ContactSchema = new Schema({
@@ -100,8 +97,6 @@ const ContactSchema = new Schema({
   isPrimary: { type: Boolean, default: false },
   isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
-
-ContactSchema.index({ clientId: 1, isDeleted: 1 });
 
 // Lead Schema
 const LeadSchema = new Schema({
@@ -118,12 +113,10 @@ const LeadSchema = new Schema({
   ownerId: { type: Schema.Types.ObjectId, ref: 'User' },
   value: { type: Number, default: 0 },
   notes: { type: String },
+  tenantId: { type: String, default: 'default-tenant' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });
-
-LeadSchema.index({ status: 1, isDeleted: 1 });
-LeadSchema.index({ ownerId: 1 });
 
 // Deal Schema
 const DealSchema = new Schema({
@@ -144,9 +137,7 @@ const DealSchema = new Schema({
   isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
 
-DealSchema.index({ stage: 1, isDeleted: 1 });
-
-// Activity Schema (CRM interactions, meetings, calls, notes)
+// Activity Schema
 const ActivitySchema = new Schema({
   entityType: { type: String, enum: ['Lead', 'Deal', 'Client', 'Project'], required: true },
   entityId: { type: Schema.Types.ObjectId, required: true },
@@ -158,8 +149,6 @@ const ActivitySchema = new Schema({
   status: { type: String, enum: ['Pending', 'Completed'], default: 'Completed' },
   isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
-
-ActivitySchema.index({ entityType: 1, entityId: 1, isDeleted: 1 });
 
 // Project Schema
 const ProjectSchema = new Schema({
@@ -191,14 +180,12 @@ const ProjectSchema = new Schema({
     uploadedAt: { type: Date, default: Date.now }
   }],
   client: { type: String },
+  tenantId: { type: String, default: 'default-tenant' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null }
 }, { timestamps: true });
 
-ProjectSchema.index({ status: 1, isDeleted: 1 });
-ProjectSchema.index({ projectManagerId: 1 });
-
-// Task Schema (Jira-style)
+// Task Schema
 const TaskSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
   sprintId: { type: Schema.Types.ObjectId, ref: 'Sprint' },
@@ -213,8 +200,8 @@ const TaskSchema = new Schema({
   reporterId: { type: Schema.Types.ObjectId, ref: 'User' },
   dueDate: { type: Date },
   labels: [{ type: String }],
-  estimatedTime: { type: Number, default: 0 }, // in hours
-  loggedTime: { type: Number, default: 0 }, // in hours
+  estimatedTime: { type: Number, default: 0 },
+  loggedTime: { type: Number, default: 0 },
   storyPoints: { type: Number, default: 1 },
   checklist: [{
     text: { type: String, required: true },
@@ -248,9 +235,6 @@ const TaskSchema = new Schema({
   isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
-TaskSchema.index({ projectId: 1, status: 1, isDeleted: 1 });
-TaskSchema.index({ assigneeId: 1, isDeleted: 1 });
-
 // Sprint Schema
 const SprintSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
@@ -274,24 +258,33 @@ const MeetingSchema = new Schema({
   status: { type: String, enum: ['Scheduled', 'Completed', 'Cancelled'], default: 'Scheduled' }
 }, { timestamps: true });
 
-// Document Schema
+// Document Schema (DMS)
 const DocumentSchema = new Schema({
   title: { type: String, required: true },
   content: { type: String },
+  fileUrl: { type: String },
+  folderId: { type: Schema.Types.ObjectId, ref: 'Folder' },
   type: {
     type: String,
-    enum: ['SRS', 'BRD', 'FSD', 'Technical', 'Meeting Minutes', 'Knowledge Base', 'FAQ'],
-    required: true
+    enum: ['SRS', 'BRD', 'FSD', 'Technical', 'Meeting Minutes', 'Knowledge Base', 'FAQ', 'PDF', 'Contract'],
+    default: 'Technical'
   },
   projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   version: { type: Number, default: 1 },
-  history: [{
-    version: { type: Number },
-    updatedBy: { type: String },
-    updatedAt: { type: Date, default: Date.now },
-    changeLog: { type: String }
-  }]
+  approvalStatus: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Approved' },
+  sharedWithClients: [{ type: Schema.Types.ObjectId, ref: 'Client' }],
+  tags: [{ type: String }],
+  isDeleted: { type: Boolean, default: false },
+}, { timestamps: true });
+
+// Folder Schema (DMS)
+const FolderSchema = new Schema({
+  name: { type: String, required: true },
+  parentId: { type: Schema.Types.ObjectId, ref: 'Folder' },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Requirement Schema
@@ -340,20 +333,54 @@ const InvoiceSchema = new Schema({
   taxAmount: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
   total: { type: Number, required: true },
-  status: { type: String, enum: ['Draft', 'Sent', 'Paid', 'Overdue', 'Cancelled'], default: 'Draft' }
+  status: { type: String, enum: ['Draft', 'Sent', 'Paid', 'Overdue', 'Cancelled'], default: 'Draft' },
+  recurring: { type: Boolean, default: false },
+  recurringInterval: { type: String, enum: ['Monthly', 'Quarterly', 'Yearly'], default: 'Monthly' },
+  isDeleted: { type: Boolean, default: false }
+}, { timestamps: true });
+
+// Expense Schema
+const ExpenseSchema = new Schema({
+  title: { type: String, required: true },
+  category: { type: String, enum: ['Software', 'Hardware', 'Travel', 'Marketing', 'Office', 'Utilities', 'Other'], default: 'Software' },
+  amount: { type: Number, required: true },
+  date: { type: Date, default: Date.now },
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client' },
+  receiptUrl: { type: String },
+  recordedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  isDeleted: { type: Boolean, default: false }
+}, { timestamps: true });
+
+// Quotation Schema
+const QuotationSchema = new Schema({
+  quoteNumber: { type: String, required: true, unique: true },
+  clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+  clientName: { type: String, required: true },
+  clientEmail: { type: String, required: true },
+  items: [{
+    description: { type: String, required: true },
+    quantity: { type: Number, default: 1 },
+    rate: { type: Number, required: true },
+    amount: { type: Number, required: true }
+  }],
+  total: { type: Number, required: true },
+  validUntil: { type: Date, required: true },
+  status: { type: String, enum: ['Draft', 'Sent', 'Accepted', 'Declined'], default: 'Draft' },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Payment Schema
 const PaymentSchema = new Schema({
   invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice', required: true },
   amount: { type: Number, required: true },
-  paymentMethod: { type: String, enum: ['Stripe', 'Bank Transfer', 'PayPal', 'Credit Card'], default: 'Stripe' },
+  paymentMethod: { type: String, enum: ['Stripe', 'Bank Transfer', 'PayPal', 'Credit Card', 'Razorpay'], default: 'Stripe' },
   transactionId: { type: String },
   paymentDate: { type: Date, default: Date.now },
   status: { type: String, enum: ['Success', 'Failed', 'Pending'], default: 'Success' }
 }, { timestamps: true });
 
-// Real-time Notification Schema
+// Notification Schema
 const NotificationSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
@@ -368,8 +395,6 @@ const NotificationSchema = new Schema({
   read: { type: Boolean, default: false },
   isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
-
-NotificationSchema.index({ userId: 1, read: 1, createdAt: -1 });
 
 // BlogPost Schema
 const BlogPostSchema = new Schema({
@@ -412,6 +437,27 @@ const SEOReportSchema = new Schema({
   }]
 }, { timestamps: true });
 
+// Automation Rule Schema
+const AutomationRuleSchema = new Schema({
+  name: { type: String, required: true },
+  trigger: { type: String, enum: ['task_due', 'invoice_overdue', 'lead_created', 'project_status_changed'], required: true },
+  condition: { type: String },
+  action: { type: String, enum: ['send_email', 'create_task', 'notify_user', 'update_status'], required: true },
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
+
+// Tenant Schema (SaaS)
+const TenantSchema = new Schema({
+  tenantId: { type: String, required: true, unique: true },
+  companyName: { type: String, required: true },
+  plan: { type: String, enum: ['Free Trial', 'Pro', 'Enterprise'], default: 'Free Trial' },
+  status: { type: String, enum: ['Active', 'Suspended', 'Cancelled'], default: 'Active' },
+  billingCycle: { type: String, enum: ['Monthly', 'Yearly'], default: 'Monthly' },
+  maxUsers: { type: Number, default: 10 },
+  maxProjects: { type: Number, default: 25 },
+  stripeCustomerId: { type: String }
+}, { timestamps: true });
+
 // ActivityLog / AuditLog Schema
 const ActivityLogSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -423,10 +469,6 @@ const ActivityLogSchema = new Schema({
   userAgent: { type: String }
 }, { timestamps: true });
 
-ActivityLogSchema.index({ userId: 1, createdAt: -1 });
-ActivityLogSchema.index({ action: 1 });
-
-// Exports
 export const User = model('User', UserSchema);
 export const Role = model('Role', RoleSchema);
 export const Permission = model('Permission', PermissionSchema);
@@ -441,13 +483,18 @@ export const Task = model('Task', TaskSchema);
 export const Sprint = model('Sprint', SprintSchema);
 export const Meeting = model('Meeting', MeetingSchema);
 export const Document = model('Document', DocumentSchema);
+export const Folder = model('Folder', FolderSchema);
 export const Requirement = model('Requirement', RequirementSchema);
 export const UserStory = model('UserStory', UserStorySchema);
 export const Invoice = model('Invoice', InvoiceSchema);
+export const Expense = model('Expense', ExpenseSchema);
+export const Quotation = model('Quotation', QuotationSchema);
 export const Payment = model('Payment', PaymentSchema);
 export const Notification = model('Notification', NotificationSchema);
 export const BlogPost = model('BlogPost', BlogPostSchema);
 export const Keyword = model('Keyword', KeywordSchema);
 export const SEOReport = model('SEOReport', SEOReportSchema);
+export const AutomationRule = model('AutomationRule', AutomationRuleSchema);
+export const Tenant = model('Tenant', TenantSchema);
 export const ActivityLog = model('ActivityLog', ActivityLogSchema);
 export const AuditLog = ActivityLog;

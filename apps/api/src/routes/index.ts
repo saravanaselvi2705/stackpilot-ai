@@ -10,9 +10,19 @@ import taskRoutes from './taskRoutes';
 import teamRoutes from './teamRoutes';
 import notificationRoutes from './notificationRoutes';
 import dashboardRoutes from './dashboardRoutes';
+import financeRoutes from './financeRoutes';
+import dmsRoutes from './dmsRoutes';
+import seoRoutes from './seoRoutes';
+import aiRoutes from './aiRoutes';
+import reportsRoutes from './reportsRoutes';
+import calendarRoutes from './calendarRoutes';
+import automationRoutes from './automationRoutes';
+import saasRoutes from './saasRoutes';
+import healthRoutes from './healthRoutes';
 
 const router = Router();
 
+router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/system', roleRoutes);
@@ -24,5 +34,13 @@ router.use('/tasks', taskRoutes);
 router.use('/team', teamRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/finance', financeRoutes);
+router.use('/dms', dmsRoutes);
+router.use('/seo', seoRoutes);
+router.use('/ai', aiRoutes);
+router.use('/reports', reportsRoutes);
+router.use('/calendar', calendarRoutes);
+router.use('/automation', automationRoutes);
+router.use('/saas', saasRoutes);
 
 export default router;

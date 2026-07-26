@@ -36,7 +36,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.aiGenerateBugReport = exports.aiGenerateTestCases = exports.aiGenerateRequirements = exports.getSEOReport = exports.createInvoice = exports.getInvoices = void 0;
+exports.aiGenerateBugReport = exports.aiGenerateTestCases = exports.aiGenerateRequirements = exports.getSEOReport = void 0;
 __exportStar(require("./authController"), exports);
 __exportStar(require("./userController"), exports);
 __exportStar(require("./roleController"), exports);
@@ -48,50 +48,17 @@ __exportStar(require("./taskController"), exports);
 __exportStar(require("./teamController"), exports);
 __exportStar(require("./notificationController"), exports);
 __exportStar(require("./dashboardController"), exports);
+__exportStar(require("./financeController"), exports);
+__exportStar(require("./dmsController"), exports);
+__exportStar(require("./seoController"), exports);
+__exportStar(require("./aiController"), exports);
+__exportStar(require("./reportsController"), exports);
+__exportStar(require("./calendarController"), exports);
+__exportStar(require("./automationController"), exports);
+__exportStar(require("./saasController"), exports);
+__exportStar(require("./healthController"), exports);
 const db = __importStar(require("../models"));
-// FINANCE CONTROLLERS
-const getInvoices = async (req, res) => {
-    try {
-        const invoices = await db.Invoice.find();
-        res.status(200).json(invoices);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.getInvoices = getInvoices;
-const createInvoice = async (req, res) => {
-    try {
-        const { clientId, clientName, clientEmail, projectId, projectName, dueDate, items, taxRate, discount } = req.body;
-        const subtotal = items.reduce((acc, item) => acc + (item.rate * item.quantity), 0);
-        const taxAmount = subtotal * ((taxRate || 0) / 100);
-        const total = subtotal + taxAmount - (discount || 0);
-        const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
-        const invoice = new db.Invoice({
-            invoiceNumber,
-            clientId,
-            clientName,
-            clientEmail,
-            projectId,
-            projectName,
-            dueDate,
-            items: items.map((item) => ({ ...item, amount: item.rate * item.quantity })),
-            subtotal,
-            taxRate: taxRate || 0,
-            taxAmount,
-            discount: discount || 0,
-            total,
-            status: 'Sent'
-        });
-        await invoice.save();
-        res.status(201).json(invoice);
-    }
-    catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-exports.createInvoice = createInvoice;
-// SEO CONTROLLERS
+// LEGACY API COMPATIBILITY EXPORTS
 const getSEOReport = async (req, res) => {
     try {
         const reports = await db.SEOReport.find().sort({ date: -1 }).limit(10);
@@ -102,7 +69,6 @@ const getSEOReport = async (req, res) => {
     }
 };
 exports.getSEOReport = getSEOReport;
-// AI CONTROLLERS
 const aiGenerateRequirements = (req, res) => {
     const { prompt } = req.body;
     if (!prompt)

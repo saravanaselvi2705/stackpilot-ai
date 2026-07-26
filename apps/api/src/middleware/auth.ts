@@ -7,6 +7,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     role: string;
+    tenantId?: string;
     permissions?: string[];
   };
 }
@@ -26,10 +27,10 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as { id: string; email: string; role: string };
+    const decoded = jwt.verify(token, jwtSecret) as { id: string; email: string; role: string; tenantId?: string };
     
     // Check if user exists and is active
-    const user = await db.User.findById(decoded.id).select('isActive role customPermissions');
+    const user = await db.User.findById(decoded.id).select('isActive role customPermissions tenantId');
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized: User account no longer exists' });
     }
@@ -42,6 +43,7 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
       id: decoded.id,
       email: decoded.email,
       role: user.role || decoded.role,
+      tenantId: user.tenantId || decoded.tenantId || 'default-tenant',
       permissions: user.customPermissions || [],
     };
 

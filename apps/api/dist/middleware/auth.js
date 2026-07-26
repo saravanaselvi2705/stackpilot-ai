@@ -52,7 +52,7 @@ const authenticateJWT = async (req, res, next) => {
     try {
         const decoded = jsonwebtoken_1.default.verify(token, jwtSecret);
         // Check if user exists and is active
-        const user = await db.User.findById(decoded.id).select('isActive role customPermissions');
+        const user = await db.User.findById(decoded.id).select('isActive role customPermissions tenantId');
         if (!user) {
             return res.status(401).json({ error: 'Unauthorized: User account no longer exists' });
         }
@@ -63,6 +63,7 @@ const authenticateJWT = async (req, res, next) => {
             id: decoded.id,
             email: decoded.email,
             role: user.role || decoded.role,
+            tenantId: user.tenantId || decoded.tenantId || 'default-tenant',
             permissions: user.customPermissions || [],
         };
         next();

@@ -9,56 +9,21 @@ export * from './taskController';
 export * from './teamController';
 export * from './notificationController';
 export * from './dashboardController';
+export * from './financeController';
+export * from './dmsController';
+export * from './seoController';
+export * from './aiController';
+export * from './reportsController';
+export * from './calendarController';
+export * from './automationController';
+export * from './saasController';
+export * from './healthController';
 
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import * as db from '../models';
 
-// FINANCE CONTROLLERS
-export const getInvoices = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const invoices = await db.Invoice.find();
-    res.status(200).json(invoices);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const createInvoice = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { clientId, clientName, clientEmail, projectId, projectName, dueDate, items, taxRate, discount } = req.body;
-
-    const subtotal = items.reduce((acc: number, item: any) => acc + (item.rate * item.quantity), 0);
-    const taxAmount = subtotal * ((taxRate || 0) / 100);
-    const total = subtotal + taxAmount - (discount || 0);
-
-    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
-
-    const invoice = new db.Invoice({
-      invoiceNumber,
-      clientId,
-      clientName,
-      clientEmail,
-      projectId,
-      projectName,
-      dueDate,
-      items: items.map((item: any) => ({ ...item, amount: item.rate * item.quantity })),
-      subtotal,
-      taxRate: taxRate || 0,
-      taxAmount,
-      discount: discount || 0,
-      total,
-      status: 'Sent'
-    });
-
-    await invoice.save();
-    res.status(201).json(invoice);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// SEO CONTROLLERS
+// LEGACY API COMPATIBILITY EXPORTS
 export const getSEOReport = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const reports = await db.SEOReport.find().sort({ date: -1 }).limit(10);
@@ -68,7 +33,6 @@ export const getSEOReport = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-// AI CONTROLLERS
 export const aiGenerateRequirements = (req: AuthenticatedRequest, res: Response) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
