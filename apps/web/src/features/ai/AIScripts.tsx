@@ -352,44 +352,44 @@ StackPilot Operations Admin
         {/* Right Side: Output Visualizer and Editor */}
         <div className="lg:col-span-2">
           <Card className="min-h-[500px] flex flex-col justify-between">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 gap-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-200">AI Workspace Output</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 font-display">AI Workspace Output</h3>
                 <Badge variant="primary">{activeTool.toUpperCase()}</Badge>
               </div>
 
               {output && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
                   {/* Export Options */}
                   <button 
                     onClick={() => triggerExport('PDF')}
-                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-0.5 text-[9px] font-bold border border-slate-850 px-2 py-1"
+                    className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold border border-slate-300 dark:border-slate-800 px-2.5 py-1"
                     title="Export as PDF"
                   >
-                    <IoDownloadOutline size={11} /> PDF
+                    <IoDownloadOutline size={12} /> PDF
                   </button>
                   <button 
                     onClick={() => triggerExport('DOCX')}
-                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-0.5 text-[9px] font-bold border border-slate-850 px-2 py-1"
+                    className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold border border-slate-300 dark:border-slate-800 px-2.5 py-1"
                     title="Export as DOCX"
                   >
-                    <IoDownloadOutline size={11} /> DOCX
+                    <IoDownloadOutline size={12} /> DOCX
                   </button>
 
-                  <div className="h-4 w-px bg-slate-800" />
+                  <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 
                   {/* Toggle Preview / Edit modes */}
                   {isEditing ? (
                     <button
                       onClick={handleSaveChanges}
-                      className="text-emerald-450 hover:text-emerald-400 p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                      className="text-[#22C55E] hover:text-[#1db053] p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
                     >
                       <IoSaveOutline size={13} /> Save Edits
                     </button>
                   ) : (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                      className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
                     >
                       <IoCreateOutline size={13} /> Edit Output
                     </button>
@@ -397,35 +397,49 @@ StackPilot Operations Admin
 
                   <button 
                     onClick={handleCopy}
-                    className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[9px] font-bold"
+                    className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold border border-slate-300 dark:border-slate-800 px-2.5 py-1"
                   >
-                    {copied ? <span className="text-[9px] font-bold text-emerald-400">Copied!</span> : <IoCopyOutline size={13} />}
+                    {copied ? <span className="text-[10px] font-bold text-[#22C55E]">Copied!</span> : <IoCopyOutline size={13} />}
                     Copy
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setOutput('');
+                      setEditedOutput('');
+                      setIsEditing(false);
+                    }}
+                    className="text-red-500 hover:text-red-600 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                    title="Clear Current Output"
+                  >
+                    <IoTrashOutline size={13} /> Clear
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto mt-4 p-4 bg-slate-950/40 rounded-xl border border-slate-850/80 font-sans text-xs leading-relaxed text-slate-300">
+            <div className="flex-1 overflow-y-auto mt-4 p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-[11px] leading-relaxed text-slate-800 dark:text-slate-200">
               {generating ? (
-                <div className="flex flex-col items-center justify-center h-full space-y-3">
+                <div className="flex flex-col items-center justify-center h-full space-y-3 py-16">
                   <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  <p className="text-slate-500 text-[10px] animate-pulse">StackPilot AI is generating...</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs font-bold animate-pulse">StackPilot AI is generating response...</p>
                 </div>
               ) : isEditing ? (
                 <textarea
-                  className="w-full h-80 bg-transparent text-slate-200 outline-none font-mono text-[10px] leading-relaxed resize-none"
+                  className="w-full h-80 bg-transparent text-slate-900 dark:text-slate-100 outline-none font-mono text-[11px] leading-relaxed resize-none"
                   value={editedOutput}
                   onChange={(e) => setEditedOutput(e.target.value)}
                 />
               ) : output ? (
-                <pre className="whitespace-pre-wrap font-mono text-[10px]">{output}</pre>
+                <pre className="whitespace-pre-wrap font-mono text-[11px] text-slate-900 dark:text-slate-200">{output}</pre>
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-600 text-center px-6">
-                  Select a tool and enter parameters to generate content. Past runs will appear in history.
+                <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400 text-center py-20 px-6">
+                  <IoSparklesSharp size={32} className="text-slate-400 dark:text-slate-600 mb-3" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No output generated yet.</p>
+                  <p className="text-[10px] text-slate-500 mt-1 max-w-sm">Select a tool from the left panel, provide the parameters, and click "Run AI Tool".</p>
                 </div>
               )}
             </div>
