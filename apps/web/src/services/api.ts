@@ -22,8 +22,7 @@ apiClient.interceptors.request.use((config) => {
 
 // System Super Admin User
 const DEFAULT_USERS: User[] = [
-  { _id: 'u-1', name: 'Super Admin', email: 'admin@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin', department: 'Administration', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
-  { _id: 'u-2', name: 'Alexander Wright', email: 'alex@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex', department: 'Executive', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() }
+  { _id: 'u-1', name: 'Super Admin', email: 'admin@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin', department: 'Administration', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() }
 ];
 
 const DEFAULT_PROJECTS: Project[] = [];
@@ -239,6 +238,16 @@ export const API = {
       }
 
       return updated;
+    },
+
+    async listUsers(): Promise<User[]> {
+      return mockDB.getUsers();
+    },
+
+    async deleteUser(id: string): Promise<void> {
+      const list = mockDB.getUsers().filter(u => u._id !== id);
+      mockDB.saveUsers(list);
+      await API.adminDelete('Team Members', id);
     }
   },
 
@@ -458,6 +467,12 @@ export const API = {
       leads[idx] = updated;
       mockDB.saveLeads(leads);
       return updated;
+    },
+
+    async deleteLead(id: string): Promise<void> {
+      const list = mockDB.getLeads().filter(l => l._id !== id);
+      mockDB.saveLeads(list);
+      await API.adminDelete('Clients', id);
     }
   },
 
@@ -520,6 +535,12 @@ export const API = {
       invoices[idx].status = 'Paid';
       mockDB.saveInvoices(invoices);
       return invoices[idx];
+    },
+
+    async deleteInvoice(id: string): Promise<void> {
+      const list = mockDB.getInvoices().filter(i => i._id !== id);
+      mockDB.saveInvoices(list);
+      await API.adminDelete('Invoices', id);
     }
   },
 
@@ -582,6 +603,12 @@ export const API = {
       docs.push(newDoc);
       mockDB.saveDocs(docs);
       return newDoc;
+    },
+
+    async deleteDoc(id: string): Promise<void> {
+      const list = mockDB.getDocs().filter(d => d._id !== id);
+      mockDB.saveDocs(list);
+      await API.adminDelete('Documents', id);
     }
   },
 

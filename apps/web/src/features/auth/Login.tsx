@@ -5,8 +5,7 @@ import { Button } from '../../components/UI';
 import { IoEyeOutline, IoEyeOffOutline, IoArrowBackOutline } from 'react-icons/io5';
 
 const Login: React.FC = () => {
-  const { login, error } = useAuth();
-
+  const { user, login, error, sessionExpiredMsg } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -14,6 +13,12 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginErr, setLoginErr] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +142,12 @@ const Login: React.FC = () => {
               </div>
 
             </div>
+
+            {sessionExpiredMsg && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-3 text-xs font-semibold leading-relaxed">
+                {sessionExpiredMsg}
+              </div>
+            )}
 
             {(loginErr || error) && (
 

@@ -32,7 +32,15 @@ const PageLoader = () => (
 );
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-white">
+        <div className="w-12 h-12 border-4 border-[#22C55E]/20 border-t-[#22C55E] rounded-full animate-spin mb-4" />
+        <span className="text-xs font-bold tracking-widest uppercase text-slate-400">Authenticating Session...</span>
+      </div>
+    );
+  }
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -91,11 +99,12 @@ export const App: React.FC = () => {
                 <Route path="/requirements" element={<Navigate to="/documentation?tab=requirements" replace />} />
                 <Route path="/ai-studio" element={<AIScripts />} />
                 <Route path="/documentation" element={<Documentation />} />
-                <Route path="/seo" element={
+                <Route path="/reports" element={
                   <GuardedRoute module="SEO">
                     <SEO />
                   </GuardedRoute>
                 } />
+                <Route path="/seo" element={<Navigate to="/reports" replace />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/leave-requests" element={<LeaveManagement />} />
                 <Route path="/finance" element={

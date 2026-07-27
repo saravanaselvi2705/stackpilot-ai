@@ -133,7 +133,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-200 dark:border-slate-800`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60">
               <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">{title}</h3>
               <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
                 <IoClose size={22} />

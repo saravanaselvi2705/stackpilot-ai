@@ -53,18 +53,8 @@ export const AIScripts: React.FC = () => {
         console.error(err);
       }
     } else {
-      // Default baseline items
-      const defaults: AIHistoryItem[] = [
-        {
-          id: 'hist-1',
-          tool: 'testcases',
-          prompt: 'JWT Refresh Auth Token',
-          output: `### Test Cases: JWT Auth Refresh Flow\n\n1. **TC-001**: Verify token exchange succeeds with valid refresh token.\n2. **TC-002**: Verify request gets HTTP 401 when refresh token is expired.`,
-          timestamp: new Date(Date.now() - 3600000).toLocaleString()
-        }
-      ];
-      setHistory(defaults);
-      localStorage.setItem('sp_ai_history', JSON.stringify(defaults));
+      setHistory([]);
+      localStorage.setItem('sp_ai_history', JSON.stringify([]));
     }
   }, []);
 
@@ -313,33 +303,44 @@ StackPilot Operations Admin
 
           {/* History log panel */}
           <Card>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Past Runs History</h3>
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-widest">Past Runs History</h3>
+              {history.length > 0 && (
+                <button 
+                  onClick={() => saveHistory([])}
+                  className="text-[10px] text-slate-500 hover:text-red-500 font-bold cursor-pointer"
+                >
+                  Clear History
+                </button>
+              )}
+            </div>
             <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
               {history.length === 0 ? (
-                <p className="text-[10px] text-slate-600 italic">No past runs in cache</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 italic py-4 text-center">No past runs in history. Run an AI tool above to generate output logs.</p>
               ) : (
                 history.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => handleSelectHistoryItem(item)}
-                    className={`flex items-start justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`flex items-start justify-between p-3 rounded-xl border text-left transition-all cursor-pointer ${
                       activeHistoryId === item.id 
-                        ? 'bg-[#22C55E]/5 border-[#22C55E]/20 text-slate-200' 
-                        : 'bg-slate-950/40 border-slate-850 hover:bg-slate-900/40 text-slate-400'
+                        ? 'bg-[#22C55E]/10 border-[#22C55E] text-slate-900 dark:text-white' 
+                        : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <div className="min-w-0 pr-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[8px] font-black uppercase text-emerald-450">{item.tool}</span>
-                        <span className="text-[8px] text-slate-500">{item.timestamp}</span>
+                        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-[#22C55E]/10 text-[#22C55E]">{item.tool}</span>
+                        <span className="text-[8px] text-slate-500 dark:text-slate-400 font-mono">{item.timestamp}</span>
                       </div>
-                      <p className="text-[10px] font-bold text-slate-350 truncate mt-0.5">{item.prompt}</p>
+                      <p className="text-[10px] font-bold text-slate-900 dark:text-slate-200 truncate mt-1">{item.prompt}</p>
                     </div>
                     <button
                       onClick={(e) => handleDeleteHistory(item.id, e)}
-                      className="text-slate-650 hover:text-red-400 p-0.5"
+                      className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                      title="Delete History Entry"
                     >
-                      <IoTrashOutline size={12} />
+                      <IoTrashOutline size={13} />
                     </button>
                   </div>
                 ))

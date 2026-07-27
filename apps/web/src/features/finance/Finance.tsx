@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoAdd, 
   IoCashOutline, 
@@ -10,12 +11,14 @@ import {
   IoPrintOutline,
   IoCardOutline,
   IoTrendingUpOutline,
-  IoAlertCircleOutline
+  IoAlertCircleOutline,
+  IoTrashOutline
 } from 'react-icons/io5';
 import API from '../../services/api';
 import type { Invoice } from '../../../../../packages/shared/types';
 
 export const Finance: React.FC = () => {
+  const { user } = useAuth();
   const { settings, formatCurrency, hasPermission } = useCustomization();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeTab, setActiveTab] = useState<'directory' | 'payments' | 'analytics'>('directory');
@@ -23,6 +26,7 @@ export const Finance: React.FC = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
   const [showInvoicePdf, setShowInvoicePdf] = useState<boolean>(false);
   const [emailStatus, setEmailStatus] = useState<string>('');
 
@@ -129,10 +133,22 @@ export const Finance: React.FC = () => {
     try {
       // Re-use markAsPaid or generic update if available, or simulate status changes
       const updated = await API.finance.markAsPaid(id);
-      // Wait, API.finance has markAsPaid. Let's update selected invoice in state
       const updatedMock = { ...selectedInvoice!, status: nextStatus };
       setSelectedInvoice(updatedMock);
-      // Re-load list
+      loadInvoices();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleConfirmDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    try {
+      await API.finance.deleteInvoice(invoiceToDelete._id);
+      setInvoiceToDelete(null);
+      if (selectedInvoice?._id === invoiceToDelete._id) {
+        setSelectedInvoice(null);
+      }
       loadInvoices();
     } catch (err) {
       console.error(err);
@@ -283,18 +299,27 @@ Status: ${selectedInvoice.status}
                           Mark Paid
                         </Button>
                       )}
-                      <Button onClick={() => setShowInvoicePdf(true)} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white text-[#111827] border border-[#22C55E]">
+                      <Button onClick={() => setShowInvoicePdf(true)} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-[#22C55E]">
                         <IoEyeOutline size={12} /> View PDF
                       </Button>
-                      <button onClick={handleDownloadPdf} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white" title="Download Text Invoice">
+                      <button onClick={handleDownloadPdf} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors" title="Download Text Invoice">
                         <IoDownloadOutline size={14} />
                       </button>
-                      <button onClick={() => window.print()} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white" title="Print Invoice">
+                      <button onClick={() => window.print()} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors" title="Print Invoice">
                         <IoPrintOutline size={14} />
                       </button>
-                      <button onClick={handleEmailInvoice} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-450 hover:text-white" title="Email Invoice to Client">
+                      <button onClick={handleEmailInvoice} className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors" title="Email Invoice to Client">
                         <IoMailOutline size={14} />
                       </button>
+                      {user?.role === 'Super Admin' && (
+                        <button 
+                          onClick={() => setInvoiceToDelete(selectedInvoice)} 
+                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors" 
+                          title="Delete Invoice (Super Admin)"
+                        >
+                          <IoTrashOutline size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -318,10 +343,10 @@ Status: ${selectedInvoice.status}
                       </div>
                     </div>
 
-                    <div className="border border-slate-800 rounded-xl overflow-hidden mt-4">
+                    <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="bg-slate-900/60 border-b border-slate-800 text-slate-550 uppercase tracking-widest font-bold text-[9px]">
+                          <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold text-[9px]">
                             <th className="py-2.5 px-3">Description</th>
                             <th className="py-2.5 px-3 text-center">Qty</th>
                             <th className="py-2.5 px-3 text-right">Rate</th>
@@ -330,41 +355,41 @@ Status: ${selectedInvoice.status}
                         </thead>
                         <tbody>
                           {selectedInvoice.items?.map((item, idx) => (
-                            <tr key={idx} className="border-b border-slate-850 hover:bg-slate-900/10 text-slate-350">
+                            <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
                               <td className="py-3 px-3 font-semibold">{item.description}</td>
                               <td className="py-3 px-3 text-center font-mono">{item.quantity}</td>
                               <td className="py-3 px-3 text-right font-mono">{formatCurrency(item.rate)}</td>
-                              <td className="py-3 px-3 text-right font-black text-slate-200">{formatCurrency(item.amount)}</td>
+                              <td className="py-3 px-3 text-right font-black text-slate-900 dark:text-slate-200">{formatCurrency(item.amount)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
 
-                    <div className="space-y-1.5 max-w-xs ml-auto pt-4 border-t border-slate-800/40 text-xs">
-                      <div className="flex justify-between text-slate-500">
+                    <div className="space-y-1.5 max-w-xs ml-auto pt-4 border-t border-slate-200 dark:border-slate-800/40 text-xs">
+                      <div className="flex justify-between text-slate-500 dark:text-slate-400">
                         <span>Subtotal:</span>
-                        <span className="font-mono text-slate-300">{formatCurrency(selectedInvoice.subtotal)}</span>
+                        <span className="font-mono text-slate-900 dark:text-slate-300">{formatCurrency(selectedInvoice.subtotal)}</span>
                       </div>
-                      <div className="flex justify-between text-slate-500">
+                      <div className="flex justify-between text-slate-500 dark:text-slate-400">
                         <span>GST (18%):</span>
-                        <span className="font-mono text-slate-300">{formatCurrency(selectedInvoice.taxAmount)}</span>
+                        <span className="font-mono text-slate-900 dark:text-slate-300">{formatCurrency(selectedInvoice.taxAmount)}</span>
                       </div>
-                      <div className="flex justify-between border-t border-slate-800 pt-2 font-bold text-sm">
-                        <span className="text-white">Total:</span>
+                      <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-2 font-bold text-sm">
+                        <span className="text-slate-900 dark:text-white">Total:</span>
                         <span className="font-mono text-[#22C55E]">{formatCurrency(selectedInvoice.total)}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-slate-850 pt-4 mt-8 flex items-center justify-between text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-8 flex items-center justify-between text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
                   <span>Invoicing Engine: Sync Active</span>
                   <span>Due date Net 30</span>
                 </div>
               </Card>
             ) : (
-              <div className="text-center py-20 text-slate-650">No invoice selected.</div>
+              <div className="text-center py-20 text-slate-500 dark:text-slate-400">No invoice selected.</div>
             )}
           </div>
         </div>
@@ -373,14 +398,14 @@ Status: ${selectedInvoice.status}
       {/* 2. Payment History Tab */}
       {activeTab === 'payments' && (
         <Card>
-          <div className="border-b border-slate-850 pb-3 mb-4">
-            <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Payments Log</h3>
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
+            <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">Payments Log</h3>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-850 text-slate-550 uppercase tracking-widest font-bold text-[9px]">
+                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold text-[9px] bg-slate-50 dark:bg-slate-950/50">
                   <th className="py-3 px-2">Invoice Number</th>
                   <th className="py-3 px-2">Client</th>
                   <th className="py-3 px-2">Transaction ID</th>
@@ -391,8 +416,8 @@ Status: ${selectedInvoice.status}
               </thead>
               <tbody>
                 {invoices.filter(inv => inv.status === 'Paid').map((inv, idx) => (
-                  <tr key={idx} className="border-b border-slate-850 hover:bg-slate-900/10 text-slate-350">
-                    <td className="py-3.5 px-2 font-bold text-slate-200">{inv.invoiceNumber}</td>
+                  <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
+                    <td className="py-3.5 px-2 font-bold text-slate-900 dark:text-slate-200">{inv.invoiceNumber}</td>
                     <td className="py-3.5 px-2 font-semibold">{inv.clientName}</td>
                     <td className="py-3.5 px-2 font-mono text-[10px]">TXN-{100000 + idx * 854}</td>
                     <td className="py-3.5 px-2">Bank Transfer</td>
@@ -411,33 +436,33 @@ Status: ${selectedInvoice.status}
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
             <Card className="p-5 flex flex-col justify-between">
-              <span className="text-[9px] text-slate-555 font-bold uppercase tracking-widest block">Total Billed</span>
-              <h3 className="text-2xl font-black text-white mt-2">{formatCurrency(totalBilled)}</h3>
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest block">Total Billed</span>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">{formatCurrency(totalBilled)}</h3>
             </Card>
             <Card className="p-5 flex flex-col justify-between">
-              <span className="text-[9px] text-slate-555 font-bold uppercase tracking-widest block">Realized Revenue</span>
-              <h3 className="text-2xl font-black text-emerald-400 mt-2">{formatCurrency(totalReceived)}</h3>
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest block">Realized Revenue</span>
+              <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{formatCurrency(totalReceived)}</h3>
             </Card>
             <Card className="p-5 flex flex-col justify-between">
-              <span className="text-[9px] text-slate-555 font-bold uppercase tracking-widest block">Pending Payments</span>
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest block">Pending Payments</span>
               <h3 className="text-2xl font-black text-amber-500 mt-2">{formatCurrency(totalPending)}</h3>
             </Card>
-            <Card className="p-5 flex flex-col justify-between text-red-400">
-              <span className="text-[9px] text-slate-555 font-bold uppercase tracking-widest block">Overdue Invoices</span>
+            <Card className="p-5 flex flex-col justify-between text-red-500">
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest block">Overdue Invoices</span>
               <h3 className="text-2xl font-black text-red-500 mt-2">{formatCurrency(totalOverdue)}</h3>
             </Card>
           </div>
 
           {/* Pending payments table */}
           <Card>
-            <div className="border-b border-slate-850 pb-3 mb-4 flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Outstanding Client Payments</h3>
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">Outstanding Client Payments</h3>
               <Badge variant="warning">Awaiting Settlement</Badge>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-850 text-slate-555 uppercase tracking-widest font-bold text-[9px]">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold text-[9px] bg-slate-50 dark:bg-slate-950/50">
                     <th className="py-2.5 px-2">Invoice</th>
                     <th className="py-2.5 px-2">Client Name</th>
                     <th className="py-2.5 px-2">Email</th>
@@ -447,12 +472,12 @@ Status: ${selectedInvoice.status}
                 </thead>
                 <tbody>
                   {invoices.filter(inv => inv.status !== 'Paid').map((inv, idx) => (
-                    <tr key={idx} className="border-b border-slate-850 hover:bg-slate-900/10 text-slate-350">
-                      <td className="py-3 px-2 font-bold text-slate-200">{inv.invoiceNumber}</td>
+                    <tr key={idx} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-900/10 text-slate-700 dark:text-slate-300">
+                      <td className="py-3 px-2 font-bold text-slate-900 dark:text-slate-200">{inv.invoiceNumber}</td>
                       <td className="py-3 px-2 font-semibold">{inv.clientName}</td>
                       <td className="py-3 px-2 font-mono text-[10px]">{inv.clientEmail || 'N/A'}</td>
                       <td className="py-3 px-2 font-mono">{inv.dueDate}</td>
-                      <td className="py-3 px-2 text-right font-black text-slate-200">{formatCurrency(inv.total)}</td>
+                      <td className="py-3 px-2 text-right font-black text-slate-900 dark:text-slate-200">{formatCurrency(inv.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -467,46 +492,46 @@ Status: ${selectedInvoice.status}
         <form onSubmit={handleCreateInvoice} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Client Name</label>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Client Name</label>
               <input
                 type="text"
                 required
                 placeholder="Vercel"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Client Email</label>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Client Email</label>
               <input
                 type="email"
                 required
                 placeholder="billing@vercel.com"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Due Date</label>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Due Date</label>
               <input
                 type="date"
                 required
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-slate-200 outline-none focus:border-[#22C55E]"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase">Invoice Status</label>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Invoice Status</label>
               <select
                 value={invoiceStatus}
                 onChange={(e) => setInvoiceStatus(e.target.value as any)}
-                className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50 cursor-pointer"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-slate-200 outline-none focus:border-[#22C55E] cursor-pointer"
               >
                 <option value="Draft">Draft</option>
                 <option value="Sent">Sent</option>
@@ -518,9 +543,9 @@ Status: ${selectedInvoice.status}
           </div>
 
           {/* Dynamic items lists */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
+          <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Invoice Items</span>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Invoice Items</span>
               <button 
                 type="button" 
                 onClick={handleAddItemRow}
@@ -540,7 +565,7 @@ Status: ${selectedInvoice.status}
                       placeholder="Line item description..."
                       value={item.desc}
                       onChange={(e) => handleItemChange(idx, 'desc', e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                      className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
                     />
                   </div>
                   <div className="col-span-2">
@@ -550,7 +575,7 @@ Status: ${selectedInvoice.status}
                       placeholder="Qty"
                       value={item.qty}
                       onChange={(e) => handleItemChange(idx, 'qty', Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                      className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
                     />
                   </div>
                   <div className="col-span-4">
@@ -560,7 +585,7 @@ Status: ${selectedInvoice.status}
                       placeholder={`Rate (${settings.currency})`}
                       value={item.rate}
                       onChange={(e) => handleItemChange(idx, 'rate', Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#22C55E]/50"
+                      className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
                     />
                   </div>
                 </div>
@@ -568,8 +593,8 @@ Status: ${selectedInvoice.status}
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-800 pt-4">
-            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)} className="text-xs bg-white text-[#111827] border border-[#22C55E]">
+          <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-4">
+            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)} className="text-xs">
               Cancel
             </Button>
             <Button type="submit" loading={loading} className="text-xs bg-[#22C55E] hover:bg-[#1db053] text-white">
@@ -669,6 +694,34 @@ Status: ${selectedInvoice.status}
             <Button onClick={() => window.print()} className="text-xs flex items-center gap-1 bg-[#22C55E] hover:bg-[#1db053] text-white">
               <IoPrintOutline size={14} /> Print / Download PDF
             </Button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Super Admin Delete Invoice Modal */}
+      {invoiceToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setInvoiceToDelete(null)}
+          title="Confirm Permanent Invoice Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete invoice <strong className="text-slate-900 dark:text-white">{invoiceToDelete.invoiceNumber}</strong> issued to <strong className="text-slate-900 dark:text-white">{invoiceToDelete.clientName}</strong>? An audit log entry will be automatically recorded.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setInvoiceToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleConfirmDeleteInvoice} 
+                className="text-xs"
+              >
+                Permanently Delete Invoice
+              </Button>
+            </div>
           </div>
         </Modal>
       )}

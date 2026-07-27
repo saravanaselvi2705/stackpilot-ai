@@ -7,14 +7,16 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
+  sessionExpiredMsg: string | null;
   isMock: boolean;
 
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role?: string) => Promise<void>;
-  logout: () => void;
+  logout: (expiredReason?: string) => void;
   switchRole: (role: UserRole) => void;
   updateProfile: (updates: Partial<User>) => Promise<void>;
   checkBackend: () => Promise<boolean>;
+  clearSessionMessage: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,26 +26,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpiredMsg, setSessionExpiredMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const init = async () => {
+    const initSession = async () => {
       try {
         const storedToken = localStorage.getItem("stackpilot_token");
         const storedUser = localStorage.getItem("stackpilot_user");
+        
         if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          try {
+            const parsedUser: User = JSON.parse(storedUser);
+            // Basic session integrity check
+            if (parsedUser && parsedUser._id && parsedUser.email) {
+              setToken(storedToken);
+              setUser(parsedUser);
+            } else {
+              localStorage.removeItem("stackpilot_token");
+              localStorage.removeItem("stackpilot_user");
+              setSessionExpiredMsg("Session expired or invalid. Please sign in again.");
+            }
+          } catch {
+            localStorage.removeItem("stackpilot_token");
+            localStorage.removeItem("stackpilot_user");
+            setSessionExpiredMsg("Stored session was corrupted. Please log in again.");
+          }
         }
       } finally {
         setLoading(false);
       }
     };
-    init();
+    initSession();
   }, []);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
+    setSessionExpiredMsg(null);
     try {
       const response = await API.auth.login(email, password);
       localStorage.setItem("stackpilot_token", response.token);
@@ -70,11 +89,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = (expiredReason?: string) => {
     localStorage.removeItem("stackpilot_token");
     localStorage.removeItem("stackpilot_user");
     setToken(null);
     setUser(null);
+    if (expiredReason) {
+      setSessionExpiredMsg(expiredReason);
+    }
+  };
+
+  const clearSessionMessage = () => {
+    setSessionExpiredMsg(null);
   };
 
   const updateProfile = async (updates: Partial<User>) => {
@@ -94,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         loading,
         error,
+        sessionExpiredMsg,
         isMock: false,
         login,
         register,
@@ -101,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         switchRole,
         updateProfile,
         checkBackend,
+        clearSessionMessage,
       }}
     >
       {children}

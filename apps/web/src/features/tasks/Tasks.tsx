@@ -441,22 +441,22 @@ export const Tasks: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Jira Tasks Board</h1>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Task Board</h1>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Organize team workloads, prioritize issues, and review checklist logs.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Swimlane Group Filter */}
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Group By:</span>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white shadow-sm">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Group By:</span>
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value as any)}
-              className="bg-transparent text-xs font-bold text-slate-200 outline-none cursor-pointer border-none"
+              className="bg-transparent text-xs font-bold text-slate-900 dark:text-slate-200 outline-none cursor-pointer border-none focus:ring-1 focus:ring-[#22C55E]"
             >
-              <option value="None" className="bg-slate-950">None (Columns)</option>
-              <option value="Priority" className="bg-slate-950">Priority Swimlanes</option>
-              <option value="Assignee" className="bg-slate-950">Assignee Swimlanes</option>
+              <option value="None" className="bg-white dark:bg-slate-900">None (Columns)</option>
+              <option value="Priority" className="bg-white dark:bg-slate-900">Priority Swimlanes</option>
+              <option value="Assignee" className="bg-white dark:bg-slate-900">Assignee Swimlanes</option>
             </select>
           </div>
 

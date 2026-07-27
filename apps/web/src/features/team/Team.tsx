@@ -1,129 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, ProgressBar, Button, Modal } from '../../components/UI';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoMailOutline, 
-  IoCallOutline
+  IoCallOutline,
+  IoTrashOutline,
+  IoPersonAddOutline
 } from 'react-icons/io5';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-  tasks: number;
-  capacity: number;
-  avatar: string;
-  email: string;
-  phone: string;
-  skills: string[];
-}
+import API from '../../services/api';
+import type { User } from '../../../../../packages/shared/types';
 
 export const Team: React.FC = () => {
-  const [members] = useState<TeamMember[]>([
-    { 
-      id: '1', 
-      name: 'Alexander Wright', 
-      role: 'Administrator', 
-      tasks: 3, 
-      capacity: 60, 
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin',
-      email: 'alex@stackpilot.ai',
-      phone: '+91 98765 43210',
-      skills: ['React', 'TypeScript', 'Node.js', 'System Architecture', 'Cloud Services']
-    },
-    { 
-      id: '2', 
-      name: 'Sarah Jenkins', 
-      role: 'Project Manager', 
-      tasks: 4, 
-      capacity: 85, 
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sarah',
-      email: 'sarah@stackpilot.ai',
-      phone: '+91 98765 43211',
-      skills: ['Sprint Planning', 'Client Relations', 'Agile Methodology', 'Budgeting']
-    },
-    { 
-      id: '3', 
-      name: 'Marcus Aurelius', 
-      role: 'Lead Developer', 
-      tasks: 6, 
-      capacity: 95, 
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Marcus',
-      email: 'marcus@stackpilot.ai',
-      phone: '+91 98765 43212',
-      skills: ['Docker', 'MongoDB', 'React 19', 'Next.js', 'CI/CD Pipelines']
-    },
-    { 
-      id: '4', 
-      name: 'Tony Soprano', 
-      role: 'Finance Lead', 
-      tasks: 2, 
-      capacity: 40, 
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tony',
-      email: 'tony@stackpilot.ai',
-      phone: '+91 98765 43213',
-      skills: ['Corporate Invoicing', 'GST Calculations', 'Payroll Management', 'Risk Assessment']
-    },
-    { 
-      id: '5', 
-      name: 'Guillermo Rauch', 
-      role: 'Client Executive', 
-      tasks: 1, 
-      capacity: 20, 
-      avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Guillermo',
-      email: 'guillermo@stackpilot.ai',
-      phone: '+91 98765 43214',
-      skills: ['Customer Success', 'Market Expansion', 'Vercel Deployment', 'UX Design']
+  const { user } = useAuth();
+  const [members, setMembers] = useState<User[]>([]);
+  const [selectedMember, setSelectedMember] = useState<User | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<User | null>(null);
+
+  const loadMembers = async () => {
+    try {
+      const data = await API.auth.listUsers();
+      setMembers(data);
+    } catch (err) {
+      console.error(err);
     }
-  ]);
+  };
 
-  // Modal State
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  useEffect(() => {
+    loadMembers();
+  }, []);
 
-  const getCapacityColor = (capacity: number) => {
-    if (capacity >= 90) return 'bg-red-500';
-    if (capacity >= 75) return 'bg-amber-500';
-    return 'bg-[#22C55E]';
+  const handleConfirmDeleteMember = async () => {
+    if (!memberToDelete) return;
+    try {
+      await API.auth.deleteUser(memberToDelete._id);
+      setMemberToDelete(null);
+      if (selectedMember?._id === memberToDelete._id) {
+        setSelectedMember(null);
+      }
+      loadMembers();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="space-y-8 pb-12">
       {/* Heading */}
-      <div>
-        <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Team Members</h1>
-        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Manage workforce roster, review skill profiles, and balance workload telemetry.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+        <div>
+          <h1 className="text-3xl font-black font-display text-slate-900 dark:text-white tracking-tight">Team Members</h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Manage workforce roster, review user accounts, and allocate project resources.</p>
+        </div>
       </div>
 
       {/* Workforce Roster cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {members.map((m) => (
-          <Card 
-            key={m.id} 
-            onClick={() => setSelectedMember(m)}
-            className="space-y-4 cursor-pointer hover:border-[#22C55E]/50 transition-all hover:scale-[1.01]"
-          >
-            <div className="flex items-center gap-3">
-              <img src={m.avatar} alt={m.name} className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{m.name}</h4>
-                <span className="text-[10px] text-[#22C55E] font-bold uppercase tracking-wider">{m.role}</span>
-              </div>
-            </div>
-
-            <div className="space-y-2 border-t border-slate-200 dark:border-slate-800 pt-3">
-              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold">
-                <span>Active Deliverables</span>
-                <span className="text-slate-900 dark:text-slate-200 font-bold">{m.tasks} tasks</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span>Workload Capacity</span>
-                  <span className={`${m.capacity >= 90 ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'} font-bold`}>{m.capacity}%</span>
+        {members.length === 0 ? (
+          <div className="col-span-full py-16 text-center text-slate-500 dark:text-slate-400">
+            No team members found. Initialized with clean production database.
+          </div>
+        ) : (
+          members.map((m) => (
+            <Card 
+              key={m._id} 
+              className="space-y-4 hover:border-[#22C55E]/50 transition-all hover:scale-[1.01] relative group"
+            >
+              <div className="flex items-center justify-between">
+                <div 
+                  onClick={() => setSelectedMember(m)}
+                  className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
+                >
+                  <img src={m.avatarUrl} alt={m.name} className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{m.name}</h4>
+                    <span className="text-[10px] text-[#22C55E] font-bold uppercase tracking-wider block">{m.role}</span>
+                  </div>
                 </div>
-                <ProgressBar value={m.capacity} color={getCapacityColor(m.capacity)} />
+
+                {user?.role === 'Super Admin' && m._id !== user._id && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMemberToDelete(m);
+                    }}
+                    className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                    title="Delete Team Member (Super Admin)"
+                  >
+                    <IoTrashOutline size={14} />
+                  </button>
+                )}
               </div>
-            </div>
-          </Card>
-        ))}
+
+              <div 
+                onClick={() => setSelectedMember(m)}
+                className="space-y-2 border-t border-slate-200 dark:border-slate-800 pt-3 cursor-pointer"
+              >
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold">
+                  <span>Department</span>
+                  <span className="text-slate-900 dark:text-slate-200 font-bold">{m.department || 'Administration'}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>Status</span>
+                  <span className="text-[#22C55E] font-bold">{m.availability || 'Available'}</span>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Team Member Profile Details Modal */}
@@ -137,55 +120,66 @@ export const Team: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
               <img 
-                src={selectedMember.avatar} 
+                src={selectedMember.avatarUrl} 
                 alt={selectedMember.name} 
-                className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800" 
+                className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
               />
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{selectedMember.name}</h3>
-                <span className="text-[10px] text-[#22C55E] font-black uppercase tracking-wider">{selectedMember.role}</span>
-                
-                <div className="flex flex-col gap-1 mt-2 text-xs text-slate-600 dark:text-slate-400">
-                  <span className="flex items-center gap-1.5"><IoMailOutline size={14} /> {selectedMember.email}</span>
-                  <span className="flex items-center gap-1.5"><IoCallOutline size={14} /> {selectedMember.phone}</span>
-                </div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white">{selectedMember.name}</h3>
+                <span className="text-xs font-bold text-[#22C55E] uppercase tracking-wider">{selectedMember.role}</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{selectedMember.department || 'Administration'}</p>
               </div>
             </div>
 
-            {/* Workload */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Workload Telemetry</span>
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-600 dark:text-slate-400">Active Task Deliverables:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedMember.tasks} tasks assigned</span>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[11px] text-slate-500">
-                    <span>Capacity Threshold:</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">{selectedMember.capacity}%</span>
-                  </div>
-                  <ProgressBar value={selectedMember.capacity} color={getCapacityColor(selectedMember.capacity)} />
-                </div>
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <IoMailOutline className="text-slate-400" size={16} />
+                <span className="font-mono">{selectedMember.email}</span>
               </div>
             </div>
 
-            {/* Core Skills */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Core Skills & Specialties</span>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedMember.skills.map(skill => (
-                  <span key={skill} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    {skill}
-                  </span>
-                ))}
-              </div>
+            <div className="flex justify-between items-center border-t border-slate-200 dark:border-slate-800 pt-4">
+              {user?.role === 'Super Admin' && selectedMember._id !== user._id ? (
+                <Button 
+                  variant="danger" 
+                  onClick={() => {
+                    setMemberToDelete(selectedMember);
+                  }}
+                  className="text-xs flex items-center gap-1.5"
+                >
+                  <IoTrashOutline size={14} /> Remove Team Member
+                </Button>
+              ) : <div />}
+              <Button variant="secondary" onClick={() => setSelectedMember(null)} className="text-xs">
+                Close
+              </Button>
             </div>
+          </div>
+        </Modal>
+      )}
 
-            {/* Close Button */}
-            <div className="flex justify-end border-t border-slate-200 dark:border-slate-800 pt-4 mt-2">
-              <Button onClick={() => setSelectedMember(null)} className="text-xs">
-                Close Profile
+      {/* Super Admin Delete Team Member Confirmation Modal */}
+      {memberToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setMemberToDelete(null)}
+          title="Confirm Team Member Removal"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently remove <strong className="text-slate-900 dark:text-white">{memberToDelete.name}</strong> ({memberToDelete.email}) from the workspace roster? An audit log entry will be generated.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setMemberToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleConfirmDeleteMember} 
+                className="text-xs"
+              >
+                Permanently Remove
               </Button>
             </div>
           </div>

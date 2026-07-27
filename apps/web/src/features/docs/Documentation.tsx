@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Button, Badge } from '../../components/UI';
+import { Card, Button, Badge, Modal } from '../../components/UI';
+import { useAuth } from '../../context/AuthContext';
 import { 
   IoBookOutline, 
   IoDocumentTextOutline, 
@@ -19,6 +20,7 @@ import API from '../../services/api';
 import type { Document, Project } from '../../../../../packages/shared/types';
 
 export const Documentation: React.FC = () => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = (searchParams.get('tab') as 'explorer' | 'requirements' | 'editor') || 'explorer';
 
@@ -26,6 +28,7 @@ export const Documentation: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>('p-1');
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -104,6 +107,20 @@ export const Documentation: React.FC = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmDeleteDoc = async () => {
+    if (!docToDelete) return;
+    try {
+      await API.docs.deleteDoc(docToDelete._id);
+      setDocToDelete(null);
+      if (selectedDoc?._id === docToDelete._id) {
+        setSelectedDoc(null);
+      }
+      loadData();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -385,12 +402,21 @@ This document outlines key functional dependencies extracted from imported docum
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button onClick={() => triggerExport('PDF')} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white text-[#111827] border border-[#22C55E]">
+                      <Button onClick={() => triggerExport('PDF')} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-[#22C55E]">
                         <IoDownloadOutline size={12} /> PDF Export
                       </Button>
-                      <Button onClick={() => triggerExport('DOCX')} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white text-[#111827] border border-[#22C55E]">
+                      <Button onClick={() => triggerExport('DOCX')} size="sm" variant="secondary" className="text-[10px] flex items-center gap-1 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-[#22C55E]">
                         <IoDownloadOutline size={12} /> DOCX Export
                       </Button>
+                      {user?.role === 'Super Admin' && (
+                        <button 
+                          onClick={() => setDocToDelete(selectedDoc)} 
+                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer" 
+                          title="Delete Document (Super Admin)"
+                        >
+                          <IoTrashOutline size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -624,6 +650,34 @@ This document outlines key functional dependencies extracted from imported docum
             </div>
           </form>
         </Card>
+      )}
+
+      {/* Super Admin Delete Document Modal */}
+      {docToDelete && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDocToDelete(null)}
+          title="Confirm Document Deletion"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              Are you sure you want to permanently delete document <strong className="text-slate-900 dark:text-white">"{docToDelete.title}"</strong>? An audit log record will be generated.
+            </p>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button variant="secondary" onClick={() => setDocToDelete(null)} className="text-xs">
+                Cancel
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleConfirmDeleteDoc} 
+                className="text-xs"
+              >
+                Permanently Delete Document
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

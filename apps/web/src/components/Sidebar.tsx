@@ -23,13 +23,22 @@ import {
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const { settings, hasPermission } = useCustomization();
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsedState] = useState<boolean>(() => {
+    const stored = localStorage.getItem('sp_sidebar_collapsed');
+    return stored ? stored === 'true' : false;
+  });
+
+  const setCollapsed = (val: boolean) => {
+    setCollapsedState(val);
+    localStorage.setItem('sp_sidebar_collapsed', String(val));
+  };
+
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
     'Dashboard': true,
     'Project Management': true,
     'AI Workspace': false,
     'Finance': false,
-    'Reports': false,
+    'Reports': true,
     'Team': false,
     'Leave Management': false,
     'Productivity': true,
@@ -76,13 +85,7 @@ export const Sidebar: React.FC = () => {
       title: 'Reports',
       items: [
         ...(settings.sidebarMenu.reports && hasPermission('SEO', 'view') ? [
-          { name: 'SEO Reports', path: '/seo?tab=seo', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Project Reports', path: '/seo?tab=projects', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Project Test Reports', path: '/seo?tab=tests', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Revenue Reports', path: '/seo?tab=revenue', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Employee Performance Reports', path: '/seo?tab=employee', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Team Performance Reports', path: '/seo?tab=team', icon: <IoGlobeOutline size={18} /> },
-          { name: 'Task Reports', path: '/seo?tab=tasks', icon: <IoGlobeOutline size={18} /> }
+          { name: 'Reports Suite', path: '/reports', icon: <IoGlobeOutline size={18} /> }
         ] : [])
       ]
     },
@@ -242,7 +245,7 @@ export const Sidebar: React.FC = () => {
           )}
           {!collapsed && (
             <button 
-              onClick={logout}
+              onClick={() => logout()}
               className="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 cursor-pointer shrink-0 transition-colors"
               title="Logout"
             >
