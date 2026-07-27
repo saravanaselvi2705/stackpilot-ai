@@ -16,6 +16,10 @@ export interface User {
   role: UserRole;
   avatarUrl?: string;
   department?: string;
+  designation?: string;
+  phone?: string;
+  joiningDate?: string;
+  status?: 'Active' | 'Inactive';
   skills?: string[];
   experience?: string;
   availability?: 'Available' | 'Busy' | 'On Leave';
@@ -30,7 +34,7 @@ export interface Client {
   companyId?: string;
   companyName?: string;
   phone?: string;
-  status: 'Lead' | 'Active' | 'Inactive';
+  status: 'Lead' | 'Active' | 'Inactive' | 'Archived';
   value?: number;
   tags?: string[];
   notes?: string;

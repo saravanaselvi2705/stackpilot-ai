@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCustomization } from '../context/CustomizationContext';
 import { Badge } from './UI';
-import { 
-  IoSearchOutline, 
-  IoNotificationsOutline, 
+import {
+  IoSearchOutline,
+  IoNotificationsOutline,
   IoHomeOutline,
   IoSunnyOutline,
   IoMoonOutline,
@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
     <header className="bg-white dark:bg-[#0B0F17] border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between h-[73px] sticky top-0 z-20 transition-colors">
       {/* Search Input Bar */}
       <div className="flex items-center gap-3">
-        <button 
+        <button
           onClick={onSearchOpen}
           className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all text-xs font-semibold select-none cursor-pointer w-48 md:w-64"
         >
@@ -96,12 +96,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
             {isMock ? 'Demo Mode' : 'Connected'}
           </span>
         </div>
-      </div>
-
-      {/* Right Side Options */}
+      </div>      {/* Right Side Options */}
       <div className="flex items-center gap-3">
         {/* Quick Actions Dropdown */}
-        <div className="relative" ref={quickRef}>
+        {/*<div className="relative" ref={quickRef}>
           <button
             onClick={() => setQuickActionsOpen(!quickActionsOpen)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 transition-all text-xs font-bold cursor-pointer"
@@ -111,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
             <span className="hidden sm:inline">Actions</span>
             <IoChevronDownOutline size={12} className="text-slate-500" />
           </button>
-          
+
           {quickActionsOpen && (
             <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 shadow-xl z-50 space-y-1">
               <span className="block px-2.5 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
@@ -135,19 +133,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
               </button>
             </div>
           )}
-        </div>
+        </div>*/}
 
         {/* Theme Toggle */}
-        <button
+        {/* <button
           onClick={toggleTheme}
           className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer transition-all"
           title="Toggle Light/Dark Theme"
         >
           {settings.theme === 'dark' ? <IoSunnyOutline size={16} className="text-amber-400" /> : <IoMoonOutline size={16} className="text-slate-700" />}
-        </button>
+        </button>*/}
 
         {/* Dashboard Home Button */}
-        <button 
+        <button
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 transition-all text-xs font-bold cursor-pointer"
           title="Return to Dashboard"
@@ -158,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
 
         {/* Notifications Dropdown Container */}
         <div className="relative" ref={notifRef}>
-          <button 
+          <button
             onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
             className="relative text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer transition-colors"
           >
@@ -181,13 +179,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
               ) : (
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                   {notifications.map((n) => (
-                    <div 
-                      key={n._id} 
-                      className={`p-3 rounded-xl border transition-all duration-200 text-left ${
-                        n.read 
-                          ? 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/50 opacity-70' 
-                          : 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20'
-                      }`}
+                    <div
+                      key={n._id}
+                      className={`p-3 rounded-xl border transition-all duration-200 text-left ${n.read
+                        ? 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800/50 opacity-70'
+                        : 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20'
+                        }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{n.title}</span>
@@ -196,11 +193,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
                         </Badge>
                       </div>
                       <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-relaxed mb-2">{n.message}</p>
-                      
+
                       <div className="flex items-center justify-between text-[9px] text-slate-500 dark:text-slate-400">
                         <span>{new Date(n.createdAt).toLocaleTimeString()}</span>
                         {!n.read && (
-                          <button 
+                          <button
                             onClick={() => handleRead(n._id)}
                             className="hover:underline font-bold cursor-pointer text-[#22C55E]"
                           >
@@ -222,8 +219,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
           className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 cursor-pointer hover:opacity-80 transition-opacity"
           title="View Profile Settings"
         >
-          <img 
-            src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'} 
+          <img
+            src={user?.avatarUrl || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin'}
             alt="Profile Avatar"
             className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0"
           />

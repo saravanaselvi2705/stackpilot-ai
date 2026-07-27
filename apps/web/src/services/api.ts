@@ -240,14 +240,83 @@ export const API = {
       return updated;
     },
 
-    async listUsers(): Promise<User[]> {
-      return mockDB.getUsers();
+    async listUsers(onlyActive = false): Promise<User[]> {
+      const users = mockDB.getUsers();
+      if (onlyActive) {
+        return users.filter(u => u.status !== 'Inactive');
+      }
+      return users;
+    },
+
+    async createUser(data: Partial<User>): Promise<User> {
+      const users = mockDB.getUsers();
+      const newUser: User = {
+        _id: `u-${Date.now()}`,
+        name: data.name || 'New Team Member',
+        email: data.email || `user${Date.now()}@stackpilot.ai`,
+        role: data.role || 'Developer',
+        department: data.department || 'Engineering',
+        designation: data.designation || 'Software Engineer',
+        phone: data.phone || '',
+        joiningDate: data.joiningDate || new Date().toISOString().split('T')[0],
+        status: data.status || 'Active',
+        avatarUrl: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(data.name || 'User')}`,
+        availability: 'Available',
+        twoFAEnabled: false,
+        createdAt: new Date().toISOString()
+      };
+      users.push(newUser);
+      mockDB.saveUsers(users);
+
+      const cachedUser = localStorage.getItem('stackpilot_user');
+      const performer = cachedUser ? JSON.parse(cachedUser).name : 'Super Admin';
+
+      const acts = mockDB.getActivities();
+      acts.unshift({
+        _id: `act-${Date.now()}`,
+        userId: 'u-1',
+        userName: performer,
+        userRole: 'Super Admin',
+        action: 'Add Team Member',
+        details: `Added new team member ${newUser.name} (${newUser.email}) as ${newUser.role}`,
+        createdAt: new Date().toISOString()
+      });
+      mockDB.saveActivities(acts);
+
+      return newUser;
+    },
+
+    async updateUser(id: string, updates: Partial<User>): Promise<User> {
+      const users = mockDB.getUsers();
+      const idx = users.findIndex(u => u._id === id);
+      if (idx === -1) throw new Error('User not found');
+      const updated = { ...users[idx], ...updates };
+      users[idx] = updated;
+      mockDB.saveUsers(users);
+
+      const cachedUser = localStorage.getItem('stackpilot_user');
+      const performer = cachedUser ? JSON.parse(cachedUser).name : 'Super Admin';
+
+      const acts = mockDB.getActivities();
+      acts.unshift({
+        _id: `act-${Date.now()}`,
+        userId: 'u-1',
+        userName: performer,
+        userRole: 'Super Admin',
+        action: 'Update Team Member',
+        details: `Updated team member ${updated.name} (${updated.email})`,
+        createdAt: new Date().toISOString()
+      });
+      mockDB.saveActivities(acts);
+
+      return updated;
     },
 
     async deleteUser(id: string): Promise<void> {
+      const targetUser = mockDB.getUsers().find(u => u._id === id);
       const list = mockDB.getUsers().filter(u => u._id !== id);
       mockDB.saveUsers(list);
-      await API.adminDelete('Team Members', id);
+      await API.adminDelete('Team Members', id, targetUser?.name || id);
     }
   },
 
@@ -463,16 +532,38 @@ export const API = {
       const leads = mockDB.getLeads();
       const idx = leads.findIndex(l => l._id === id);
       if (idx === -1) throw new Error('Lead not found');
+      const oldStatus = leads[idx].status;
       const updated = { ...leads[idx], ...updates };
       leads[idx] = updated;
       mockDB.saveLeads(leads);
+
+      if (updates.status && updates.status !== oldStatus) {
+        const cachedUser = localStorage.getItem('stackpilot_user');
+        const u = cachedUser ? JSON.parse(cachedUser) : { _id: 'u-1', name: 'Super Admin', role: 'Super Admin' };
+        const actionLabel = updates.status === 'Archived' ? 'Archive Client' : oldStatus === 'Archived' ? 'Restore Client' : 'Update Client Status';
+        
+        const acts = mockDB.getActivities();
+        acts.unshift({
+          _id: `act-${Date.now()}`,
+          userId: u._id,
+          userName: u.name,
+          userRole: u.role,
+          action: actionLabel,
+          details: `Client "${updated.companyName || updated.name}" status updated from ${oldStatus} to ${updated.status}`,
+          createdAt: new Date().toISOString()
+        });
+        mockDB.saveActivities(acts);
+      }
+
       return updated;
     },
 
     async deleteLead(id: string): Promise<void> {
-      const list = mockDB.getLeads().filter(l => l._id !== id);
+      const leads = mockDB.getLeads();
+      const target = leads.find(l => l._id === id);
+      const list = leads.filter(l => l._id !== id);
       mockDB.saveLeads(list);
-      await API.adminDelete('Clients', id);
+      await API.adminDelete('Clients', target ? `${target.companyName || target.name} (${id})` : id);
     }
   },
 

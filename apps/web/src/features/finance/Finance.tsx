@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  IoAdd, 
-  IoCashOutline, 
-  IoDownloadOutline, 
-  IoEyeOutline, 
+import {
+  IoAdd,
+  IoCashOutline,
+  IoDownloadOutline,
+  IoEyeOutline,
   IoMailOutline,
   IoPrintOutline,
   IoCardOutline,
@@ -22,7 +22,7 @@ export const Finance: React.FC = () => {
   const { settings, formatCurrency, hasPermission } = useCustomization();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeTab, setActiveTab] = useState<'directory' | 'payments' | 'analytics'>('directory');
-  
+
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -35,7 +35,7 @@ export const Finance: React.FC = () => {
   const [clientEmail, setClientEmail] = useState<string>('');
   const [dueDate, setDueDate] = useState<string>('');
   const [invoiceStatus, setInvoiceStatus] = useState<Invoice['status']>('Draft');
-  
+
   // Invoice items state
   const [items, setItems] = useState<{ desc: string; qty: number; rate: number }[]>([
     { desc: 'Technical Writing SRS Spec', qty: 1, rate: 2500 }
@@ -117,7 +117,7 @@ export const Finance: React.FC = () => {
       setDueDate('');
       setInvoiceStatus('Draft');
       setItems([{ desc: 'Technical Writing SRS Spec', qty: 1, rate: 2500 }]);
-      
+
       setModalOpen(false);
       setSelectedInvoice(newInv);
       loadInvoices();
@@ -215,31 +215,28 @@ Status: ${selectedInvoice.status}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('directory')}
-          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'directory'
-              ? 'border-[#22C55E] text-[#22C55E]'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-          }`}
+          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'directory'
+            ? 'border-[#22C55E] text-[#22C55E]'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
         >
           <IoCashOutline size={14} /> Invoices Directory
         </button>
         <button
           onClick={() => setActiveTab('payments')}
-          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'payments'
-              ? 'border-[#22C55E] text-[#22C55E]'
-              : 'border-transparent text-slate-450 hover:text-slate-200'
-          }`}
+          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'payments'
+            ? 'border-[#22C55E] text-[#22C55E]'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
         >
           <IoCardOutline size={14} /> Payment History
         </button>
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'analytics'
-              ? 'border-[#22C55E] text-[#22C55E]'
-              : 'border-transparent text-slate-450 hover:text-slate-200'
-          }`}
+          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'analytics'
+            ? 'border-[#22C55E] text-[#22C55E]'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
         >
           <IoTrendingUpOutline size={14} /> Revenue Analytics
         </button>
@@ -257,18 +254,17 @@ Status: ${selectedInvoice.status}
                   <button
                     key={inv._id}
                     onClick={() => setSelectedInvoice(inv)}
-                    className={`w-full flex items-start justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      selectedInvoice?._id === inv._id 
-                        ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20 shadow-inner' 
-                        : 'bg-slate-900/40 border-slate-850 hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
-                    }`}
+                    className={`w-full flex items-start justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${selectedInvoice?._id === inv._id
+                      ? 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/20 shadow-inner'
+                      : 'bg-slate-900/40 border-slate-850 hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
+                      }`}
                   >
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-200 truncate">{inv.invoiceNumber}</h4>
-                      <p className="text-[9px] text-slate-500 font-semibold truncate mt-0.5">{inv.clientName}</p>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{inv.invoiceNumber}</h4>
+                      <p className="text-[9px] text-slate-700 dark:text-slate-400 font-semibold truncate mt-0.5">{inv.clientName}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-black text-slate-200 block">{formatCurrency(inv.total)}</span>
+                      <span className="text-xs font-black text-slate-900 dark:text-white block">{formatCurrency(inv.total)}</span>
                       {getStatusBadge(inv.status)}
                     </div>
                   </button>
@@ -288,8 +284,8 @@ Status: ${selectedInvoice.status}
                         <IoCashOutline size={20} />
                       </div>
                       <div>
-                        <h2 className="text-sm font-bold text-slate-200">{selectedInvoice.invoiceNumber}</h2>
-                        <p className="text-[9px] text-slate-500 font-semibold uppercase mt-0.5">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                        <h2 className="text-sm font-bold text-slate-900 dark:text-white">{selectedInvoice.invoiceNumber}</h2>
+                        <p className="text-[9px] text-slate-600 dark:text-slate-400 font-semibold uppercase mt-0.5">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
                       </div>
                     </div>
 
@@ -312,9 +308,9 @@ Status: ${selectedInvoice.status}
                         <IoMailOutline size={14} />
                       </button>
                       {user?.role === 'Super Admin' && (
-                        <button 
-                          onClick={() => setInvoiceToDelete(selectedInvoice)} 
-                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors" 
+                        <button
+                          onClick={() => setInvoiceToDelete(selectedInvoice)}
+                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                           title="Delete Invoice (Super Admin)"
                         >
                           <IoTrashOutline size={14} />
@@ -333,12 +329,12 @@ Status: ${selectedInvoice.status}
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
-                        <span className="text-[9px] text-slate-550 font-bold uppercase block">Bill To</span>
-                        <span className="font-bold text-white mt-1 block">{selectedInvoice.clientName}</span>
-                        <span className="text-[10px] text-slate-400 block font-mono">{selectedInvoice.clientEmail}</span>
+                        <span className="text-[9px] text-slate-600 dark:text-slate-400 font-bold uppercase block">Bill To</span>
+                        <span className="font-bold text-slate-900 dark:text-white mt-1 block">{selectedInvoice.clientName}</span>
+                        <span className="text-[10px] text-slate-600 dark:text-slate-400 block font-mono">{selectedInvoice.clientEmail}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] text-slate-550 font-bold uppercase block">Payment Status</span>
+                        <span className="text-[9px] text-slate-600 dark:text-slate-400 font-bold uppercase block">Payment Status</span>
                         <div className="mt-1">{getStatusBadge(selectedInvoice.status)}</div>
                       </div>
                     </div>
@@ -546,8 +542,8 @@ Status: ${selectedInvoice.status}
           <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Invoice Items</span>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleAddItemRow}
                 className="text-[10px] font-bold text-[#22C55E] hover:text-[#1db053] cursor-pointer"
               >
@@ -606,9 +602,9 @@ Status: ${selectedInvoice.status}
 
       {/* Printable Invoice PDF simulator */}
       {selectedInvoice && (
-        <Modal 
-          isOpen={showInvoicePdf} 
-          onClose={() => setShowInvoicePdf(false)} 
+        <Modal
+          isOpen={showInvoicePdf}
+          onClose={() => setShowInvoicePdf(false)}
           title="Printable Invoice (PDF)"
           size="lg"
         >
@@ -668,7 +664,7 @@ Status: ${selectedInvoice.status}
                   Please process payments using the secure check-out link or via bank transfer. If you have any questions, contact billing@stackpilot.com.
                 </p>
               </div>
-              
+
               <div className="space-y-1.5 w-48 text-xs text-slate-600 text-right">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
@@ -714,9 +710,9 @@ Status: ${selectedInvoice.status}
               <Button variant="secondary" onClick={() => setInvoiceToDelete(null)} className="text-xs">
                 Cancel
               </Button>
-              <Button 
-                variant="danger" 
-                onClick={handleConfirmDeleteInvoice} 
+              <Button
+                variant="danger"
+                onClick={handleConfirmDeleteInvoice}
                 className="text-xs"
               >
                 Permanently Delete Invoice

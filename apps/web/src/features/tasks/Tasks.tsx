@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, ProgressBar } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  IoAdd, 
-  IoChatbubbleOutline, 
-  IoCheckmarkDoneOutline, 
-  IoCalendarOutline, 
-  IoArrowForwardOutline, 
+import {
+  IoAdd,
+  IoChatbubbleOutline,
+  IoCheckmarkDoneOutline,
+  IoCalendarOutline,
+  IoArrowForwardOutline,
   IoArrowBackOutline,
   IoAttachOutline,
   IoTrashOutline,
@@ -25,19 +25,19 @@ export const Tasks: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-  
+
   // Modals / forms
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [inspectModalOpen, setInspectModalOpen] = useState<boolean>(false);
-  
+
   // Create Task Form
   const [taskTitle, setTaskTitle] = useState<string>('');
   const [taskDesc, setTaskDesc] = useState<string>('');
   const [taskPriority, setTaskPriority] = useState<Task['priority']>('Medium');
   const [taskDueDate, setTaskDueDate] = useState<string>('');
   const [taskLabels, setTaskLabels] = useState<string>('Engineering');
-  const [taskEstimatedTime, setTaskEstimatedTime] = useState<number>(4);
-  const [taskAssigneeId, setTaskAssigneeId] = useState<string>('1');
+  const [taskEstimatedTime, setTaskEstimatedTime] = useState<number>();
+  const [taskAssigneeId, setTaskAssigneeId] = useState<string>('001');
 
   // Grouping swimlanes
   const [groupBy, setGroupBy] = useState<'None' | 'Priority' | 'Assignee'>('None');
@@ -50,22 +50,30 @@ export const Tasks: React.FC = () => {
   const [checkText, setCheckText] = useState<string>('');
   const [attachmentName, setAttachmentName] = useState<string>('');
 
-  const members = [
-    { id: '1', name: 'Alexander Wright', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin' },
-    { id: '2', name: 'Sarah Jenkins', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sarah' },
-    { id: '3', name: 'Marcus Aurelius', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Marcus' },
-    { id: '4', name: 'Tony Soprano', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tony' },
-    { id: '5', name: 'Guillermo Rauch', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Guillermo' }
-  ];
+  const [activeMembers, setActiveMembers] = useState<{ id: string; name: string; avatar: string }[]>([]);
 
   const loadTasksAndProjects = async () => {
     try {
-      const [projs, ts] = await Promise.all([
+      const [projs, ts, users] = await Promise.all([
         API.projects.list(),
-        API.tasks.list()
+        API.tasks.list(),
+        API.auth.listUsers(true)
       ]);
       setProjects(projs);
       setTasks(ts);
+
+      const mappedUsers = users.map(u => ({
+        id: u._id,
+        name: u.name,
+        avatar: u.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.name)}`
+      }));
+
+      if (mappedUsers.length === 0) {
+        setActiveMembers([{ id: 'u-1', name: 'Super Admin', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin' }]);
+      } else {
+        setActiveMembers(mappedUsers);
+      }
+
       if (projs.length > 0 && !selectedProject) {
         setSelectedProject(projs[0]._id);
       }
@@ -295,14 +303,14 @@ export const Tasks: React.FC = () => {
   };
 
   const getMember = (id?: string) => {
-    return members.find(m => m.id === id) || { name: 'Unassigned', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Unassigned' };
+    return activeMembers.find(m => m.id === id) || activeMembers[0] || { name: 'Super Admin', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin' };
   };
 
   const renderCard = (t: Task, colKey: Task['status']) => {
     const assignee = getMember(t.assigneeId);
     return (
-      <div 
-        key={t._id} 
+      <div
+        key={t._id}
         draggable
         onDragStart={(e) => {
           e.dataTransfer.setData('text/plain', t._id);
@@ -310,7 +318,7 @@ export const Tasks: React.FC = () => {
         className="p-4 bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-[#22C55E]/40 rounded-xl space-y-3 transition-all shadow-xs cursor-grab active:cursor-grabbing hover:scale-[1.01]"
       >
         <div className="flex items-start justify-between gap-1">
-          <button 
+          <button
             onClick={() => handleInspectTask(t)}
             className="text-xs font-bold text-slate-900 dark:text-white text-left hover:text-[#22C55E] cursor-pointer line-clamp-2 truncate"
           >
@@ -356,15 +364,15 @@ export const Tasks: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <img 
-              src={assignee.avatar} 
-              alt={assignee.name} 
-              className="w-5.5 h-5.5 rounded-full border border-slate-800 bg-slate-950" 
+            <img
+              src={assignee.avatar}
+              alt={assignee.name}
+              className="w-5.5 h-5.5 rounded-full border border-slate-800 bg-slate-950"
               title={`Assigned to: ${assignee.name}`}
             />
             <div className="flex items-center gap-0.5">
               {colKey !== 'Backlog' && (
-                <button 
+                <button
                   onClick={() => handleColumnMove(t, 'backward')}
                   className="text-slate-500 hover:text-white p-0.5 bg-slate-950 border border-slate-850 rounded hover:bg-slate-800 cursor-pointer"
                 >
@@ -372,7 +380,7 @@ export const Tasks: React.FC = () => {
                 </button>
               )}
               {colKey !== 'Done' && (
-                <button 
+                <button
                   onClick={() => handleColumnMove(t, 'forward')}
                   className="text-slate-500 hover:text-white p-0.5 bg-slate-950 border border-slate-850 rounded hover:bg-slate-800 cursor-pointer"
                 >
@@ -392,8 +400,8 @@ export const Tasks: React.FC = () => {
         {columns.map((col) => {
           const colTasks = boardTasks.filter(t => t.status === col.key);
           return (
-            <div 
-              key={col.key} 
+            <div
+              key={col.key}
               onDragOver={(e) => {
                 e.preventDefault();
                 setActiveDragCol(col.key);
@@ -407,11 +415,10 @@ export const Tasks: React.FC = () => {
                   await handleCardDrop(taskId, col.key);
                 }
               }}
-              className={`glass rounded-2xl p-4 flex flex-col min-w-[240px] min-h-[460px] border transition-all duration-200 ${
-                activeDragCol === col.key
+              className={`glass rounded-2xl p-4 flex flex-col min-w-[240px] min-h-[460px] border transition-all duration-200 ${activeDragCol === col.key
                   ? 'border-[#22C55E] bg-[#22C55E]/5 shadow-lg shadow-[#22C55E]/5 scale-[1.01]'
                   : 'border-slate-800/40'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between mb-4 border-b border-slate-850 pb-2">
                 <h3 className={`text-[10px] font-black uppercase tracking-wider ${col.color.split(' ')[1]}`}>{col.title}</h3>
@@ -501,7 +508,7 @@ export const Tasks: React.FC = () => {
 
       {groupBy === 'Assignee' && (
         <div className="space-y-8">
-          {members.map(member => {
+          {activeMembers.map(member => {
             const memberTasks = filteredProjectTasks.filter(t => t.assigneeId === member.id);
             return (
               <div key={member.id} className="rounded-2xl border border-slate-850 p-4 bg-slate-900/10 space-y-3">
@@ -564,7 +571,7 @@ export const Tasks: React.FC = () => {
                 onChange={(e) => setTaskAssigneeId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none focus:border-[#22C55E]/50 cursor-pointer"
               >
-                {members.map(m => (
+                {activeMembers.map(m => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
@@ -614,9 +621,9 @@ export const Tasks: React.FC = () => {
 
       {/* Task Inspect drawer modal */}
       {selectedTask && (
-        <Modal 
-          isOpen={inspectModalOpen} 
-          onClose={() => { setInspectModalOpen(false); setSelectedTask(null); }} 
+        <Modal
+          isOpen={inspectModalOpen}
+          onClose={() => { setInspectModalOpen(false); setSelectedTask(null); }}
           title="Task Details"
           size="lg"
         >
@@ -642,12 +649,12 @@ export const Tasks: React.FC = () => {
                 </div>
 
                 {selectedTask.checklist && selectedTask.checklist.length > 0 && (
-                  <ProgressBar 
-                    value={Math.round((selectedTask.checklist.filter(i => i.done).length / selectedTask.checklist.length) * 100)} 
-                    color="bg-[#22C55E]" 
+                  <ProgressBar
+                    value={Math.round((selectedTask.checklist.filter(i => i.done).length / selectedTask.checklist.length) * 100)}
+                    color="bg-[#22C55E]"
                   />
                 )}
-                
+
                 {/* Checklist items list */}
                 <div className="space-y-2">
                   {selectedTask.checklist?.map(item => (
@@ -680,7 +687,7 @@ export const Tasks: React.FC = () => {
               {/* Attachments Section */}
               <div className="space-y-3">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800/40 pb-1.5">Attachments File Roster</h4>
-                
+
                 <div className="space-y-2">
                   {selectedTask.attachments?.map(file => (
                     <div key={file.id} className="flex items-center justify-between p-2.5 bg-slate-950/30 border border-slate-850 rounded-xl">
@@ -689,7 +696,7 @@ export const Tasks: React.FC = () => {
                         <span className="font-bold text-slate-300">{file.name}</span>
                         <span className="text-[9px] text-slate-500 font-mono">({file.size})</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => handleDeleteAttachment(file.id)}
                         className="text-slate-500 hover:text-red-400 cursor-pointer"
                       >
@@ -772,7 +779,7 @@ export const Tasks: React.FC = () => {
                     onChange={(e) => handleAssigneeChange(e.target.value)}
                     className="flex-1 bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none cursor-pointer font-bold"
                   >
-                    {members.map(m => (
+                    {activeMembers.map(m => (
                       <option key={m.id} value={m.id}>{m.name}</option>
                     ))}
                   </select>
@@ -812,17 +819,6 @@ export const Tasks: React.FC = () => {
                 </div>
               )}
 
-              <div>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Labels</span>
-                <div className="flex flex-wrap gap-1">
-                  {selectedTask.labels?.map(l => (
-                    <span key={l} className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-[8px] text-slate-350 font-bold rounded">
-                      {l}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
               {/* Simulated Activity Log */}
               <div className="space-y-2 border-t border-slate-850 pt-4">
                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Activity Log</span>
@@ -844,8 +840,8 @@ export const Tasks: React.FC = () => {
 
               {user?.role === 'Super Admin' && (
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-end">
-                  <Button 
-                    variant="danger" 
+                  <Button
+                    variant="danger"
                     onClick={() => setTaskToDelete(selectedTask)}
                     className="text-xs flex items-center gap-1"
                   >
@@ -874,14 +870,14 @@ export const Tasks: React.FC = () => {
               <Button variant="secondary" onClick={() => setTaskToDelete(null)} className="text-xs">
                 Cancel
               </Button>
-              <Button 
-                variant="danger" 
+              <Button
+                variant="danger"
                 onClick={async () => {
                   await API.tasks.delete(taskToDelete._id);
                   setTaskToDelete(null);
                   setInspectModalOpen(false);
                   loadTasksAndProjects();
-                }} 
+                }}
                 className="text-xs"
               >
                 Permanently Delete

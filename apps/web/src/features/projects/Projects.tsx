@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, ProgressBar, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  IoAdd, 
-  IoCalendarOutline, 
-  IoArrowBackOutline, 
-  IoDocumentTextOutline, 
-  IoCheckmarkCircleOutline, 
+import {
+  IoAdd,
+  IoCalendarOutline,
+  IoArrowBackOutline,
+  IoDocumentTextOutline,
+  IoCheckmarkCircleOutline,
   IoCloseCircleOutline,
   IoCodeOutline,
   IoSparklesOutline,
@@ -27,7 +27,7 @@ export const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'overview' | 'tasks' | 'documents' | 'testing' | 'deliverables' | 'ai' | 'timeline'>('overview');
-  
+
   const [hoveredProject, setHoveredProject] = useState<Project | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -37,7 +37,7 @@ export const Projects: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Medium');
-  const [budget, setBudget] = useState<number>(50000);
+  const [budget, setBudget] = useState<number>();
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [client, setClient] = useState<string>('');
@@ -47,14 +47,24 @@ export const Projects: React.FC = () => {
   const [aiOutput, setAiOutput] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
 
+  // Active Clients list for Project Creation
+  const [activeClients, setActiveClients] = useState<any[]>([]);
+  const [showAddClientModal, setShowAddClientModal] = useState<boolean>(false);
+  const [newClientName, setNewClientName] = useState<string>('');
+  const [newClientCompany, setNewClientCompany] = useState<string>('');
+  const [newClientEmail, setNewClientEmail] = useState<string>('');
+  const [newClientPhone, setNewClientPhone] = useState<string>('');
+
   const loadProjectsAndTasks = async () => {
     try {
-      const [projectList, taskList] = await Promise.all([
+      const [projectList, taskList, clientList] = await Promise.all([
         API.projects.list(),
-        API.tasks.list()
+        API.tasks.list(),
+        API.crm.listLeads()
       ]);
       setProjects(projectList);
       setTasks(taskList);
+      setActiveClients(clientList.filter(c => c.status !== 'Archived'));
     } catch (err) {
       console.error(err);
     }
@@ -93,7 +103,7 @@ export const Projects: React.FC = () => {
       setStartDate('');
       setEndDate('');
       setClient('');
-      
+
       setModalOpen(false);
       loadProjectsAndTasks();
     } catch (err) {
@@ -180,8 +190,8 @@ Specifications summary successfully mapped to requirements directory.`);
             {projects.map((p) => {
               const percentSpent = p.budget > 0 ? Math.round((p.spent / p.budget) * 100) : 0;
               return (
-                <Card 
-                  key={p._id} 
+                <Card
+                  key={p._id}
                   onClick={() => setSelectedProject(p)}
                   className="flex flex-col justify-between h-[300px] cursor-pointer hover:border-[#22C55E]/40 transition-all hover:scale-[1.01]"
                 >
@@ -257,7 +267,7 @@ Specifications summary successfully mapped to requirements directory.`);
                   <div key={p._id} className="grid grid-cols-12 items-center text-xs">
                     <span className="col-span-3 text-slate-900 dark:text-slate-300 font-semibold truncate">{p.name}</span>
                     <div className="col-span-9 grid grid-cols-9 h-6 relative bg-slate-100 dark:bg-slate-900/40 rounded-lg overflow-hidden">
-                      <div 
+                      <div
                         className="h-full rounded-md bg-gradient-to-r from-[#22C55E]/25 to-[#22C55E] border-l-2 border-[#22C55E] shadow-sm flex items-center px-3 cursor-pointer hover:brightness-110 transition-all"
                         style={{ gridColumnStart: startCol, gridColumnEnd: startCol + widthCols }}
                         onMouseEnter={(e) => {
@@ -285,7 +295,7 @@ Specifications summary successfully mapped to requirements directory.`);
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => setSelectedProject(null)}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-all"
               >
@@ -349,11 +359,10 @@ Specifications summary successfully mapped to requirements directory.`);
                   <button
                     key={tab.key}
                     onClick={() => setActiveWorkspaceTab(tab.key as any)}
-                    className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                      activeWorkspaceTab === tab.key 
-                        ? 'border-[#22C55E] text-[#22C55E] bg-[#22C55E]/5' 
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeWorkspaceTab === tab.key
+                        ? 'border-[#22C55E] text-[#22C55E] bg-[#22C55E]/5'
                         : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     {tab.icon}
                     <span>{tab.label}</span>
@@ -409,7 +418,7 @@ Specifications summary successfully mapped to requirements directory.`);
               {activeWorkspaceTab === 'tasks' && (
                 <Card>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Workspace Task Registry</h3>
-                  
+
                   {projectTasks.length === 0 ? (
                     <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6">No tasks registered for this project.</p>
                   ) : (
@@ -529,14 +538,14 @@ Specifications summary successfully mapped to requirements directory.`);
                   </div>
 
                   <div className="space-y-3">
-                    <input 
+                    <input
                       type="text"
                       placeholder="e.g. Generate software skeleton for React hooks telemetry"
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
                       className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
                     />
-                    <Button 
+                    <Button
                       onClick={handleAiGenerate}
                       loading={aiLoading}
                       className="text-xs bg-[#22C55E] hover:bg-[#1db053] text-white"
@@ -620,15 +629,30 @@ Specifications summary successfully mapped to requirements directory.`);
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase">Client Name</label>
-              <input
-                type="text"
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Client</label>
+                <button
+                  type="button"
+                  onClick={() => setShowAddClientModal(true)}
+                  className="text-[10px] font-bold text-[#22C55E] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  + Add New Client
+                </button>
+              </div>
+              <select
                 required
-                placeholder="Vercel Inc."
                 value={client}
                 onChange={(e) => setClient(e.target.value)}
-                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
-              />
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E] cursor-pointer"
+              >
+                <option value="">Select a Client...</option>
+                <option value="Internal">Internal Development</option>
+                {activeClients.map((c) => (
+                  <option key={c._id} value={c.companyName || c.name}>
+                    {c.companyName || c.name} ({c.email})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -693,19 +717,109 @@ Specifications summary successfully mapped to requirements directory.`);
               <Button variant="secondary" onClick={() => setProjectToDelete(null)} className="text-xs">
                 Cancel
               </Button>
-              <Button 
-                variant="danger" 
+              <Button
+                variant="danger"
                 onClick={async () => {
                   await API.projects.delete(projectToDelete._id);
                   setProjectToDelete(null);
                   loadProjectsAndTasks();
-                }} 
+                }}
                 className="text-xs"
               >
                 Permanently Delete
               </Button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Inline Create Client Modal */}
+      {showAddClientModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowAddClientModal(false)}
+          title="Add New Client Account"
+          size="md"
+        >
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!newClientName) return;
+              try {
+                const created = await API.crm.createLead({
+                  name: newClientName,
+                  companyName: newClientCompany || newClientName,
+                  email: newClientEmail || `${newClientName.toLowerCase().replace(/\s+/g, '')}@client.com`,
+                  phone: newClientPhone,
+                  status: 'Active',
+                  value: 100000
+                });
+                const updatedClients = await API.crm.listLeads();
+                setActiveClients(updatedClients.filter(c => c.status !== 'Archived'));
+                setClient(created.companyName || created.name);
+                setNewClientName('');
+                setNewClientCompany('');
+                setNewClientEmail('');
+                setNewClientPhone('');
+                setShowAddClientModal(false);
+              } catch (err) {
+                console.error(err);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Contact Name</label>
+              <input
+                type="text"
+                required
+                placeholder="Jane Doe"
+                value={newClientName}
+                onChange={(e) => setNewClientName(e.target.value)}
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Company Name</label>
+              <input
+                type="text"
+                placeholder="Acme Corp"
+                value={newClientCompany}
+                onChange={(e) => setNewClientCompany(e.target.value)}
+                className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Email</label>
+                <input
+                  type="email"
+                  placeholder="jane@acme.com"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Phone</label>
+                <input
+                  type="text"
+                  placeholder="+1 (555) 019-2834"
+                  value={newClientPhone}
+                  onChange={(e) => setNewClientPhone(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:border-[#22C55E]"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <Button type="button" variant="secondary" onClick={() => setShowAddClientModal(false)} className="text-xs">
+                Cancel
+              </Button>
+              <Button type="submit" className="text-xs bg-[#22C55E] hover:bg-[#1db053] text-white">
+                Save & Select Client
+              </Button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

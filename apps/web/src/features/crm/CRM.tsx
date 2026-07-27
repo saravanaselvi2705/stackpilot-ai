@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal } from '../../components/UI';
 import { useCustomization } from '../../context/CustomizationContext';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  IoAdd, 
-  IoMailOutline, 
-  IoCallOutline, 
-  IoBusinessOutline, 
+import {
+  IoAdd,
+  IoMailOutline,
+  IoCallOutline,
+  IoBusinessOutline,
   IoArrowBackOutline,
   IoFolderOpenOutline,
   IoDocumentTextOutline,
@@ -29,7 +29,7 @@ export const CRM: React.FC = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'info' | 'projects' | 'documents' | 'meetings' | 'billing' | 'timeline'>('info');
-  
+
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -38,11 +38,11 @@ export const CRM: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
-  const [value, setValue] = useState<number>(120000);
+  const [value, setValue] = useState<number>();
   const [status, setStatus] = useState<'Lead' | 'Active' | 'Inactive'>('Active');
-  const [tags, setTags] = useState<string>('Enterprise, Key Client');
+  const [tags, setTags] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
-  const [address, setAddress] = useState<string>('100 Vercel Way, San Francisco, CA');
+  const [address, setAddress] = useState<string>('');
 
   const loadClientsAndProjects = async () => {
     try {
@@ -95,7 +95,7 @@ export const CRM: React.FC = () => {
       setTags('Enterprise, Key Client');
       setNotes('');
       setAddress('100 Vercel Way, San Francisco, CA');
-      
+
       setModalOpen(false);
       loadClientsAndProjects();
     } catch (err) {
@@ -132,11 +132,11 @@ export const CRM: React.FC = () => {
   };
 
   // Filter projects associated with the selected client
-  const clientProjects = selectedClient 
-    ? projects.filter(p => 
-        p.client?.toLowerCase().includes(selectedClient.companyName?.toLowerCase() || '') ||
-        selectedClient.companyName?.toLowerCase().includes(p.client?.toLowerCase() || '')
-      )
+  const clientProjects = selectedClient
+    ? projects.filter(p =>
+      p.client?.toLowerCase().includes(selectedClient.companyName?.toLowerCase() || '') ||
+      selectedClient.companyName?.toLowerCase().includes(p.client?.toLowerCase() || '')
+    )
     : [];
 
   return (
@@ -162,7 +162,7 @@ export const CRM: React.FC = () => {
             {['Active', 'Lead', 'Inactive'].map((stageKey) => {
               const stageClients = clients.filter(c => c.status === stageKey);
               const stageTotalValue = stageClients.reduce((acc, curr) => acc + (curr.value || 0), 0);
-              
+
               return (
                 <div key={stageKey} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 flex flex-col min-h-[350px]">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
@@ -180,8 +180,8 @@ export const CRM: React.FC = () => {
                       <div className="text-center py-10 text-[10px] text-slate-500 dark:text-slate-400">No accounts in this phase</div>
                     ) : (
                       stageClients.map((c) => (
-                        <div 
-                          key={c._id} 
+                        <div
+                          key={c._id}
                           onClick={() => setSelectedClient(c)}
                           className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 hover:border-[#22C55E]/40 rounded-xl space-y-3 transition-all cursor-pointer hover:scale-[1.01]"
                         >
@@ -246,8 +246,8 @@ export const CRM: React.FC = () => {
                 </thead>
                 <tbody>
                   {clients.map((c) => (
-                    <tr 
-                      key={c._id} 
+                    <tr
+                      key={c._id}
                       onClick={() => setSelectedClient(c)}
                       className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 text-slate-700 dark:text-slate-300 cursor-pointer"
                     >
@@ -274,7 +274,7 @@ export const CRM: React.FC = () => {
           {/* Workspace Back Button & Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => setSelectedClient(null)}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-all"
               >
@@ -285,7 +285,7 @@ export const CRM: React.FC = () => {
                 <h1 className="text-2xl font-black text-slate-900 dark:text-white font-display mt-0.5">{selectedClient.companyName || selectedClient.name}</h1>
               </div>
             </div>
-            
+
             {/* Quick Actions for Selected Client */}
             <div className="flex items-center gap-2">
               <Badge variant={selectedClient.status === 'Active' ? 'success' : selectedClient.status === 'Lead' ? 'primary' : 'secondary'}>
@@ -302,10 +302,10 @@ export const CRM: React.FC = () => {
                 </Button>
               )}
               {user?.role === 'Super Admin' && (
-                <Button 
-                  onClick={() => setClientToDelete(selectedClient)} 
-                  variant="danger" 
-                  size="sm" 
+                <Button
+                  onClick={() => setClientToDelete(selectedClient)}
+                  variant="danger"
+                  size="sm"
                   className="text-[10px] flex items-center gap-1"
                 >
                   <IoTrashOutline size={12} /> Delete Client
@@ -374,11 +374,10 @@ export const CRM: React.FC = () => {
                   <button
                     key={t.key}
                     onClick={() => setActiveWorkspaceTab(t.key as any)}
-                    className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                      activeWorkspaceTab === t.key 
-                        ? 'border-[#22C55E] text-[#22C55E] bg-[#22C55E]/5' 
-                        : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeWorkspaceTab === t.key
+                      ? 'border-[#22C55E] text-[#22C55E] bg-[#22C55E]/5'
+                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
                   >
                     {t.icon}
                     <span>{t.label}</span>
@@ -517,7 +516,7 @@ export const CRM: React.FC = () => {
                   {/* Meetings Minutes */}
                   <Card>
                     <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Meeting Minutes & AI Summaries</h3>
-                    
+
                     <div className="space-y-4">
                       <div className="p-4 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/20 rounded-xl space-y-2">
                         <div className="flex items-center justify-between text-xs">
@@ -538,7 +537,7 @@ export const CRM: React.FC = () => {
                   {/* Deliveries Status */}
                   <Card>
                     <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Delivery Reports</h3>
-                    
+
                     <div className="space-y-3 text-xs">
                       <div className="grid grid-cols-2 gap-4 border-b border-slate-200 dark:border-slate-800 pb-3">
                         <div>
@@ -595,7 +594,7 @@ export const CRM: React.FC = () => {
               {activeWorkspaceTab === 'timeline' && (
                 <Card>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider mb-6 border-b border-slate-200 dark:border-slate-800 pb-2">Chronological Activity History</h3>
-                  
+
                   <div className="space-y-6 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
                     {[
                       { icon: <IoShieldCheckmarkOutline size={12} />, title: 'Phase 1 Signed Off', desc: 'Client executive reviewed and signed the acceptance report.', date: 'Jul 15, 2026' },
@@ -759,9 +758,9 @@ export const CRM: React.FC = () => {
               <Button variant="secondary" onClick={() => setClientToDelete(null)} className="text-xs">
                 Cancel
               </Button>
-              <Button 
-                variant="danger" 
-                onClick={handleConfirmDeleteClient} 
+              <Button
+                variant="danger"
+                onClick={handleConfirmDeleteClient}
                 className="text-xs"
               >
                 Permanently Delete Client
