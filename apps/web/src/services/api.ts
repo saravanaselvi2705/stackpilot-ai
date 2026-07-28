@@ -26,7 +26,217 @@ const DEFAULT_USERS: User[] = [
 ];
 
 const DEFAULT_PROJECTS: Project[] = [];
-const DEFAULT_TASKS: Task[] = [];
+const DEFAULT_TASKS: Task[] = [
+  {
+    _id: 't-101',
+    taskId: 'SP-101',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'CRM Dashboard Analytics Enhancements',
+    description: 'Enhance the analytics dashboard with real-time charts and lead conversion rate telemetry.',
+    status: 'In Progress',
+    priority: 'High',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    reporterId: 'u-1',
+    reporterName: 'Super Admin',
+    sprint: 'Sprint 14',
+    dueDate: '2026-08-05',
+    checklist: [
+      { id: 'chk-1', text: 'Build SVG chart renderer component', done: true },
+      { id: 'chk-2', text: 'Connect real-time websocket endpoint', done: true },
+      { id: 'chk-3', text: 'Write integration unit test suite', done: false }
+    ],
+    comments: [
+      {
+        id: 'c-1',
+        userId: 'u-1',
+        userName: 'Super Admin',
+        userAvatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin',
+        text: 'Initial wireframes for the dashboard charts look great! Make sure to support dark mode colors.',
+        createdAt: '2026-07-27T10:30:00Z'
+      }
+    ],
+    attachments: [
+      {
+        id: 'att-1',
+        name: 'Dashboard_Telemetry_Spec.pdf',
+        url: '#',
+        size: '2.4 MB',
+        type: 'pdf',
+        createdAt: '2026-07-26T14:20:00Z'
+      }
+    ],
+    activity: [
+      { id: 'act-1', type: 'created', user: 'Super Admin', text: 'Created task SP-101', timestamp: '2026-07-26T14:00:00Z' },
+      { id: 'act-2', type: 'status_changed', user: 'Super Admin', text: 'Changed status from Todo to In Progress', timestamp: '2026-07-27T09:15:00Z' }
+    ],
+    estimatedTime: 12,
+    loggedTime: 6,
+    createdAt: '2026-07-26T14:00:00Z',
+    updatedAt: '2026-07-28T08:00:00Z'
+  },
+  {
+    _id: 't-102',
+    taskId: 'SP-102',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'OAuth 2.0 Single Sign-On Authentication',
+    description: 'Implement SAML and Google SSO authentication strategy for enterprise clients.',
+    status: 'Todo',
+    priority: 'Critical',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    reporterId: 'u-1',
+    reporterName: 'Super Admin',
+    sprint: 'Sprint 15',
+    dueDate: '2026-08-12',
+    checklist: [
+      { id: 'chk-10', text: 'Configure Google Developer Console credentials', done: true },
+      { id: 'chk-11', text: 'Implement JWT refresh token strategy', done: false }
+    ],
+    comments: [],
+    attachments: [],
+    activity: [
+      { id: 'act-10', type: 'created', user: 'Super Admin', text: 'Created task SP-102', timestamp: '2026-07-27T11:00:00Z' }
+    ],
+    estimatedTime: 16,
+    loggedTime: 2,
+    createdAt: '2026-07-27T11:00:00Z',
+    updatedAt: '2026-07-27T11:00:00Z'
+  },
+  {
+    _id: 't-103',
+    taskId: 'SP-103',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'Mobile Responsive Layout Refactoring',
+    description: 'Ensure Kanban board and workspace drawers scale cleanly on mobile viewports.',
+    status: 'In Review',
+    priority: 'High',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    sprint: 'Sprint 14',
+    dueDate: '2026-07-30',
+    checklist: [
+      { id: 'chk-20', text: 'Test viewport breakpoints from 320px to 1024px', done: true },
+      { id: 'chk-21', text: 'Verify horizontal scroll containers', done: true }
+    ],
+    comments: [],
+    attachments: [],
+    activity: [],
+    estimatedTime: 8,
+    loggedTime: 7.5,
+    createdAt: '2026-07-25T09:00:00Z',
+    updatedAt: '2026-07-28T10:00:00Z'
+  },
+  {
+    _id: 't-104',
+    taskId: 'SP-104',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'Stripe Webhook Payment Gateway Integration',
+    description: 'Handle recurring subscription invoices and failed payment webhooks securely.',
+    status: 'Done',
+    priority: 'High',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    sprint: 'Sprint 13',
+    dueDate: '2026-07-24',
+    checklist: [
+      { id: 'chk-30', text: 'Setup webhook listener', done: true },
+      { id: 'chk-31', text: 'Verify signature verification', done: true }
+    ],
+    comments: [],
+    attachments: [],
+    activity: [],
+    estimatedTime: 10,
+    loggedTime: 10,
+    createdAt: '2026-07-20T10:00:00Z',
+    updatedAt: '2026-07-24T16:00:00Z'
+  },
+  {
+    _id: 't-105',
+    taskId: 'SP-105',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'GraphQL API Schema Migration',
+    description: 'Prepare GraphQL schema migration definitions for backend query optimization.',
+    status: 'Backlog',
+    priority: 'Low',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    sprint: 'Sprint 16',
+    dueDate: '2026-08-20',
+    checklist: [],
+    comments: [],
+    attachments: [],
+    activity: [],
+    estimatedTime: 14,
+    loggedTime: 0,
+    createdAt: '2026-07-28T09:00:00Z',
+    updatedAt: '2026-07-28T09:00:00Z'
+  },
+  {
+    _id: 't-106',
+    taskId: 'SP-106',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'Third-party SMS Gateway API Key Provisioning',
+    description: 'Awaiting vendor API credentials and compliance verification before implementation.',
+    status: 'Blocked',
+    priority: 'Critical',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    sprint: 'Sprint 14',
+    dueDate: '2026-08-01',
+    checklist: [
+      { id: 'chk-40', text: 'Submit vendor verification paperwork', done: true },
+      { id: 'chk-41', text: 'Receive production API key', done: false }
+    ],
+    comments: [
+      {
+        id: 'c-5',
+        userId: 'u-1',
+        userName: 'Super Admin',
+        text: 'Blocked pending carrier approval response.',
+        createdAt: '2026-07-28T08:30:00Z'
+      }
+    ],
+    attachments: [],
+    activity: [
+      { id: 'act-40', type: 'status_changed', user: 'Super Admin', text: 'Moved task status to Blocked', timestamp: '2026-07-28T08:30:00Z' }
+    ],
+    estimatedTime: 6,
+    loggedTime: 2,
+    createdAt: '2026-07-26T15:00:00Z',
+    updatedAt: '2026-07-28T08:30:00Z'
+  },
+  {
+    _id: 't-107',
+    taskId: 'SP-107',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    title: 'Legacy FTP Data Ingestion Service',
+    description: 'Task deprecated as client transitioned to S3 direct upload workflow.',
+    status: 'Cancelled',
+    priority: 'Low',
+    assigneeId: 'u-1',
+    assigneeName: 'Super Admin',
+    sprint: 'Sprint 12',
+    dueDate: '2026-07-15',
+    checklist: [],
+    comments: [],
+    attachments: [],
+    activity: [
+      { id: 'act-50', type: 'status_changed', user: 'Super Admin', text: 'Cancelled task due to requirement change', timestamp: '2026-07-15T10:00:00Z' }
+    ],
+    estimatedTime: 8,
+    loggedTime: 1,
+    createdAt: '2026-07-10T12:00:00Z',
+    updatedAt: '2026-07-15T10:00:00Z'
+  }
+];
 const DEFAULT_LEADS: Client[] = [];
 const DEFAULT_INVOICES: Invoice[] = [];
 const DEFAULT_SEO_REPORTS: SEOReport[] = [];
@@ -38,12 +248,12 @@ const DEFAULT_PRESENTATION_REQUESTS: PresentationRequest[] = [];
 class LocalDatabase {
   private get<T>(key: string, defaults: T[]): T[] {
     const data = localStorage.getItem(`sp_${key}`);
-    if (!data) {
+    if (!data || (JSON.parse(data).length === 0 && (key === 'tasks' || key === 'users'))) {
       if (localStorage.getItem('sp_demo_mode') === null) {
         localStorage.setItem('sp_demo_mode', 'false');
       }
       const isDemoMode = localStorage.getItem('sp_demo_mode') === 'true';
-      const actualDefaults = (isDemoMode || key === 'users') ? defaults : [];
+      const actualDefaults = (isDemoMode || key === 'users' || key === 'tasks') ? defaults : [];
       localStorage.setItem(`sp_${key}`, JSON.stringify(actualDefaults));
       return actualDefaults;
     }
@@ -416,25 +626,60 @@ export const API = {
       } catch { }
 
       const tasks = mockDB.getTasks();
+      const cachedUser = localStorage.getItem('stackpilot_user');
+      const u = cachedUser ? JSON.parse(cachedUser) : { _id: 'u-1', name: 'Super Admin' };
+      const nextNum = 100 + tasks.length + 1;
+      const taskIdStr = t.taskId || `SP-${nextNum}`;
+
       const newTask: Task = {
         _id: `t-${Date.now()}`,
+        taskId: taskIdStr,
         projectId: t.projectId || 'p-1',
+        projectName: t.projectName || 'StackPilot SaaS',
         title: t.title || 'New Task',
         description: t.description || '',
         status: t.status || 'Todo',
         priority: t.priority || 'Medium',
-        assigneeId: t.assigneeId,
-        dueDate: t.dueDate,
-        labels: t.labels || [],
-        checklist: [],
-        comments: [],
-        attachments: [],
-        estimatedTime: t.estimatedTime || 0,
-        createdAt: new Date().toISOString()
+        assigneeId: t.assigneeId || u._id,
+        assigneeName: t.assigneeName || u.name,
+        reporterId: t.reporterId || u._id,
+        reporterName: t.reporterName || u.name,
+        sprint: t.sprint || 'Sprint 14',
+        dueDate: t.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        labels: [],
+        checklist: t.checklist || [],
+        comments: t.comments || [],
+        attachments: t.attachments || [],
+        activity: [
+          {
+            id: `act-${Date.now()}`,
+            type: 'created',
+            user: u.name,
+            text: `Created task ${taskIdStr}`,
+            timestamp: new Date().toISOString()
+          }
+        ],
+        estimatedTime: t.estimatedTime || 4,
+        loggedTime: t.loggedTime || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       tasks.push(newTask);
       mockDB.saveTasks(tasks);
+
+      // Log system activity
+      const acts = mockDB.getActivities();
+      acts.unshift({
+        _id: `act-${Date.now()}`,
+        userId: u._id,
+        userName: u.name,
+        userRole: u.role || 'Super Admin',
+        action: 'Create Task',
+        details: `Created task "${newTask.title}" (${newTask.taskId}) in ${newTask.status}`,
+        createdAt: new Date().toISOString()
+      });
+      mockDB.saveActivities(acts);
 
       return newTask;
     },
@@ -452,28 +697,109 @@ export const API = {
       if (idx === -1) throw new Error('Task not found');
 
       const oldTask = tasks[idx];
-      const updated = { ...oldTask, ...updates };
+      const cachedUser = localStorage.getItem('stackpilot_user');
+      const u = cachedUser ? JSON.parse(cachedUser) : { _id: 'u-1', name: 'Super Admin', role: 'Super Admin' };
+
+      // Build activity timeline log
+      const newActivity = [...(oldTask.activity || [])];
+
+      if (updates.status && updates.status !== oldTask.status) {
+        newActivity.unshift({
+          id: `act-${Date.now()}-status`,
+          type: 'status_changed',
+          user: u.name,
+          text: `Status changed from ${oldTask.status} to ${updates.status}`,
+          timestamp: new Date().toISOString()
+        });
+
+        // Also add system log
+        const acts = mockDB.getActivities();
+        acts.unshift({
+          _id: `act-${Date.now()}`,
+          userId: u._id,
+          userName: u.name,
+          userRole: u.role,
+          action: 'Move Task',
+          details: `Moved task "${oldTask.title}" (${oldTask.taskId || oldTask._id}) from ${oldTask.status} to ${updates.status}`,
+          createdAt: new Date().toISOString()
+        });
+        mockDB.saveActivities(acts);
+      }
+
+      if (updates.assigneeId && updates.assigneeId !== oldTask.assigneeId) {
+        const users = mockDB.getUsers();
+        const assigneeUser = users.find(usr => usr._id === updates.assigneeId);
+        const assigneeNameStr = assigneeUser ? assigneeUser.name : updates.assigneeName || updates.assigneeId;
+        newActivity.unshift({
+          id: `act-${Date.now()}-assignee`,
+          type: 'assignee_changed',
+          user: u.name,
+          text: `Assignee changed to ${assigneeNameStr}`,
+          timestamp: new Date().toISOString()
+        });
+        updates.assigneeName = assigneeNameStr;
+      }
+
+      if (updates.priority && updates.priority !== oldTask.priority) {
+        newActivity.unshift({
+          id: `act-${Date.now()}-priority`,
+          type: 'priority_changed',
+          user: u.name,
+          text: `Priority changed from ${oldTask.priority} to ${updates.priority}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (updates.attachments && updates.attachments.length > (oldTask.attachments?.length || 0)) {
+        const latestAtt = updates.attachments[updates.attachments.length - 1];
+        newActivity.unshift({
+          id: `act-${Date.now()}-att`,
+          type: 'attachment_added',
+          user: u.name,
+          text: `Attached file "${latestAtt.name}"`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (updates.checklist && updates.checklist.length !== (oldTask.checklist?.length || 0)) {
+        newActivity.unshift({
+          id: `act-${Date.now()}-check`,
+          type: 'checklist_updated',
+          user: u.name,
+          text: `Updated checklist items`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (updates.comments && updates.comments.length > (oldTask.comments?.length || 0)) {
+        newActivity.unshift({
+          id: `act-${Date.now()}-comment`,
+          type: 'comment_added',
+          user: u.name,
+          text: `Added a new comment`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (updates.loggedTime !== undefined && updates.loggedTime !== oldTask.loggedTime) {
+        newActivity.unshift({
+          id: `act-${Date.now()}-time`,
+          type: 'time_logged',
+          user: u.name,
+          text: `Logged time updated to ${updates.loggedTime}h`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      const updated: Task = {
+        ...oldTask,
+        ...updates,
+        activity: newActivity,
+        updatedAt: new Date().toISOString()
+      };
+
       tasks[idx] = updated;
       mockDB.saveTasks(tasks);
-
-      // Log status changes
-      if (updates.status && updates.status !== oldTask.status) {
-        const cachedUser = localStorage.getItem('stackpilot_user');
-        if (cachedUser) {
-          const u = JSON.parse(cachedUser);
-          const acts = mockDB.getActivities();
-          acts.unshift({
-            _id: `act-${Date.now()}`,
-            userId: u._id,
-            userName: u.name,
-            userRole: u.role,
-            action: 'Move Task',
-            details: `Moved task "${updated.title}" from ${oldTask.status} to ${updated.status}`,
-            createdAt: new Date().toISOString()
-          });
-          mockDB.saveActivities(acts);
-        }
-      }
 
       return updated;
     },

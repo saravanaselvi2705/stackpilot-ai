@@ -67,21 +67,66 @@ export interface Project {
   createdAt: string;
 }
 
+export interface TaskActivity {
+  id: string;
+  type: 'created' | 'status_changed' | 'assignee_changed' | 'priority_changed' | 'attachment_added' | 'checklist_updated' | 'comment_added' | 'time_logged';
+  user: string;
+  userAvatar?: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  url: string;
+  size: string;
+  type?: 'image' | 'pdf' | 'docx' | 'excel' | 'zip' | 'other';
+  createdAt: string;
+}
+
+export interface TaskChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface TaskComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  text: string;
+  createdAt: string;
+  attachments?: TaskAttachment[];
+}
+
 export interface Task {
   _id: string;
+  taskId?: string; // e.g. "SP-101"
   projectId: string;
+  projectName?: string;
   title: string;
   description?: string;
-  status: 'Backlog' | 'Todo' | 'In Progress' | 'In Review' | 'Done';
+  status: 'Backlog' | 'Todo' | 'In Progress' | 'In Review' | 'Done' | 'Blocked' | 'Cancelled';
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   assigneeId?: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  reporterId?: string;
+  reporterName?: string;
+  reporterAvatar?: string;
+  sprint?: string;
   dueDate?: string;
   labels?: string[];
-  checklist?: { id: string; text: string; done: boolean }[];
-  comments?: { id: string; userId: string; userName: string; userAvatar?: string; text: string; createdAt: string }[];
-  attachments?: { id: string; name: string; url: string; size: string; createdAt: string }[];
-  estimatedTime?: number;
+  checklist?: TaskChecklistItem[];
+  comments?: TaskComment[];
+  attachments?: TaskAttachment[];
+  activity?: TaskActivity[];
+  estimatedTime?: number; // Estimated hours
+  loggedTime?: number; // Logged hours
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Meeting {
