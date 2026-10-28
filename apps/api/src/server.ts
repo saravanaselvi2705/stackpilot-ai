@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { authenticateJWT } from './middleware/auth';
-import { helmetSecurity, sanitizeInputs, rateLimiter, errorHandler } from './middleware/security';
+import { helmetSecurity, sanitizeInputs, rateLimiter, errorHandler, corsOptions } from './middleware/security';
 import * as ctrl from './controllers';
 import apiRoutes from './routes';
 import { seedDatabase } from './utils/seed';
@@ -19,17 +19,13 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stackp
 app.use(helmetSecurity);
 app.use(rateLimiter({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(sanitizeInputs);
-
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Serve static file uploads (avatars)
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Serve static presentation and download assets
+app.use('/assets', express.static(path.join(process.cwd(), 'public/assets')));
 
 // Modular API Router
 app.use('/api', apiRoutes);
@@ -63,8 +59,11 @@ app.get('/api/seo/reports', authenticateJWT, ctrl.getSEOReport);
 
 // AI routes
 app.post('/api/ai/requirements', authenticateJWT, ctrl.aiGenerateRequirements);
-app.post('/api/ai/testcases', authenticateJWT, ctrl.aiGenerateTestCases);
 app.post('/api/ai/bugreport', authenticateJWT, ctrl.aiGenerateBugReport);
+
+// Presentation Request route
+app.post('/api/presentation-requests', ctrl.createPresentationRequest);
+
 
 // Centralized error handler
 app.use(errorHandler);

@@ -67,9 +67,61 @@ export interface Project {
   createdAt: string;
 }
 
+export type SprintStatus = 'Planning' | 'Active' | 'Completed' | 'Archived';
+
+export interface Sprint {
+  _id: string;
+  id?: string;
+  projectId: string;
+  projectName?: string;
+  name: string;
+  goal: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  status: SprintStatus;
+  capacity: number;
+  storyPoints?: number;
+  velocity?: number;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SprintReport {
+  sprintId: string;
+  sprintName: string;
+  projectName: string;
+  totalTasks: number;
+  completedTasks: number;
+  carryForwardTasks: number;
+  blockedTasks: number;
+  totalStoryPoints: number;
+  completedStoryPoints: number;
+  velocity: number;
+  capacity: number;
+  burndown: { day: string; remainingPoints: number; idealPoints: number }[];
+  burnup: { day: string; completedPoints: number; totalPoints: number }[];
+  teamPerformance: { name: string; avatar?: string; assigned: number; completed: number; points: number }[];
+}
+
+export interface Release {
+  _id: string;
+  projectId: string;
+  projectName?: string;
+  version: string;
+  sprintId?: string;
+  sprintName?: string;
+  releaseNotes: string;
+  releaseDate: string;
+  status: 'Planned' | 'In Progress' | 'Deployed' | 'Rolled Back';
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface TaskActivity {
   id: string;
-  type: 'created' | 'status_changed' | 'assignee_changed' | 'priority_changed' | 'attachment_added' | 'checklist_updated' | 'comment_added' | 'time_logged';
+  type: 'created' | 'status_changed' | 'assignee_changed' | 'priority_changed' | 'attachment_added' | 'checklist_updated' | 'comment_added' | 'time_logged' | 'sprint_changed';
   user: string;
   userAvatar?: string;
   text: string;
@@ -101,30 +153,38 @@ export interface TaskComment {
   attachments?: TaskAttachment[];
 }
 
+export type TaskStatus = 'Backlog' | 'Todo' | 'In Progress' | 'In Review' | 'Done' | 'Blocked' | 'Cancelled';
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+
 export interface Task {
   _id: string;
   taskId?: string; // e.g. "SP-101"
   projectId: string;
   projectName?: string;
+  sprintId?: string;
+  sprintName?: string;
+  sprint?: string; // legacy support
+  epicId?: string;
   title: string;
   description?: string;
-  status: 'Backlog' | 'Todo' | 'In Progress' | 'In Review' | 'Done' | 'Blocked' | 'Cancelled';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  status: TaskStatus;
+  priority: TaskPriority;
   assigneeId?: string;
   assigneeName?: string;
   assigneeAvatar?: string;
   reporterId?: string;
   reporterName?: string;
   reporterAvatar?: string;
-  sprint?: string;
   dueDate?: string;
+  storyPoints?: number;
+  estimatedTime?: number; // Estimated hours
+  loggedTime?: number; // Logged hours
+  remainingTime?: number; // Logged vs Estimated hours
   labels?: string[];
   checklist?: TaskChecklistItem[];
   comments?: TaskComment[];
   attachments?: TaskAttachment[];
   activity?: TaskActivity[];
-  estimatedTime?: number; // Estimated hours
-  loggedTime?: number; // Logged hours
   createdAt: string;
   updatedAt?: string;
 }
@@ -147,12 +207,17 @@ export interface Document {
   _id: string;
   title: string;
   content: string;
-  type: 'SRS' | 'BRD' | 'FSD' | 'Technical' | 'Meeting Minutes' | 'Knowledge Base' | 'FAQ';
+  type: 'SRS' | 'PRD' | 'FSD' | 'Technical' | 'Meeting Notes' | 'Knowledge Base' | 'FAQ' | 'Contract' | 'Policy' | 'SOP' | 'Other';
+  category?: 'Project Documents' | 'Contracts' | 'SRS' | 'PRD' | 'Meeting Notes' | 'Policies' | 'Knowledge Base' | 'SOPs' | 'Client Documents' | 'HR Documents';
   projectId?: string;
+  projectName?: string;
   createdBy: string;
+  authorName?: string;
   version: number;
+  tags?: string[];
   history?: { version: number; updatedBy: string; updatedAt: string; changeLog: string }[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Requirement {
@@ -219,7 +284,10 @@ export interface Notification {
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
+  category?: 'Task' | 'Sprint' | 'Invoice' | 'Leave' | 'Approval' | 'Client' | 'Meeting' | 'AI';
   read: boolean;
+  archived?: boolean;
+  actionUrl?: string;
   createdAt: string;
 }
 
@@ -264,6 +332,11 @@ export interface ActivityLog {
   userRole: UserRole;
   action: string;
   details?: string;
+  entity?: string;
+  ipAddress?: string;
+  browser?: string;
+  oldValue?: string;
+  newValue?: string;
   createdAt: string;
 }
 
@@ -288,4 +361,101 @@ export interface PresentationRequest {
   phone: string;
   status: 'Pending' | 'Sent';
   createdAt: string;
+}
+
+/* ==========================================================================
+   STACKPILOT AI v1.1 ENTERPRISE BUSINESS OPERATING SYSTEM NEW ENTITIES
+   ========================================================================== */
+
+export type ApprovalType = 
+  | 'Leave Approval'
+  | 'Expense Approval'
+  | 'Invoice Approval'
+  | 'Purchase Approval'
+  | 'Quotation Approval'
+  | 'Timesheet Approval'
+  | 'Document Approval'
+  | 'Project Approval';
+
+export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
+
+export interface ApprovalRequest {
+  _id: string;
+  type: ApprovalType;
+  title: string;
+  description: string;
+  requestedBy: string;
+  requestedByName: string;
+  requestedByAvatar?: string;
+  approverId: string;
+  approverName: string;
+  amount?: number;
+  status: ApprovalStatus;
+  comments?: string;
+  submittedAt: string;
+  reviewedAt?: string;
+}
+
+export interface WorkflowRule {
+  _id: string;
+  name: string;
+  trigger: 'Task Completed' | 'Sprint Started' | 'Invoice Created' | 'Client Onboarded' | 'Approval Granted';
+  condition: string;
+  action: 'Notify Manager' | 'Generate Invoice' | 'Send Email' | 'Create Follow-up Task' | 'Export Audit Log';
+  status: 'Active' | 'Disabled';
+  executionCount: number;
+  lastExecuted?: string;
+  createdAt: string;
+}
+
+export interface Contract {
+  _id: string;
+  contractNumber: string;
+  title: string;
+  clientId: string;
+  clientName: string;
+  value: number;
+  startDate: string;
+  endDate: string;
+  status: 'Draft' | 'Active' | 'Expired' | 'Terminated';
+  documentUrl?: string;
+  createdAt: string;
+}
+
+export interface TimesheetEntry {
+  _id: string;
+  userId: string;
+  userName: string;
+  projectId: string;
+  projectName: string;
+  taskId?: string;
+  date: string;
+  hours: number;
+  billable: boolean;
+  description: string;
+  status: 'Submitted' | 'Approved' | 'Rejected';
+  createdAt: string;
+}
+
+export interface Organization {
+  _id: string;
+  name: string;
+  code: string;
+  domain: string;
+  plan: 'Startup' | 'Growth' | 'Enterprise';
+  departments: { id: string; name: string; manager: string; memberCount: number }[];
+  status: 'Active' | 'Trial' | 'Suspended';
+  createdAt: string;
+}
+
+export interface SystemHealth {
+  serverStatus: 'Operational' | 'Degraded' | 'Maintenance';
+  apiLatencyMs: number;
+  dbStatus: 'Healthy' | 'Busy';
+  storageUsedGb: number;
+  storageMaxGb: number;
+  emailQueueCount: number;
+  activeSessions: number;
+  aiTokenCountToday: number;
+  licenseDaysRemaining: number;
 }

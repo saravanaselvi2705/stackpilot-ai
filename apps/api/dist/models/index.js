@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuditLog = exports.ActivityLog = exports.Tenant = exports.AutomationRule = exports.SEOReport = exports.Keyword = exports.BlogPost = exports.Notification = exports.Payment = exports.Quotation = exports.Expense = exports.Invoice = exports.UserStory = exports.Requirement = exports.Folder = exports.Document = exports.Meeting = exports.Sprint = exports.Task = exports.Project = exports.Activity = exports.Deal = exports.Lead = exports.Contact = exports.Client = exports.Company = exports.Permission = exports.Role = exports.User = void 0;
+exports.PresentationRequest = exports.Organization = exports.Timesheet = exports.Contract = exports.WorkflowRule = exports.Approval = exports.AuditLog = exports.ActivityLog = exports.Tenant = exports.AutomationRule = exports.SEOReport = exports.Keyword = exports.BlogPost = exports.Notification = exports.Payment = exports.Quotation = exports.Expense = exports.Invoice = exports.UserStory = exports.Requirement = exports.Folder = exports.Document = exports.Meeting = exports.Release = exports.Sprint = exports.Task = exports.Project = exports.Activity = exports.Deal = exports.Lead = exports.Contact = exports.Client = exports.Company = exports.Permission = exports.Role = exports.User = void 0;
 const mongoose_1 = require("mongoose");
 // User Schema
 const UserSchema = new mongoose_1.Schema({
@@ -229,9 +229,25 @@ const SprintSchema = new mongoose_1.Schema({
     projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Project', required: true },
     name: { type: String, required: true },
     goal: { type: String },
-    startDate: { type: Date },
-    endDate: { type: Date },
-    status: { type: String, enum: ['Future', 'Active', 'Closed'], default: 'Future' },
+    description: { type: String },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    status: { type: String, enum: ['Planning', 'Active', 'Completed', 'Archived'], default: 'Planning' },
+    capacity: { type: Number, default: 40 },
+    storyPoints: { type: Number, default: 0 },
+    velocity: { type: Number, default: 0 },
+    createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
+    isDeleted: { type: Boolean, default: false },
+}, { timestamps: true });
+// Release Schema
+const ReleaseSchema = new mongoose_1.Schema({
+    projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Project', required: true },
+    version: { type: String, required: true },
+    sprintId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Sprint' },
+    releaseNotes: { type: String },
+    releaseDate: { type: Date },
+    status: { type: String, enum: ['Planned', 'In Progress', 'Deployed', 'Rolled Back'], default: 'Planned' },
+    isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 // Meeting Schema
 const MeetingSchema = new mongoose_1.Schema({
@@ -441,6 +457,72 @@ const ActivityLogSchema = new mongoose_1.Schema({
     ipAddress: { type: String },
     userAgent: { type: String }
 }, { timestamps: true });
+const ApprovalSchema = new mongoose_1.Schema({
+    type: { type: String, required: true },
+    title: { type: String, required: true },
+    description: { type: String },
+    requestedBy: { type: String, required: true },
+    requestedByName: { type: String, required: true },
+    requestedByAvatar: { type: String },
+    approverId: { type: String, required: true },
+    approverName: { type: String, required: true },
+    amount: { type: Number },
+    status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'], default: 'Pending' },
+    comments: { type: String },
+    submittedAt: { type: Date, default: Date.now },
+    reviewedAt: { type: Date }
+}, { timestamps: true });
+const WorkflowRuleSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    trigger: { type: String, required: true },
+    condition: { type: String },
+    action: { type: String, required: true },
+    status: { type: String, enum: ['Active', 'Disabled'], default: 'Active' },
+    executionCount: { type: Number, default: 0 },
+    lastExecuted: { type: Date }
+}, { timestamps: true });
+const ContractSchema = new mongoose_1.Schema({
+    contractNumber: { type: String, required: true },
+    title: { type: String, required: true },
+    clientId: { type: String, required: true },
+    clientName: { type: String, required: true },
+    value: { type: Number, default: 0 },
+    startDate: { type: String },
+    endDate: { type: String },
+    status: { type: String, enum: ['Draft', 'Active', 'Expired', 'Terminated'], default: 'Active' },
+    documentUrl: { type: String }
+}, { timestamps: true });
+const TimesheetSchema = new mongoose_1.Schema({
+    userId: { type: String, required: true },
+    userName: { type: String, required: true },
+    projectId: { type: String, required: true },
+    projectName: { type: String, required: true },
+    taskId: { type: String },
+    date: { type: String, required: true },
+    hours: { type: Number, required: true },
+    billable: { type: Boolean, default: true },
+    description: { type: String },
+    status: { type: String, enum: ['Submitted', 'Approved', 'Rejected'], default: 'Submitted' }
+}, { timestamps: true });
+const OrganizationSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+    domain: { type: String },
+    plan: { type: String, enum: ['Startup', 'Growth', 'Enterprise'], default: 'Enterprise' },
+    departments: [{
+            id: { type: String },
+            name: { type: String },
+            manager: { type: String },
+            memberCount: { type: Number, default: 0 }
+        }],
+    status: { type: String, enum: ['Active', 'Trial', 'Suspended'], default: 'Active' }
+}, { timestamps: true });
+const PresentationRequestSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    companyName: { type: String },
+    email: { type: String, required: true },
+    phone: { type: String }
+}, { timestamps: true });
 exports.User = (0, mongoose_1.model)('User', UserSchema);
 exports.Role = (0, mongoose_1.model)('Role', RoleSchema);
 exports.Permission = (0, mongoose_1.model)('Permission', PermissionSchema);
@@ -453,6 +535,7 @@ exports.Activity = (0, mongoose_1.model)('Activity', ActivitySchema);
 exports.Project = (0, mongoose_1.model)('Project', ProjectSchema);
 exports.Task = (0, mongoose_1.model)('Task', TaskSchema);
 exports.Sprint = (0, mongoose_1.model)('Sprint', SprintSchema);
+exports.Release = (0, mongoose_1.model)('Release', ReleaseSchema);
 exports.Meeting = (0, mongoose_1.model)('Meeting', MeetingSchema);
 exports.Document = (0, mongoose_1.model)('Document', DocumentSchema);
 exports.Folder = (0, mongoose_1.model)('Folder', FolderSchema);
@@ -470,3 +553,9 @@ exports.AutomationRule = (0, mongoose_1.model)('AutomationRule', AutomationRuleS
 exports.Tenant = (0, mongoose_1.model)('Tenant', TenantSchema);
 exports.ActivityLog = (0, mongoose_1.model)('ActivityLog', ActivityLogSchema);
 exports.AuditLog = exports.ActivityLog;
+exports.Approval = (0, mongoose_1.model)('Approval', ApprovalSchema);
+exports.WorkflowRule = (0, mongoose_1.model)('WorkflowRule', WorkflowRuleSchema);
+exports.Contract = (0, mongoose_1.model)('Contract', ContractSchema);
+exports.Timesheet = (0, mongoose_1.model)('Timesheet', TimesheetSchema);
+exports.Organization = (0, mongoose_1.model)('Organization', OrganizationSchema);
+exports.PresentationRequest = (0, mongoose_1.model)('PresentationRequest', PresentationRequestSchema);

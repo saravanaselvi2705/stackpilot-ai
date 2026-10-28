@@ -1,5 +1,76 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+import { CorsOptions } from 'cors';
+
+// CORS Options enforcing FRONTEND_URL in production & allowing localhost in development
+export const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const rawFrontendUrl = process.env.FRONTEND_URL;
+
+    if (isProduction) {
+      // Requirement 1 & 2: Throw error or block request if FRONTEND_URL is missing in production
+      if (!rawFrontendUrl || !rawFrontendUrl.trim()) {
+        return callback(
+          new Error('CORS Policy: FRONTEND_URL environment variable is required in production mode.')
+        );
+      }
+
+      const allowedOrigins = rawFrontendUrl
+        .split(',')
+        .map((url) => url.trim().replace(/\/$/, ''))
+        .filter(Boolean);
+
+      // Non-browser or same-origin requests (no Origin header)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const normalizedOrigin = origin.trim().replace(/\/$/, '');
+
+      // Requirement 2: Strictly match process.env.FRONTEND_URL in production
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      } else {
+        return callback(
+          new Error(`CORS Policy: Origin '${origin}' is not allowed by FRONTEND_URL configuration in production.`)
+        );
+      }
+    }
+
+    // Requirement 3: Allow localhost/development origins when NODE_ENV !== 'production'
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const normalizedOrigin = origin.trim().replace(/\/$/, '');
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalizedOrigin);
+
+    let allowedDevOrigins: string[] = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5174',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5174',
+    ];
+
+    if (rawFrontendUrl) {
+      const customOrigins = rawFrontendUrl
+        .split(',')
+        .map((url) => url.trim().replace(/\/$/, ''))
+        .filter(Boolean);
+      allowedDevOrigins = [...allowedDevOrigins, ...customOrigins];
+    }
+
+    if (isLocalhost || allowedDevOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, true);
+  },
+  credentials: true,
+};
 
 // Simple in-memory rate limiter middleware
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
@@ -55,9 +126,10 @@ export const helmetSecurity = helmet({
 
 export const errorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled Error:', err);
-  const status = err.status || err.statusCode || 500;
+  const status = err.status || err.statusCode || (err.message?.startsWith('CORS Policy') ? 403 : 500);
   res.status(status).json({
     error: err.message || 'Internal Server Error',
     ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
   });
 };
+

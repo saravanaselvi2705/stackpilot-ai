@@ -57,6 +57,7 @@ __exportStar(require("./calendarController"), exports);
 __exportStar(require("./automationController"), exports);
 __exportStar(require("./saasController"), exports);
 __exportStar(require("./healthController"), exports);
+__exportStar(require("./presentationController"), exports);
 const db = __importStar(require("../models"));
 // LEGACY API COMPATIBILITY EXPORTS
 const getSEOReport = async (req, res) => {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { User, Project, Task, Client, Invoice, Document, SEOReport, BlogPost, Keyword, ActivityLog, Notification, UserRole, Enquiry, PresentationRequest } from '../../../../packages/shared/types';
+import type { User, Project, Sprint, Release, SprintReport, Task, Client, Invoice, Document, SEOReport, BlogPost, Keyword, ActivityLog, Notification, UserRole, Enquiry, PresentationRequest, ApprovalRequest, WorkflowRule, Contract, TimesheetEntry, Organization, SystemHealth } from '../../../../packages/shared/types';
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -22,10 +22,122 @@ apiClient.interceptors.request.use((config) => {
 
 // System Super Admin User
 const DEFAULT_USERS: User[] = [
-  { _id: 'u-1', name: 'Super Admin', email: 'admin@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Admin', department: 'Administration', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() }
+  { _id: 'u-1', name: 'Alexander Wright', email: 'alex@stackpilot.ai', role: 'Super Admin', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex', department: 'Executive Management', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
+  { _id: 'u-2', name: 'Sarah Jenkins', email: 'sarah@stackpilot.ai', role: 'Project Manager', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sarah', department: 'Product', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
+  { _id: 'u-3', name: 'Michael Chen', email: 'michael@stackpilot.ai', role: 'Developer', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Michael', department: 'Engineering', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() },
+  { _id: 'u-4', name: 'Emily Watson', email: 'emily@stackpilot.ai', role: 'Tester', avatarUrl: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Emily', department: 'QA', availability: 'Available', twoFAEnabled: false, createdAt: new Date().toISOString() }
 ];
 
-const DEFAULT_PROJECTS: Project[] = [];
+const DEFAULT_PROJECTS: Project[] = [
+  {
+    _id: 'p-1',
+    name: 'StackPilot SaaS',
+    description: 'Enterprise AI Sprint & Task Management Platform',
+    status: 'Active',
+    priority: 'High',
+    budget: 150000,
+    spent: 42000,
+    startDate: '2026-07-01',
+    endDate: '2026-12-31',
+    team: [{ userId: 'u-1', role: 'Super Admin' }, { userId: 'u-2', role: 'Project Manager' }],
+    health: 'Healthy',
+    client: 'Internal Enterprise',
+    createdAt: '2026-07-01T00:00:00Z'
+  },
+  {
+    _id: 'p-2',
+    name: 'CRM Development',
+    description: 'Customer Relationship & Pipeline Management System',
+    status: 'Active',
+    priority: 'Medium',
+    budget: 95000,
+    spent: 28000,
+    startDate: '2026-07-15',
+    endDate: '2026-11-30',
+    team: [{ userId: 'u-2', role: 'Project Manager' }, { userId: 'u-3', role: 'Developer' }],
+    health: 'Healthy',
+    client: 'Acme Corp',
+    createdAt: '2026-07-15T00:00:00Z'
+  }
+];
+
+const DEFAULT_SPRINTS: Sprint[] = [
+  {
+    _id: 'spr-1',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    name: 'Sprint 1',
+    goal: 'CRM Development & Task Board Redesign',
+    description: 'Deliver responsive Kanban columns, Sprint Management, and modern side drawer.',
+    startDate: '2026-07-30',
+    endDate: '2026-08-12',
+    status: 'Active',
+    capacity: 40,
+    storyPoints: 28,
+    velocity: 24,
+    createdBy: 'u-1',
+    createdAt: '2026-07-29T10:00:00Z'
+  },
+  {
+    _id: 'spr-2',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    name: 'Sprint 2',
+    goal: 'Authentication & Core Infrastructure',
+    description: 'Implement JWT auth, RBAC permissions, and team workspace configuration.',
+    startDate: '2026-07-15',
+    endDate: '2026-07-29',
+    status: 'Completed',
+    capacity: 35,
+    storyPoints: 35,
+    velocity: 35,
+    createdBy: 'u-1',
+    createdAt: '2026-07-14T09:00:00Z'
+  },
+  {
+    _id: 'spr-3',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    name: 'Sprint 3',
+    goal: 'Billing & Stripe Integration',
+    description: 'Setup subscription tiers, invoice PDF generation, and revenue telemetry.',
+    startDate: '2026-08-13',
+    endDate: '2026-08-27',
+    status: 'Planning',
+    capacity: 45,
+    storyPoints: 16,
+    velocity: 0,
+    createdBy: 'u-1',
+    createdAt: '2026-07-30T08:00:00Z'
+  }
+];
+
+const DEFAULT_RELEASES: Release[] = [
+  {
+    _id: 'rel-1',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    version: 'v1.1.0',
+    sprintId: 'spr-1',
+    sprintName: 'Sprint 1',
+    releaseNotes: 'Agile Sprint Management, 7-column Task Board, Story Points, Activity Timeline & Sprint Reports.',
+    releaseDate: '2026-08-14',
+    status: 'In Progress',
+    createdAt: '2026-07-30T10:00:00Z'
+  },
+  {
+    _id: 'rel-2',
+    projectId: 'p-1',
+    projectName: 'StackPilot SaaS',
+    version: 'v1.0.0',
+    sprintId: 'spr-2',
+    sprintName: 'Sprint 2',
+    releaseNotes: 'Initial production release with CRM, Team Workspace, and Auth Security.',
+    releaseDate: '2026-07-29',
+    status: 'Deployed',
+    createdAt: '2026-07-29T18:00:00Z'
+  }
+];
 const DEFAULT_TASKS: Task[] = [
   {
     _id: 't-101',
@@ -237,10 +349,88 @@ const DEFAULT_TASKS: Task[] = [
     updatedAt: '2026-07-15T10:00:00Z'
   }
 ];
-const DEFAULT_LEADS: Client[] = [];
-const DEFAULT_INVOICES: Invoice[] = [];
+const DEFAULT_LEADS: Client[] = [
+  { _id: 'c-1', name: 'Acme Corp', email: 'contact@acme.com', companyName: 'Acme Global', phone: '+1 555-0199', status: 'Active', value: 45000, tags: ['Enterprise', 'SaaS'], notes: 'Key enterprise account', createdAt: '2026-01-15T08:00:00Z' },
+  { _id: 'c-2', name: 'Starlight Tech', email: 'info@starlight.io', companyName: 'Starlight AI', phone: '+1 555-0244', status: 'Lead', value: 18000, tags: ['Startup'], notes: 'Interested in Business OS tier', createdAt: '2026-03-20T10:30:00Z' }
+];
+
+const DEFAULT_INVOICES: Invoice[] = [
+  { _id: 'inv-1', invoiceNumber: 'INV-2026-001', clientId: 'c-1', clientName: 'Acme Corp', clientEmail: 'contact@acme.com', projectName: 'StackPilot SaaS', issueDate: '2026-07-01', dueDate: '2026-07-31', items: [{ description: 'Agile Sprint Engineering (Q3)', quantity: 1, rate: 12500, amount: 12500 }], subtotal: 12500, taxRate: 10, taxAmount: 1250, discount: 0, total: 13750, status: 'Paid', createdAt: '2026-07-01T09:00:00Z' },
+  { _id: 'inv-2', invoiceNumber: 'INV-2026-002', clientId: 'c-2', clientName: 'Starlight Tech', clientEmail: 'info@starlight.io', projectName: 'AI Workflow Integration', issueDate: '2026-07-15', dueDate: '2026-08-15', items: [{ description: 'Custom AI Assistant Setup', quantity: 1, rate: 6500, amount: 6500 }], subtotal: 6500, taxRate: 10, taxAmount: 650, discount: 500, total: 6650, status: 'Sent', createdAt: '2026-07-15T11:00:00Z' }
+];
+
 const DEFAULT_SEO_REPORTS: SEOReport[] = [];
-const DEFAULT_DOCUMENTS: Document[] = [];
+
+const DEFAULT_DOCUMENTS: Document[] = [
+  { _id: 'doc-1', title: 'StackPilot AI Business OS Architecture PRD', content: 'Comprehensive Product Requirements Document for v1.1 Enterprise Business OS Upgrade including Navigation, Approvals, Workflows, Audit Logs, and Client Portal.', type: 'PRD', category: 'PRD', projectId: 'p-1', projectName: 'StackPilot SaaS', createdBy: 'u-1', authorName: 'Super Admin', version: 1, tags: ['Architecture', 'Enterprise', 'v1.1'], createdAt: '2026-07-28T09:00:00Z' },
+  { _id: 'doc-2', title: 'Security & Compliance Policy 2026', content: 'Enterprise SOC2 Type II, ISO27001 compliance standards, RBAC role matrix, and encryption guidelines.', type: 'Policy', category: 'Policies', createdBy: 'u-1', authorName: 'Super Admin', version: 2, tags: ['Security', 'Compliance'], createdAt: '2026-06-10T14:00:00Z' },
+  { _id: 'doc-3', title: 'Client Master Services Agreement (Acme Corp)', content: 'Legal framework and SLA agreements for Acme Corp cloud hosting and technical support services.', type: 'Contract', category: 'Contracts', createdBy: 'u-1', authorName: 'Super Admin', version: 1, tags: ['Legal', 'Acme'], createdAt: '2026-01-20T10:00:00Z' }
+];
+
+const DEFAULT_APPROVALS: ApprovalRequest[] = [
+  { _id: 'app-1', type: 'Leave Approval', title: 'Annual Paid Time Off Request (3 Days)', description: 'Requesting PTO for family event from Aug 5 to Aug 7.', requestedBy: 'u-1', requestedByName: 'Super Admin', approverId: 'u-1', approverName: 'Super Admin', status: 'Approved', comments: 'Approved by PM', submittedAt: '2026-07-28T09:00:00Z', reviewedAt: '2026-07-28T11:00:00Z' },
+  { _id: 'app-2', type: 'Expense Approval', title: 'AWS Cloud Infrastructure Q3 Bill ($1,450)', description: 'Monthly production cluster and RDS backup storage invoice.', requestedBy: 'u-1', requestedByName: 'Super Admin', approverId: 'u-1', approverName: 'Super Admin', amount: 1450, status: 'Pending', submittedAt: '2026-07-29T14:30:00Z' },
+  { _id: 'app-3', type: 'Invoice Approval', title: 'Invoice INV-2026-002 Release Confirmation', description: 'Starlight Tech milestone 1 billing verification.', requestedBy: 'u-1', requestedByName: 'Super Admin', approverId: 'u-1', approverName: 'Super Admin', amount: 6650, status: 'Pending', submittedAt: '2026-07-30T10:00:00Z' }
+];
+
+const DEFAULT_WORKFLOWS: WorkflowRule[] = [
+  { _id: 'wf-1', name: 'Auto-Generate Invoice on Task Completion', trigger: 'Task Completed', condition: 'Task Labels contain "Billable"', action: 'Generate Invoice', status: 'Active', executionCount: 14, lastExecuted: '2026-07-29T16:00:00Z', createdAt: '2026-05-01T08:00:00Z' },
+  { _id: 'wf-2', name: 'Notify PM when Sprint Starts', trigger: 'Sprint Started', condition: 'Sprint Total Points > 30', action: 'Notify Manager', status: 'Active', executionCount: 8, lastExecuted: '2026-07-28T09:00:00Z', createdAt: '2026-05-15T10:00:00Z' },
+  { _id: 'wf-3', name: 'Send Client Welcome Email', trigger: 'Client Onboarded', condition: 'Client Status is Active', action: 'Send Email', status: 'Active', executionCount: 5, lastExecuted: '2026-07-20T12:00:00Z', createdAt: '2026-06-01T11:00:00Z' }
+];
+
+const DEFAULT_CONTRACTS: Contract[] = [
+  { _id: 'ctr-1', contractNumber: 'CTR-2026-001', title: 'Acme Enterprise Master SaaS Subscription', clientId: 'c-1', clientName: 'Acme Corp', value: 54000, startDate: '2026-01-01', endDate: '2026-12-31', status: 'Active', documentUrl: '/docs/ctr-acme.pdf', createdAt: '2026-01-01T00:00:00Z' },
+  { _id: 'ctr-2', contractNumber: 'CTR-2026-002', title: 'Starlight AI Integration NDA & SLA', clientId: 'c-2', clientName: 'Starlight Tech', value: 18000, startDate: '2026-04-01', endDate: '2027-03-31', status: 'Active', documentUrl: '/docs/ctr-starlight.pdf', createdAt: '2026-04-01T00:00:00Z' }
+];
+
+const DEFAULT_TIMESHEETS: TimesheetEntry[] = [
+  { _id: 'ts-1', userId: 'u-1', userName: 'Super Admin', projectId: 'p-1', projectName: 'StackPilot SaaS', taskId: 'SP-101', date: '2026-07-29', hours: 7.5, billable: true, description: 'Agile Sprint Management and Kanban column UI implementation', status: 'Approved', createdAt: '2026-07-29T18:00:00Z' },
+  { _id: 'ts-2', userId: 'u-1', userName: 'Super Admin', projectId: 'p-1', projectName: 'StackPilot SaaS', taskId: 'SP-102', date: '2026-07-30', hours: 8.0, billable: true, description: 'Business OS Enterprise Navigation & Audit Log integration', status: 'Submitted', createdAt: '2026-07-30T17:00:00Z' }
+];
+
+const DEFAULT_NOTIFICATIONS_LIST: Notification[] = [
+  { _id: 'notif-1', userId: 'u-1', title: 'Task Assigned', message: 'You were assigned to "Business OS Navigation Upgrade" in StackPilot SaaS', type: 'info', category: 'Task', read: false, createdAt: '2026-07-30T09:00:00Z' },
+  { _id: 'notif-2', userId: 'u-1', title: 'Sprint Started', message: 'Sprint 15 "Business OS Upgrade" has officially started.', type: 'success', category: 'Sprint', read: false, createdAt: '2026-07-28T09:00:00Z' },
+  { _id: 'notif-3', userId: 'u-1', title: 'Expense Approval Pending', message: 'AWS Cloud Q3 Invoice ($1,450) requires your approval.', type: 'warning', category: 'Approval', read: false, createdAt: '2026-07-29T14:30:00Z' },
+  { _id: 'notif-4', userId: 'u-1', title: 'Invoice Paid', message: 'Acme Corp paid Invoice INV-2026-001 ($13,750).', type: 'success', category: 'Invoice', read: true, createdAt: '2026-07-25T11:00:00Z' }
+];
+
+const DEFAULT_AUDIT_LOGS: ActivityLog[] = [
+  { _id: 'aud-1', userId: 'u-1', userName: 'Super Admin', userRole: 'Super Admin', action: 'Login', details: 'User logged in successfully from Chrome / Linux', ipAddress: '192.168.1.45', createdAt: '2026-07-30T08:00:00Z' },
+  { _id: 'aud-2', userId: 'u-1', userName: 'Super Admin', userRole: 'Super Admin', action: 'Record Updated', details: 'Updated Sprint 15 status to Active', entity: 'Sprint', ipAddress: '192.168.1.45', createdAt: '2026-07-30T09:30:00Z' },
+  { _id: 'aud-3', userId: 'u-1', userName: 'Super Admin', userRole: 'Super Admin', action: 'Invoice Generated', details: 'Created Invoice INV-2026-002 for Starlight Tech ($6,650)', entity: 'Invoice', ipAddress: '192.168.1.45', createdAt: '2026-07-29T15:00:00Z' },
+  { _id: 'aud-4', userId: 'u-1', userName: 'Super Admin', userRole: 'Super Admin', action: 'Permission Changed', details: 'Assigned Business Analyst role permissions to Sarah Jenkins', entity: 'User', ipAddress: '192.168.1.45', createdAt: '2026-07-27T14:10:00Z' }
+];
+
+const DEFAULT_ORGANIZATION: Organization = {
+  _id: 'org-1',
+  name: 'StackPilot AI Inc.',
+  code: 'STACKPILOT',
+  domain: 'stackpilot.ai',
+  plan: 'Enterprise',
+  departments: [
+    { id: 'dept-1', name: 'Engineering', manager: 'Alex Morgan', memberCount: 14 },
+    { id: 'dept-2', name: 'Product Management', manager: 'Sarah Jenkins', memberCount: 6 },
+    { id: 'dept-3', name: 'Sales & Marketing', manager: 'Marcus Vance', memberCount: 8 },
+    { id: 'dept-4', name: 'Finance & Operations', manager: 'Elena Rostova', memberCount: 4 }
+  ],
+  status: 'Active',
+  createdAt: '2025-01-01T00:00:00Z'
+};
+
+const DEFAULT_SYSTEM_HEALTH: SystemHealth = {
+  serverStatus: 'Operational',
+  apiLatencyMs: 24,
+  dbStatus: 'Healthy',
+  storageUsedGb: 142.8,
+  storageMaxGb: 500,
+  emailQueueCount: 0,
+  activeSessions: 18,
+  aiTokenCountToday: 48500,
+  licenseDaysRemaining: 320
+};
+
 const DEFAULT_ENQUIRIES: Enquiry[] = [];
 const DEFAULT_PRESENTATION_REQUESTS: PresentationRequest[] = [];
 
@@ -248,12 +438,12 @@ const DEFAULT_PRESENTATION_REQUESTS: PresentationRequest[] = [];
 class LocalDatabase {
   private get<T>(key: string, defaults: T[]): T[] {
     const data = localStorage.getItem(`sp_${key}`);
-    if (!data || (JSON.parse(data).length === 0 && (key === 'tasks' || key === 'users'))) {
+    if (!data || (JSON.parse(data).length === 0 && (key === 'tasks' || key === 'users' || key === 'sprints' || key === 'projects' || key === 'releases'))) {
       if (localStorage.getItem('sp_demo_mode') === null) {
         localStorage.setItem('sp_demo_mode', 'false');
       }
       const isDemoMode = localStorage.getItem('sp_demo_mode') === 'true';
-      const actualDefaults = (isDemoMode || key === 'users' || key === 'tasks') ? defaults : [];
+      const actualDefaults = (isDemoMode || key === 'users' || key === 'tasks' || key === 'sprints' || key === 'projects' || key === 'releases') ? defaults : [];
       localStorage.setItem(`sp_${key}`, JSON.stringify(actualDefaults));
       return actualDefaults;
     }
@@ -269,6 +459,12 @@ class LocalDatabase {
 
   getProjects() { return this.get('projects', DEFAULT_PROJECTS); }
   saveProjects(d: Project[]) { this.save('projects', d); }
+
+  getSprints() { return this.get('sprints', DEFAULT_SPRINTS); }
+  saveSprints(d: Sprint[]) { this.save('sprints', d); }
+
+  getReleases() { return this.get('releases', DEFAULT_RELEASES); }
+  saveReleases(d: Release[]) { this.save('releases', d); }
 
   getTasks() { return this.get('tasks', DEFAULT_TASKS); }
   saveTasks(d: Task[]) { this.save('tasks', d); }
@@ -292,14 +488,50 @@ class LocalDatabase {
   savePresentationRequests(d: PresentationRequest[]) { this.save('presentation_requests', d); }
 
   getNotifications(): Notification[] {
-    return this.get<Notification>('notifications', []);
+    return this.get<Notification>('notifications', DEFAULT_NOTIFICATIONS_LIST);
   }
   saveNotifications(d: Notification[]) { this.save('notifications', d); }
 
   getActivities(): ActivityLog[] {
-    return this.get<ActivityLog>('activities', []);
+    return this.get<ActivityLog>('activities', DEFAULT_AUDIT_LOGS);
   }
   saveActivities(d: ActivityLog[]) { this.save('activities', d); }
+
+  getApprovals(): ApprovalRequest[] {
+    return this.get<ApprovalRequest>('approvals', DEFAULT_APPROVALS);
+  }
+  saveApprovals(d: ApprovalRequest[]) { this.save('approvals', d); }
+
+  getWorkflows(): WorkflowRule[] {
+    return this.get<WorkflowRule>('workflows', DEFAULT_WORKFLOWS);
+  }
+  saveWorkflows(d: WorkflowRule[]) { this.save('workflows', d); }
+
+  getContracts(): Contract[] {
+    return this.get<Contract>('contracts', DEFAULT_CONTRACTS);
+  }
+  saveContracts(d: Contract[]) { this.save('contracts', d); }
+
+  getTimesheets(): TimesheetEntry[] {
+    return this.get<TimesheetEntry>('timesheets', DEFAULT_TIMESHEETS);
+  }
+  saveTimesheets(d: TimesheetEntry[]) { this.save('timesheets', d); }
+
+  getOrganization(): Organization {
+    const raw = localStorage.getItem('sp_organization');
+    if (!raw) {
+      localStorage.setItem('sp_organization', JSON.stringify(DEFAULT_ORGANIZATION));
+      return DEFAULT_ORGANIZATION;
+    }
+    return JSON.parse(raw);
+  }
+  saveOrganization(d: Organization) {
+    localStorage.setItem('sp_organization', JSON.stringify(d));
+  }
+
+  getSystemHealth(): SystemHealth {
+    return DEFAULT_SYSTEM_HEALTH;
+  }
 }
 
 const mockDB = new LocalDatabase();
@@ -601,6 +833,260 @@ export const API = {
     }
   },
 
+  sprints: {
+    async list(projectId?: string): Promise<Sprint[]> {
+      try {
+        if (!API.isMockMode) {
+          const res = await apiClient.get('/sprints', { params: { projectId } });
+          return res.data;
+        }
+      } catch { }
+
+      const sprints = mockDB.getSprints();
+      if (projectId) {
+        return sprints.filter(s => s.projectId === projectId);
+      }
+      return sprints;
+    },
+
+    async create(s: Partial<Sprint>): Promise<Sprint> {
+      try {
+        if (!API.isMockMode) {
+          const res = await apiClient.post('/sprints', s);
+          return res.data;
+        }
+      } catch { }
+
+      const sprints = mockDB.getSprints();
+      const newSprint: Sprint = {
+        _id: `spr-${Date.now()}`,
+        projectId: s.projectId || 'p-1',
+        projectName: s.projectName || 'StackPilot SaaS',
+        name: s.name || `Sprint ${sprints.length + 1}`,
+        goal: s.goal || '',
+        description: s.description || '',
+        startDate: s.startDate || new Date().toISOString().split('T')[0],
+        endDate: s.endDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+        status: s.status || 'Planning',
+        capacity: s.capacity || 40,
+        storyPoints: s.storyPoints || 0,
+        velocity: s.velocity || 0,
+        createdBy: 'u-1',
+        createdAt: new Date().toISOString()
+      };
+
+      sprints.push(newSprint);
+      mockDB.saveSprints(sprints);
+      return newSprint;
+    },
+
+    async update(id: string, updates: Partial<Sprint>): Promise<Sprint> {
+      try {
+        if (!API.isMockMode) {
+          const res = await apiClient.put(`/sprints/${id}`, updates);
+          return res.data;
+        }
+      } catch { }
+
+      const sprints = mockDB.getSprints();
+      const idx = sprints.findIndex(s => s._id === id);
+      if (idx === -1) throw new Error('Sprint not found');
+
+      // Rule: Only 1 active sprint per project
+      if (updates.status === 'Active') {
+        const targetProjId = sprints[idx].projectId;
+        sprints.forEach(sp => {
+          if (sp.projectId === targetProjId && sp._id !== id && sp.status === 'Active') {
+            sp.status = 'Planning';
+          }
+        });
+      }
+
+      const updated = { ...sprints[idx], ...updates, updatedAt: new Date().toISOString() };
+      sprints[idx] = updated;
+      mockDB.saveSprints(sprints);
+      return updated;
+    },
+
+    async delete(id: string): Promise<void> {
+      try {
+        if (!API.isMockMode) {
+          await apiClient.delete(`/sprints/${id}`);
+        }
+      } catch { }
+
+      const sprints = mockDB.getSprints().filter(s => s._id !== id);
+      mockDB.saveSprints(sprints);
+
+      // Reset sprintId on associated tasks -> Backlog
+      const tasks = mockDB.getTasks();
+      let changed = false;
+      tasks.forEach(t => {
+        if (t.sprintId === id) {
+          t.sprintId = undefined;
+          t.sprintName = undefined;
+          t.status = 'Backlog';
+          changed = true;
+        }
+      });
+      if (changed) mockDB.saveTasks(tasks);
+    },
+
+    async start(id: string): Promise<Sprint> {
+      return this.update(id, { status: 'Active' });
+    },
+
+    async complete(id: string, targetSprintId?: string): Promise<Sprint> {
+      const updated = await this.update(id, { status: 'Completed' });
+      // Move incomplete tasks to target sprint or Backlog
+      const tasks = mockDB.getTasks();
+      const targetSprint = targetSprintId ? mockDB.getSprints().find(s => s._id === targetSprintId) : undefined;
+      let changed = false;
+      tasks.forEach(t => {
+        if (t.sprintId === id && t.status !== 'Done') {
+          if (targetSprint) {
+            t.sprintId = targetSprint._id;
+            t.sprintName = targetSprint.name;
+          } else {
+            t.sprintId = undefined;
+            t.sprintName = undefined;
+            t.status = 'Backlog';
+          }
+          changed = true;
+        }
+      });
+      if (changed) mockDB.saveTasks(tasks);
+      return updated;
+    },
+
+    async archive(id: string): Promise<Sprint> {
+      return this.update(id, { status: 'Archived' });
+    },
+
+    async duplicate(id: string): Promise<Sprint> {
+      const sprints = mockDB.getSprints();
+      const source = sprints.find(s => s._id === id);
+      if (!source) throw new Error('Sprint not found');
+      return this.create({
+        projectId: source.projectId,
+        projectName: source.projectName,
+        name: `${source.name} (Copy)`,
+        goal: source.goal,
+        description: source.description,
+        startDate: source.startDate,
+        endDate: source.endDate,
+        status: 'Planning',
+        capacity: source.capacity
+      });
+    }
+  },
+
+  sprintReports: {
+    async getReport(sprintId: string): Promise<SprintReport> {
+      const sprints = mockDB.getSprints();
+      const sprint = sprints.find(s => s._id === sprintId) || sprints[0];
+      const tasks = mockDB.getTasks().filter(t => t.sprintId === sprint?._id);
+
+      const totalTasks = tasks.length;
+      const completedTasks = tasks.filter(t => t.status === 'Done').length;
+      const blockedTasks = tasks.filter(t => t.status === 'Blocked').length;
+      const carryForwardTasks = totalTasks - completedTasks;
+
+      const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+      const completedStoryPoints = tasks.filter(t => t.status === 'Done').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+      // Generate burndown data
+      const burndown = [
+        { day: 'Day 1', remainingPoints: totalStoryPoints, idealPoints: totalStoryPoints },
+        { day: 'Day 3', remainingPoints: Math.max(0, totalStoryPoints - 4), idealPoints: Math.round(totalStoryPoints * 0.8) },
+        { day: 'Day 6', remainingPoints: Math.max(0, totalStoryPoints - 10), idealPoints: Math.round(totalStoryPoints * 0.5) },
+        { day: 'Day 9', remainingPoints: Math.max(0, totalStoryPoints - 18), idealPoints: Math.round(totalStoryPoints * 0.2) },
+        { day: 'Day 14', remainingPoints: totalStoryPoints - completedStoryPoints, idealPoints: 0 },
+      ];
+
+      const burnup = [
+        { day: 'Day 1', completedPoints: 0, totalPoints: totalStoryPoints },
+        { day: 'Day 3', completedPoints: 4, totalPoints: totalStoryPoints },
+        { day: 'Day 6', completedPoints: 10, totalPoints: totalStoryPoints },
+        { day: 'Day 9', completedPoints: 18, totalPoints: totalStoryPoints },
+        { day: 'Day 14', completedPoints: completedStoryPoints, totalPoints: totalStoryPoints },
+      ];
+
+      const users = mockDB.getUsers();
+      const teamPerformance = users.slice(0, 4).map(u => {
+        const uTasks = tasks.filter(t => t.assigneeId === u._id);
+        const uDone = uTasks.filter(t => t.status === 'Done');
+        const pts = uDone.reduce((acc, t) => acc + (t.storyPoints || 0), 0);
+        return {
+          name: u.name,
+          avatar: u.avatarUrl,
+          assigned: uTasks.length,
+          completed: uDone.length,
+          points: pts
+        };
+      });
+
+      return {
+        sprintId: sprint?._id || 'spr-1',
+        sprintName: sprint?.name || 'Sprint 1',
+        projectName: sprint?.projectName || 'StackPilot SaaS',
+        totalTasks,
+        completedTasks,
+        carryForwardTasks,
+        blockedTasks,
+        totalStoryPoints,
+        completedStoryPoints,
+        velocity: sprint?.velocity || completedStoryPoints,
+        capacity: sprint?.capacity || 40,
+        burndown,
+        burnup,
+        teamPerformance
+      };
+    }
+  },
+
+  releases: {
+    async list(projectId?: string): Promise<Release[]> {
+      const rels = mockDB.getReleases();
+      if (projectId) return rels.filter(r => r.projectId === projectId);
+      return rels;
+    },
+
+    async create(r: Partial<Release>): Promise<Release> {
+      const rels = mockDB.getReleases();
+      const newRelease: Release = {
+        _id: `rel-${Date.now()}`,
+        projectId: r.projectId || 'p-1',
+        projectName: r.projectName || 'StackPilot SaaS',
+        version: r.version || 'v1.0.0',
+        sprintId: r.sprintId,
+        sprintName: r.sprintName,
+        releaseNotes: r.releaseNotes || '',
+        releaseDate: r.releaseDate || new Date().toISOString().split('T')[0],
+        status: r.status || 'Planned',
+        createdAt: new Date().toISOString()
+      };
+      rels.push(newRelease);
+      mockDB.saveReleases(rels);
+      return newRelease;
+    },
+
+    async update(id: string, updates: Partial<Release>): Promise<Release> {
+      const rels = mockDB.getReleases();
+      const idx = rels.findIndex(r => r._id === id);
+      if (idx === -1) throw new Error('Release not found');
+      const updated = { ...rels[idx], ...updates, updatedAt: new Date().toISOString() };
+      rels[idx] = updated;
+      mockDB.saveReleases(rels);
+      return updated;
+    },
+
+    async delete(id: string): Promise<void> {
+      const rels = mockDB.getReleases().filter(r => r._id !== id);
+      mockDB.saveReleases(rels);
+    }
+  },
+
   tasks: {
     async list(projectId?: string): Promise<Task[]> {
       try {
@@ -631,22 +1117,39 @@ export const API = {
       const nextNum = 100 + tasks.length + 1;
       const taskIdStr = t.taskId || `SP-${nextNum}`;
 
+      // Resolve sprint name if sprintId provided
+      let sprintNameStr = t.sprintName;
+      if (t.sprintId) {
+        const spr = mockDB.getSprints().find(s => s._id === t.sprintId);
+        if (spr) sprintNameStr = spr.name;
+      }
+
+      const statusVal = t.status || (t.sprintId ? 'Todo' : 'Backlog');
+      const estTime = t.estimatedTime !== undefined ? t.estimatedTime : 4;
+      const logTime = t.loggedTime || 0;
+
       const newTask: Task = {
         _id: `t-${Date.now()}`,
         taskId: taskIdStr,
         projectId: t.projectId || 'p-1',
         projectName: t.projectName || 'StackPilot SaaS',
+        sprintId: t.sprintId,
+        sprintName: sprintNameStr,
+        sprint: sprintNameStr,
         title: t.title || 'New Task',
         description: t.description || '',
-        status: t.status || 'Todo',
+        status: statusVal,
         priority: t.priority || 'Medium',
         assigneeId: t.assigneeId || u._id,
         assigneeName: t.assigneeName || u.name,
         reporterId: t.reporterId || u._id,
         reporterName: t.reporterName || u.name,
-        sprint: t.sprint || 'Sprint 14',
         dueDate: t.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        labels: [],
+        storyPoints: t.storyPoints || 3,
+        estimatedTime: estTime,
+        loggedTime: logTime,
+        remainingTime: Math.max(0, estTime - logTime),
+        labels: t.labels || [],
         checklist: t.checklist || [],
         comments: t.comments || [],
         attachments: t.attachments || [],
@@ -659,8 +1162,6 @@ export const API = {
             timestamp: new Date().toISOString()
           }
         ],
-        estimatedTime: t.estimatedTime || 4,
-        loggedTime: t.loggedTime || 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -726,6 +1227,22 @@ export const API = {
         mockDB.saveActivities(acts);
       }
 
+      if (updates.sprintId !== undefined && updates.sprintId !== oldTask.sprintId) {
+        const sprints = mockDB.getSprints();
+        const spr = sprints.find(s => s._id === updates.sprintId);
+        const sprName = spr ? spr.name : (updates.sprintId ? 'Assigned Sprint' : 'Backlog');
+        updates.sprintName = sprName;
+        updates.sprint = sprName;
+
+        newActivity.unshift({
+          id: `act-${Date.now()}-sprint`,
+          type: 'sprint_changed',
+          user: u.name,
+          text: `Moved to ${sprName}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+
       if (updates.assigneeId && updates.assigneeId !== oldTask.assigneeId) {
         const users = mockDB.getUsers();
         const assigneeUser = users.find(usr => usr._id === updates.assigneeId);
@@ -781,12 +1298,16 @@ export const API = {
         });
       }
 
+      const est = updates.estimatedTime !== undefined ? updates.estimatedTime : (oldTask.estimatedTime || 0);
+      const logTime = updates.loggedTime !== undefined ? updates.loggedTime : (oldTask.loggedTime || 0);
+      updates.remainingTime = Math.max(0, est - logTime);
+
       if (updates.loggedTime !== undefined && updates.loggedTime !== oldTask.loggedTime) {
         newActivity.unshift({
           id: `act-${Date.now()}-time`,
           type: 'time_logged',
           user: u.name,
-          text: `Logged time updated to ${updates.loggedTime}h`,
+          text: `Logged time updated to ${logTime}h`,
           timestamp: new Date().toISOString()
         });
       }
@@ -1033,13 +1554,28 @@ export const API = {
     async list(): Promise<Notification[]> {
       return mockDB.getNotifications();
     },
-
+    async markRead(id: string): Promise<void> {
+      const list = mockDB.getNotifications();
+      const item = list.find(n => n._id === id);
+      if (item) {
+        item.read = true;
+        mockDB.saveNotifications(list);
+      }
+    },
     async markAsRead(id: string): Promise<void> {
-      const notifs = mockDB.getNotifications();
-      const n = notifs.find(item => item._id === id);
-      if (n) {
-        n.read = true;
-        mockDB.saveNotifications(notifs);
+      return this.markRead(id);
+    },
+    async markAllRead(): Promise<void> {
+      const list = mockDB.getNotifications();
+      list.forEach(n => { n.read = true; });
+      mockDB.saveNotifications(list);
+    },
+    async archive(id: string): Promise<void> {
+      const list = mockDB.getNotifications();
+      const item = list.find(n => n._id === id);
+      if (item) {
+        item.archived = true;
+        mockDB.saveNotifications(list);
       }
     }
   },
@@ -1088,6 +1624,15 @@ export const API = {
 
   presentationRequests: {
     async create(data: Omit<PresentationRequest, '_id' | 'status' | 'createdAt'>): Promise<PresentationRequest> {
+      try {
+        if (!API.isMockMode) {
+          const res = await apiClient.post('/presentation-requests', data);
+          return res.data.data || res.data;
+        }
+      } catch (err) {
+        console.warn('Backend presentation-requests API call failed. Falling back to Mock DB...', err);
+      }
+
       const requests = mockDB.getPresentationRequests();
       const newReq: PresentationRequest = {
         _id: `pr-${Date.now()}`,
@@ -1105,11 +1650,34 @@ export const API = {
         userId: 'u-system',
         userName: data.name,
         userRole: 'Client',
-        action: 'Presentation Requested',
-        details: `Presentation request from ${data.email} (${data.companyName}) sent to creovixstack@gmail.com`,
+        action: 'Product Deck Downloaded',
+        details: `PPT presentation downloaded by ${data.name} (${data.email}, ${data.companyName || 'Lead'})`,
         createdAt: new Date().toISOString()
       });
       mockDB.saveActivities(activities);
+
+      // Automatically register captured lead in CRM leads
+      try {
+        const leads = mockDB.getLeads();
+        const existing = leads.find(l => l.email.toLowerCase() === data.email.toLowerCase());
+        if (!existing) {
+          leads.unshift({
+            _id: `l-${Date.now()}`,
+            name: data.name,
+            companyName: data.companyName || 'Prospect Org',
+            email: data.email,
+            phone: data.phone || '',
+            status: 'Lead',
+            value: 0,
+            tags: ['Presentation Lead'],
+            notes: 'Downloaded Product Presentation Deck (PPT) via Landing Page',
+            createdAt: new Date().toISOString()
+          });
+          mockDB.saveLeads(leads);
+        }
+      } catch (leadSyncErr) {
+        console.warn('Could not sync presentation lead to CRM mock DB:', leadSyncErr);
+      }
 
       return newReq;
     },
@@ -1119,6 +1687,146 @@ export const API = {
     async delete(id: string): Promise<void> {
       const list = mockDB.getPresentationRequests().filter(r => r._id !== id);
       mockDB.savePresentationRequests(list);
+    }
+  },
+
+  approvals: {
+    async list(): Promise<ApprovalRequest[]> {
+      return mockDB.getApprovals();
+    },
+    async create(data: Omit<ApprovalRequest, '_id' | 'status' | 'submittedAt'>): Promise<ApprovalRequest> {
+      const items = mockDB.getApprovals();
+      const newItem: ApprovalRequest = {
+        _id: `app-${Date.now()}`,
+        ...data,
+        status: 'Pending',
+        submittedAt: new Date().toISOString()
+      };
+      items.unshift(newItem);
+      mockDB.saveApprovals(items);
+      return newItem;
+    },
+    async updateStatus(id: string, status: 'Approved' | 'Rejected', comments?: string): Promise<ApprovalRequest> {
+      const items = mockDB.getApprovals();
+      const idx = items.findIndex(a => a._id === id);
+      if (idx !== -1) {
+        items[idx].status = status;
+        items[idx].reviewedAt = new Date().toISOString();
+        if (comments) items[idx].comments = comments;
+        mockDB.saveApprovals(items);
+        return items[idx];
+      }
+      throw new Error('Approval request not found');
+    }
+  },
+
+  workflows: {
+    async list(): Promise<WorkflowRule[]> {
+      return mockDB.getWorkflows();
+    },
+    async create(data: Omit<WorkflowRule, '_id' | 'executionCount' | 'createdAt'>): Promise<WorkflowRule> {
+      const items = mockDB.getWorkflows();
+      const newItem: WorkflowRule = {
+        _id: `wf-${Date.now()}`,
+        ...data,
+        executionCount: 0,
+        createdAt: new Date().toISOString()
+      };
+      items.unshift(newItem);
+      mockDB.saveWorkflows(items);
+      return newItem;
+    },
+    async toggle(id: string): Promise<WorkflowRule> {
+      const items = mockDB.getWorkflows();
+      const idx = items.findIndex(w => w._id === id);
+      if (idx !== -1) {
+        items[idx].status = items[idx].status === 'Active' ? 'Disabled' : 'Active';
+        mockDB.saveWorkflows(items);
+        return items[idx];
+      }
+      throw new Error('Workflow rule not found');
+    }
+  },
+
+  contracts: {
+    async list(): Promise<Contract[]> {
+      return mockDB.getContracts();
+    },
+    async create(data: Omit<Contract, '_id' | 'createdAt'>): Promise<Contract> {
+      const items = mockDB.getContracts();
+      const newItem: Contract = {
+        _id: `ctr-${Date.now()}`,
+        ...data,
+        createdAt: new Date().toISOString()
+      };
+      items.unshift(newItem);
+      mockDB.saveContracts(items);
+      return newItem;
+    }
+  },
+
+  timesheets: {
+    async list(): Promise<TimesheetEntry[]> {
+      return mockDB.getTimesheets();
+    },
+    async create(data: Omit<TimesheetEntry, '_id' | 'status' | 'createdAt'>): Promise<TimesheetEntry> {
+      const items = mockDB.getTimesheets();
+      const newItem: TimesheetEntry = {
+        _id: `ts-${Date.now()}`,
+        ...data,
+        status: 'Submitted',
+        createdAt: new Date().toISOString()
+      };
+      items.unshift(newItem);
+      mockDB.saveTimesheets(items);
+      return newItem;
+    },
+    async updateStatus(id: string, status: 'Approved' | 'Rejected'): Promise<TimesheetEntry> {
+      const items = mockDB.getTimesheets();
+      const idx = items.findIndex(t => t._id === id);
+      if (idx !== -1) {
+        items[idx].status = status;
+        mockDB.saveTimesheets(items);
+        return items[idx];
+      }
+      throw new Error('Timesheet entry not found');
+    }
+  },
+
+
+
+  auditLogs: {
+    async list(): Promise<ActivityLog[]> {
+      return mockDB.getActivities();
+    },
+    async create(log: Omit<ActivityLog, '_id' | 'createdAt'>): Promise<ActivityLog> {
+      const list = mockDB.getActivities();
+      const newLog: ActivityLog = {
+        _id: `aud-${Date.now()}`,
+        ...log,
+        createdAt: new Date().toISOString()
+      };
+      list.unshift(newLog);
+      mockDB.saveActivities(list);
+      return newLog;
+    }
+  },
+
+  organization: {
+    async get(): Promise<Organization> {
+      return mockDB.getOrganization();
+    },
+    async update(updates: Partial<Organization>): Promise<Organization> {
+      const current = mockDB.getOrganization();
+      const updated = { ...current, ...updates };
+      mockDB.saveOrganization(updated);
+      return updated;
+    }
+  },
+
+  systemHealth: {
+    async get(): Promise<SystemHealth> {
+      return mockDB.getSystemHealth();
     }
   },
 

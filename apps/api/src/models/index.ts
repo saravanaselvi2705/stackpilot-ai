@@ -240,9 +240,26 @@ const SprintSchema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
   name: { type: String, required: true },
   goal: { type: String },
-  startDate: { type: Date },
-  endDate: { type: Date },
-  status: { type: String, enum: ['Future', 'Active', 'Closed'], default: 'Future' },
+  description: { type: String },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  status: { type: String, enum: ['Planning', 'Active', 'Completed', 'Archived'], default: 'Planning' },
+  capacity: { type: Number, default: 40 },
+  storyPoints: { type: Number, default: 0 },
+  velocity: { type: Number, default: 0 },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  isDeleted: { type: Boolean, default: false },
+}, { timestamps: true });
+
+// Release Schema
+const ReleaseSchema = new Schema({
+  projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
+  version: { type: String, required: true },
+  sprintId: { type: Schema.Types.ObjectId, ref: 'Sprint' },
+  releaseNotes: { type: String },
+  releaseDate: { type: Date },
+  status: { type: String, enum: ['Planned', 'In Progress', 'Deployed', 'Rolled Back'], default: 'Planned' },
+  isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Meeting Schema
@@ -469,6 +486,78 @@ const ActivityLogSchema = new Schema({
   userAgent: { type: String }
 }, { timestamps: true });
 
+const ApprovalSchema = new Schema({
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  requestedBy: { type: String, required: true },
+  requestedByName: { type: String, required: true },
+  requestedByAvatar: { type: String },
+  approverId: { type: String, required: true },
+  approverName: { type: String, required: true },
+  amount: { type: Number },
+  status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'], default: 'Pending' },
+  comments: { type: String },
+  submittedAt: { type: Date, default: Date.now },
+  reviewedAt: { type: Date }
+}, { timestamps: true });
+
+const WorkflowRuleSchema = new Schema({
+  name: { type: String, required: true },
+  trigger: { type: String, required: true },
+  condition: { type: String },
+  action: { type: String, required: true },
+  status: { type: String, enum: ['Active', 'Disabled'], default: 'Active' },
+  executionCount: { type: Number, default: 0 },
+  lastExecuted: { type: Date }
+}, { timestamps: true });
+
+const ContractSchema = new Schema({
+  contractNumber: { type: String, required: true },
+  title: { type: String, required: true },
+  clientId: { type: String, required: true },
+  clientName: { type: String, required: true },
+  value: { type: Number, default: 0 },
+  startDate: { type: String },
+  endDate: { type: String },
+  status: { type: String, enum: ['Draft', 'Active', 'Expired', 'Terminated'], default: 'Active' },
+  documentUrl: { type: String }
+}, { timestamps: true });
+
+const TimesheetSchema = new Schema({
+  userId: { type: String, required: true },
+  userName: { type: String, required: true },
+  projectId: { type: String, required: true },
+  projectName: { type: String, required: true },
+  taskId: { type: String },
+  date: { type: String, required: true },
+  hours: { type: Number, required: true },
+  billable: { type: Boolean, default: true },
+  description: { type: String },
+  status: { type: String, enum: ['Submitted', 'Approved', 'Rejected'], default: 'Submitted' }
+}, { timestamps: true });
+
+const OrganizationSchema = new Schema({
+  name: { type: String, required: true },
+  code: { type: String, required: true },
+  domain: { type: String },
+  plan: { type: String, enum: ['Startup', 'Growth', 'Enterprise'], default: 'Enterprise' },
+  departments: [{
+    id: { type: String },
+    name: { type: String },
+    manager: { type: String },
+    memberCount: { type: Number, default: 0 }
+  }],
+  status: { type: String, enum: ['Active', 'Trial', 'Suspended'], default: 'Active' }
+}, { timestamps: true });
+
+const PresentationRequestSchema = new Schema({
+  name: { type: String, required: true },
+  companyName: { type: String },
+  email: { type: String, required: true },
+  phone: { type: String }
+}, { timestamps: true });
+
 export const User = model('User', UserSchema);
 export const Role = model('Role', RoleSchema);
 export const Permission = model('Permission', PermissionSchema);
@@ -481,6 +570,7 @@ export const Activity = model('Activity', ActivitySchema);
 export const Project = model('Project', ProjectSchema);
 export const Task = model('Task', TaskSchema);
 export const Sprint = model('Sprint', SprintSchema);
+export const Release = model('Release', ReleaseSchema);
 export const Meeting = model('Meeting', MeetingSchema);
 export const Document = model('Document', DocumentSchema);
 export const Folder = model('Folder', FolderSchema);
@@ -498,3 +588,12 @@ export const AutomationRule = model('AutomationRule', AutomationRuleSchema);
 export const Tenant = model('Tenant', TenantSchema);
 export const ActivityLog = model('ActivityLog', ActivityLogSchema);
 export const AuditLog = ActivityLog;
+export const Approval = model('Approval', ApprovalSchema);
+export const WorkflowRule = model('WorkflowRule', WorkflowRuleSchema);
+export const Contract = model('Contract', ContractSchema);
+export const Timesheet = model('Timesheet', TimesheetSchema);
+export const Organization = model('Organization', OrganizationSchema);
+export const PresentationRequest = model('PresentationRequest', PresentationRequestSchema);
+
+
+

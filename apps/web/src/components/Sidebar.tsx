@@ -4,25 +4,40 @@ import { useAuth } from '../context/AuthContext';
 import { useCustomization } from '../context/CustomizationContext';
 import { 
   IoSpeedometerOutline, 
+  IoPersonOutline,
+  IoNotificationsOutline,
   IoPeopleOutline, 
   IoFolderOpenOutline, 
   IoListOutline, 
-  IoSparklesOutline, 
-  IoGlobeOutline, 
-  IoPeopleCircleOutline, 
+  IoFlashOutline,
+  IoCalendarOutline,
+  IoDocumentTextOutline,
   IoCashOutline, 
-  IoCalendarOutline, 
+  IoBarChartOutline,
+  IoBusinessOutline,
+  IoBriefcaseOutline,
+  IoPeopleCircleOutline,
+  IoAirplaneOutline,
+  IoRibbonOutline,
+  IoShieldCheckmarkOutline,
+  IoHardwareChipOutline,
   IoSettingsOutline,
+  IoSparklesOutline,
+  IoChatbubblesOutline,
+  IoStatsChartOutline,
   IoChevronBackOutline,
   IoChevronForwardOutline,
   IoChevronDownOutline,
   IoChevronUpOutline,
-  IoLogOutOutline
+  IoLogOutOutline,
+  IoSearchOutline
 } from 'react-icons/io5';
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const { settings, hasPermission } = useCustomization();
+  const [menuSearch, setMenuSearch] = useState<string>('');
+  
   const [collapsed, setCollapsedState] = useState<boolean>(() => {
     const stored = localStorage.getItem('sp_sidebar_collapsed');
     return stored ? stored === 'true' : false;
@@ -34,16 +49,14 @@ export const Sidebar: React.FC = () => {
   };
 
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
-    'Dashboard': true,
-    'Project Management': true,
-    'AI Workspace': false,
-    'Finance': false,
-    'Reports': true,
-    'Team': false,
-    'Leave Management': false,
-    'Productivity': true,
-    'Administration': false
+    'Workspace': true,
+    'Operations': true,
+    'Business': true,
+    'People': false,
+    'Administration': false,
+    'AI OS': true
   });
+
   const location = useLocation();
   const currentPathWithSearch = location.pathname + location.search;
 
@@ -56,75 +69,72 @@ export const Sidebar: React.FC = () => {
 
   const navigationGroups = [
     {
-      title: 'Dashboard',
+      title: 'Workspace',
       items: [
-        ...(settings.sidebarMenu.dashboard ? [{ name: 'Overview', path: '/dashboard', icon: <IoSpeedometerOutline size={18} /> }] : []),
-        ...(settings.sidebarMenu.crm && hasPermission('CRM', 'view') ? [{ name: 'Clients', path: '/crm', icon: <IoPeopleOutline size={18} /> }] : [])
+        { name: 'Dashboard', path: '/dashboard', icon: <IoSpeedometerOutline size={18} /> },
+        { name: 'My Work', path: '/my-work', icon: <IoPersonOutline size={18} /> },
+        { name: 'Notifications', path: '/notifications', icon: <IoNotificationsOutline size={18} /> }
       ]
     },
     {
-      title: 'Project Management',
+      title: 'Operations',
       items: [
-        ...(settings.sidebarMenu.projects && hasPermission('PM', 'view') ? [{ name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={18} /> }] : []),
-        ...(settings.sidebarMenu.tasks && hasPermission('PM', 'view') ? [{ name: 'Tasks', path: '/tasks', icon: <IoListOutline size={18} /> }] : [])
+        ...(hasPermission('CRM', 'view') ? [{ name: 'CRM Pipeline', path: '/crm', icon: <IoPeopleOutline size={18} /> }] : []),
+        ...(hasPermission('PM', 'view') ? [{ name: 'Projects', path: '/projects', icon: <IoFolderOpenOutline size={18} /> }] : []),
+        ...(hasPermission('PM', 'view') ? [
+          { name: 'Sprint Planning', path: '/tasks?tab=sprints', icon: <IoFlashOutline size={18} /> },
+          { name: 'Task Board', path: '/tasks?tab=board', icon: <IoListOutline size={18} /> }
+        ] : []),
+        { name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={18} /> },
+        { name: 'Documents', path: '/documents', icon: <IoDocumentTextOutline size={18} /> }
       ]
     },
     {
-      title: 'AI Workspace',
+      title: 'Business',
       items: [
-        ...(settings.sidebarMenu.documentation ? [{ name: 'AI Tools', path: '/ai-studio', icon: <IoSparklesOutline size={18} /> }] : [])
+        ...(hasPermission('Finance', 'view') ? [{ name: 'Finance & Invoices', path: '/finance', icon: <IoCashOutline size={18} /> }] : []),
+        { name: 'Reports Hub', path: '/reports', icon: <IoBarChartOutline size={18} /> },
+        { name: 'Contracts', path: '/contracts', icon: <IoBriefcaseOutline size={18} /> },
+        { name: 'Approvals Engine', path: '/approvals', icon: <IoShieldCheckmarkOutline size={18} /> }
       ]
     },
     {
-      title: 'Finance',
+      title: 'People',
       items: [
-        ...(settings.sidebarMenu.finance && hasPermission('Finance', 'view') ? [{ name: 'Invoice & Billing', path: '/finance', icon: <IoCashOutline size={18} /> }] : [])
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        ...(settings.sidebarMenu.reports && hasPermission('SEO', 'view') ? [
-          { name: 'Reports Suite', path: '/reports', icon: <IoGlobeOutline size={18} /> }
-        ] : [])
-      ]
-    },
-    {
-      title: 'Team',
-      items: [
-        ...(settings.sidebarMenu.team ? [
-          { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> }
-        ] : [])
-      ]
-    },
-    {
-      title: 'Leave Management',
-      items: [
-        ...(settings.sidebarMenu.team ? [
-          { name: 'Leave Requests', path: '/leave-requests', icon: <IoCalendarOutline size={18} /> }
-        ] : [])
-      ]
-    },
-    {
-      title: 'Productivity',
-      items: [
-        ...(settings.sidebarMenu.calendar ? [{ name: 'Calendar', path: '/calendar', icon: <IoCalendarOutline size={18} /> }] : [])
+        { name: 'Team Members', path: '/team', icon: <IoPeopleCircleOutline size={18} /> },
+        { name: 'Leave Requests', path: '/leave-requests', icon: <IoAirplaneOutline size={18} /> },
+        { name: 'Timesheets', path: '/timesheets', icon: <IoRibbonOutline size={18} /> }
       ]
     },
     {
       title: 'Administration',
       items: [
-        { name: 'Administration', path: '/settings', icon: <IoSettingsOutline size={18} /> }
+        ...(user?.role === 'Super Admin' || user?.role === 'Admin' ? [
+          { name: 'Organization', path: '/organization', icon: <IoBusinessOutline size={18} /> },
+          { name: 'Audit Logs', path: '/audit-logs', icon: <IoShieldCheckmarkOutline size={18} /> },
+          { name: 'Workflows', path: '/workflows', icon: <IoHardwareChipOutline size={18} /> },
+          { name: 'System Health', path: '/system-health', icon: <IoHardwareChipOutline size={18} /> }
+        ] : []),
+        { name: 'Settings & Roles', path: '/settings', icon: <IoSettingsOutline size={18} /> }
+      ]
+    },
+    {
+      title: 'AI OS',
+      items: [
+        { name: 'AI Workspace', path: '/ai-studio', icon: <IoSparklesOutline size={18} /> },
+        { name: 'AI Assistant', path: '/ai-assistant', icon: <IoChatbubblesOutline size={18} /> },
+        { name: 'AI Business Reports', path: '/ai-reports', icon: <IoStatsChartOutline size={18} /> }
       ]
     }
   ];
 
   const isActive = (itemPath: string) => {
     if (currentPathWithSearch === itemPath) return true;
+    if (itemPath === '/dashboard' && location.pathname === '/dashboard' && !location.search) return true;
+    if (itemPath === '/my-work' && location.pathname === '/my-work') return true;
     if (itemPath === '/crm' && location.pathname === '/crm' && !location.search) return true;
     if (itemPath === '/finance' && location.pathname === '/finance' && !location.search) return true;
     if (itemPath === '/team' && location.pathname === '/team' && !location.search) return true;
-    if (itemPath === '/dashboard' && location.pathname === '/dashboard' && !location.search) return true;
     if (itemPath === '/settings' && location.pathname === '/settings' && !location.search) return true;
     return location.pathname === itemPath.split('?')[0] && itemPath.indexOf('?') === -1;
   };
@@ -137,7 +147,7 @@ export const Sidebar: React.FC = () => {
     >
       {/* Top Brand Logo */}
       <div>
-        <div className="flex items-center justify-between px-5 py-6 border-b border-slate-800 h-[73px]">
+        <div className="flex items-center justify-between px-5 py-5 border-b border-slate-800 h-[73px]">
           <div className="flex items-center gap-3 overflow-hidden">
             {settings.logoUrl ? (
               <img src={settings.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain shrink-0" />
@@ -150,9 +160,12 @@ export const Sidebar: React.FC = () => {
               </div>
             )}
             {!collapsed && (
-              <span className="font-display font-black text-sm tracking-wider text-white select-none truncate">
-                {settings.companyName}
-              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-display font-black text-sm tracking-wider text-white select-none truncate">
+                  {settings.companyName}
+                </span>
+                <span className="text-[9px] font-extrabold text-emerald-400 uppercase tracking-widest">Business OS v1.1</span>
+              </div>
             )}
           </div>
           
@@ -164,13 +177,32 @@ export const Sidebar: React.FC = () => {
             {collapsed ? <IoChevronForwardOutline size={16} /> : <IoChevronBackOutline size={16} />}
           </button>
         </div>
+
+        {/* Sidebar Search Filter */}
+        {!collapsed && (
+          <div className="px-3 pt-3">
+            <div className="relative">
+              <IoSearchOutline className="absolute left-3 top-2.5 text-slate-500" size={14} />
+              <input
+                type="text"
+                placeholder="Filter menu..."
+                value={menuSearch}
+                onChange={e => setMenuSearch(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+          </div>
+        )}
  
         {/* Navigation list */}
-        <nav className="p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-180px)] scrollbar-none">
+        <nav className="p-3 space-y-2 overflow-y-auto max-h-[calc(100vh-190px)] scrollbar-none">
           {navigationGroups.map((group) => {
-            const isExpanded = expandedCategories[group.title];
-            
-            if (group.items.length === 0) return null;
+            const filteredItems = group.items.filter(item => 
+              item.name.toLowerCase().includes(menuSearch.toLowerCase())
+            );
+
+            if (filteredItems.length === 0) return null;
+            const isExpanded = expandedCategories[group.title] || menuSearch.length > 0;
 
             return (
               <div key={group.title} className="space-y-1">
@@ -178,7 +210,7 @@ export const Sidebar: React.FC = () => {
                 {!collapsed ? (
                   <button
                     onClick={() => toggleCategory(group.title)}
-                    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold text-slate-400 hover:text-slate-200 uppercase tracking-widest cursor-pointer select-none"
+                    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-extrabold text-slate-400 hover:text-slate-200 uppercase tracking-widest cursor-pointer select-none"
                   >
                     <span>{group.title}</span>
                     <span className="text-slate-400">
@@ -192,7 +224,7 @@ export const Sidebar: React.FC = () => {
                 {/* Category Items */}
                 {(isExpanded || collapsed) && (
                   <div className="space-y-1 transition-all duration-300">
-                    {group.items.map((item) => {
+                    {filteredItems.map((item) => {
                       const active = isActive(item.path);
                       return (
                         <NavLink

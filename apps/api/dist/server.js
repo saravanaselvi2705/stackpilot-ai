@@ -54,13 +54,12 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stackp
 app.use(security_1.helmetSecurity);
 app.use((0, security_1.rateLimiter)({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(security_1.sanitizeInputs);
-app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true,
-}));
+app.use((0, cors_1.default)(security_1.corsOptions));
 app.use(express_1.default.json());
 // Serve static file uploads (avatars)
 app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
+// Serve static presentation and download assets
+app.use('/assets', express_1.default.static(path_1.default.join(process.cwd(), 'public/assets')));
 // Modular API Router
 app.use('/api', routes_1.default);
 // Legacy Route Compatibility Endpoints
@@ -86,8 +85,9 @@ app.post('/api/finance/invoices', auth_1.authenticateJWT, ctrl.createInvoice);
 app.get('/api/seo/reports', auth_1.authenticateJWT, ctrl.getSEOReport);
 // AI routes
 app.post('/api/ai/requirements', auth_1.authenticateJWT, ctrl.aiGenerateRequirements);
-app.post('/api/ai/testcases', auth_1.authenticateJWT, ctrl.aiGenerateTestCases);
 app.post('/api/ai/bugreport', auth_1.authenticateJWT, ctrl.aiGenerateBugReport);
+// Presentation Request route
+app.post('/api/presentation-requests', ctrl.createPresentationRequest);
 // Centralized error handler
 app.use(security_1.errorHandler);
 // Connect to MongoDB & start server

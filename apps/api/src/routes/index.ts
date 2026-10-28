@@ -7,6 +7,7 @@ import auditRoutes from './auditRoutes';
 import crmRoutes from './crmRoutes';
 import projectRoutes from './projectRoutes';
 import taskRoutes from './taskRoutes';
+import sprintRoutes from './sprintRoutes';
 import teamRoutes from './teamRoutes';
 import notificationRoutes from './notificationRoutes';
 import dashboardRoutes from './dashboardRoutes';
@@ -19,6 +20,7 @@ import calendarRoutes from './calendarRoutes';
 import automationRoutes from './automationRoutes';
 import saasRoutes from './saasRoutes';
 import healthRoutes from './healthRoutes';
+import presentationRoutes from './presentationRoutes';
 
 const router = Router();
 
@@ -31,6 +33,7 @@ router.use('/audit-logs', auditRoutes);
 router.use('/crm', crmRoutes);
 router.use('/projects', projectRoutes);
 router.use('/tasks', taskRoutes);
+router.use('/sprints', sprintRoutes);
 router.use('/team', teamRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
@@ -42,5 +45,6 @@ router.use('/reports', reportsRoutes);
 router.use('/calendar', calendarRoutes);
 router.use('/automation', automationRoutes);
 router.use('/saas', saasRoutes);
+router.use('/presentation-requests', presentationRoutes);
 
 export default router;

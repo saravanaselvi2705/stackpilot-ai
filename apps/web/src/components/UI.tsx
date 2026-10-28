@@ -16,7 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyle = 'inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#22C55E] disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyle = 'inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#22C55E] disabled:opacity-50 disabled:cursor-not-allowed transform-gpu transition-transform duration-150';
   
   const variants = {
     primary: 'bg-[#22C55E] text-white hover:bg-[#1db053] shadow-md shadow-[#22C55E]/20 active:scale-[0.98]',
@@ -60,7 +60,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', hoverEffec
   return (
     <div
       onClick={onClick}
-      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden group shadow-sm ${
+      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 relative overflow-hidden group shadow-sm ${
         hoverEffect ? 'hover:translate-y-[-2px] hover:border-[#22C55E]/40 hover:shadow-md cursor-pointer' : ''
       } ${className}`}
     >
@@ -81,7 +81,7 @@ interface BadgeProps {
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'secondary', className = '' }) => {
   const styles = {
     primary: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-    secondary: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+    secondary: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10',
     success: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20',
     warning: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20',
     danger: 'bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20',
@@ -130,10 +130,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.4 }}
-            className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-200 dark:border-slate-800`}
+            className={`w-full ${sizes[size]} bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative z-10 border border-slate-200 dark:border-white/10`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60">
               <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">{title}</h3>
               <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
                 <IoClose size={22} />
@@ -178,10 +178,10 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, children
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="w-full max-w-md h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-10 flex flex-col"
+            className="w-full max-w-md h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 shadow-2xl z-10 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-850">
               <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white">{title}</h3>
               <button onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
                 <IoClose size={22} />

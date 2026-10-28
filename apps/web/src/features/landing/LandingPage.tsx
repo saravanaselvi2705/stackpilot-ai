@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../../components/SEO';
 import API from '../../services/api';
-import { 
-  IoSparklesSharp, 
-  IoArrowForwardOutline, 
-  IoCheckmarkCircle, 
-  IoLayersOutline, 
-  IoChevronDownOutline, 
+import PresentationDownloadModal from '../../components/PresentationDownloadModal';
+import {
+  IoSparklesSharp,
+  IoArrowForwardOutline,
+  IoCheckmarkCircle,
+  IoLayersOutline,
+  IoChevronDownOutline,
   IoChevronUpOutline,
   IoPeopleOutline,
   IoListOutline,
@@ -20,11 +21,14 @@ import {
   IoShieldCheckmarkOutline,
   IoCloseOutline,
   IoMailOutline,
-  IoCallOutline,
   IoBriefcaseOutline,
   IoRibbonOutline,
   IoDesktopOutline,
-  IoSearchOutline
+  IoSearchOutline,
+  IoDownloadOutline,
+  IoLogoWhatsapp,
+  IoLogoLinkedin,
+  IoMenuOutline
 } from 'react-icons/io5';
 
 export const LandingPage: React.FC = () => {
@@ -41,6 +45,18 @@ export const LandingPage: React.FC = () => {
   // FAQ toggle
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Smooth scroll helper
+  const scrollTo = (id: string) => {
+    setIsMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   // Form states
   const [startFreeData, setStartFreeData] = useState({
     name: '',
@@ -53,15 +69,6 @@ export const LandingPage: React.FC = () => {
   });
   const [startFreeSuccess, setStartFreeSuccess] = useState(false);
   const [startFreeLoading, setStartFreeLoading] = useState(false);
-
-  const [presData, setPresData] = useState({
-    name: '',
-    companyName: '',
-    email: '',
-    phone: ''
-  });
-  const [presSuccess, setPresSuccess] = useState(false);
-  const [presLoading, setPresLoading] = useState(false);
 
   const handleStartFreeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,19 +83,6 @@ export const LandingPage: React.FC = () => {
     }
   };
 
-  const handlePresSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPresLoading(true);
-    try {
-      await API.presentationRequests.create(presData);
-      setPresSuccess(true);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPresLoading(false);
-    }
-  };
-
   const toggleFaq = (index: number) => {
     setFaqOpen(faqOpen === index ? null : index);
   };
@@ -96,7 +90,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans selection:bg-[#22C55E]/30 relative overflow-x-hidden">
       {/* Dynamic SEO Tags & Structured Data */}
-      <SEO 
+      <SEO
         title="StackPilot AI - Streamline Workflows & Scale Business Operations with AI"
         description="Unified enterprise platform connecting CRM, Project Management, Automated Billing, SEO Tracking, and AI Productivity. Powered by Creovix.Stack."
       />
@@ -106,43 +100,113 @@ export const LandingPage: React.FC = () => {
       <div className="absolute top-[800px] right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
       {/* Header Navigation Bar */}
-      <header className="fixed top-0 inset-x-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#22C55E] to-emerald-600 flex items-center justify-center font-display font-black text-white text-lg shadow-md shadow-[#22C55E]/20">
-            S
+      <header className="fixed top-0 inset-x-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="px-4 sm:px-6 py-3.5 flex items-center justify-between max-w-screen-xl mx-auto">
+          {/* Logo */}
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5 cursor-pointer">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#22C55E] to-emerald-600 flex items-center justify-center font-display font-black text-white text-lg shadow-md shadow-[#22C55E]/20">
+              S
+            </div>
+            <span className="font-display font-black text-xl tracking-tight text-slate-900 select-none">
+              StackPilot<span className="text-xs font-bold text-[#22C55E] align-super ml-0.5">AI</span>
+            </span>
+          </button>
+
+          {/* Desktop Nav */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-600">
+            <button onClick={() => scrollTo('workspace')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Product</button>
+            <button onClick={() => scrollTo('features')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Features</button>
+            <button onClick={() => scrollTo('why-us')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Why StackPilot</button>
+            <button onClick={() => scrollTo('presentation')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Product PPT</button>
+            <button onClick={() => scrollTo('pricing')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Pricing</button>
+            <button onClick={() => scrollTo('faq')} className="hover:text-[#22C55E] transition-colors cursor-pointer">FAQ</button>
+            <button onClick={() => navigate('/security')} className="hover:text-[#22C55E] transition-colors cursor-pointer">Security</button>
+          </nav>
+
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm font-semibold text-slate-700 hover:text-[#22C55E] cursor-pointer transition-colors"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
+              className="px-5 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white text-sm font-bold shadow-md shadow-[#22C55E]/20 active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Start Free
+            </button>
           </div>
-          <span className="font-display font-black text-xl tracking-tight text-slate-900 select-none">
-            StackPilot<span className="text-xs font-bold text-[#22C55E] align-super ml-0.5">AI</span>
-          </span>
+
+          {/* Mobile: Log In + Hamburger */}
+          <div className="flex lg:hidden items-center gap-2">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm font-semibold text-slate-700 hover:text-[#22C55E] cursor-pointer transition-colors px-2 py-1"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => setIsMobileMenuOpen(prev => !prev)}
+              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 cursor-pointer transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <IoCloseOutline size={22} /> : <IoMenuOutline size={22} />}
+            </button>
+          </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-          <a href="#features" className="hover:text-[#22C55E] transition-colors">Features</a>
-          <a href="#why-us" className="hover:text-[#22C55E] transition-colors">Why StackPilot</a>
-          <a href="#presentation" className="hover:text-[#22C55E] transition-colors">Product PPT</a>
-          <a href="#pricing" className="hover:text-[#22C55E] transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-[#22C55E] transition-colors">FAQ</a>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate('/login')}
-            className="text-sm font-semibold text-slate-700 hover:text-[#22C55E] cursor-pointer"
-          >
-            Log In
-          </button>
-          <button 
-            onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
-            className="px-5 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white text-sm font-bold shadow-md shadow-[#22C55E]/20 active:scale-[0.98] transition-all cursor-pointer"
-          >
-            Start Free
-          </button>
-        </div>
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden border-t border-slate-200 bg-white overflow-hidden"
+            >
+              <nav className="flex flex-col px-4 py-4 gap-1">
+                {[
+                  { label: 'Product', id: 'workspace' },
+                  { label: 'Features', id: 'features' },
+                  { label: 'Why StackPilot', id: 'why-us' },
+                  { label: 'Product PPT', id: 'presentation' },
+                  { label: 'Pricing', id: 'pricing' },
+                  { label: 'FAQ', id: 'faq' },
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollTo(item.id)}
+                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-[#22C55E] transition-colors cursor-pointer"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); navigate('/security'); }}
+                  className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-[#22C55E] transition-colors cursor-pointer"
+                >
+                  Security
+                </button>
+                <div className="mt-2 pt-2 border-t border-slate-100">
+                  <button
+                    onClick={() => { setIsMobileMenuOpen(false); setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
+                    className="w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white text-sm font-bold shadow-md shadow-[#22C55E]/20 transition-all cursor-pointer"
+                  >
+                    Start Free Trial
+                  </button>
+                </div>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Hero Section */}
-      <section className="pt-36 pb-20 px-6 max-w-6xl mx-auto flex flex-col items-center text-center relative z-10">
-        <motion.div 
+      <section id="workspace" className="pt-36 pb-20 px-4 sm:px-6 max-w-6xl mx-auto flex flex-col items-center text-center relative z-10">
+        <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-[#22C55E] mb-6 shadow-sm"
@@ -151,7 +215,7 @@ export const LandingPage: React.FC = () => {
           <span>AI-Powered Enterprise Platform</span>
         </motion.div>
 
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -160,7 +224,7 @@ export const LandingPage: React.FC = () => {
           Streamline Workflows, Manage Projects & Scale Operations with AI
         </motion.h1>
 
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -169,28 +233,28 @@ export const LandingPage: React.FC = () => {
           StackPilot AI brings your entire business together in one easy-to-use workspace. Manage customer pipelines, track project sprints, automate billing, generate documents, and monitor growth without switching between multiple complex tools.
         </motion.p>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center gap-4 mb-16"
         >
-          <button 
+          <button
             onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white font-bold text-base shadow-lg shadow-[#22C55E]/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             Start Free Trial <IoArrowForwardOutline size={18} />
           </button>
-          <button 
-            onClick={() => { setPresSuccess(false); setIsPresentationOpen(true); }}
+          <button
+            onClick={() => setIsPresentationOpen(true)}
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-base border-2 border-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
-            <IoDesktopOutline size={18} className="text-[#22C55E]" /> Schedule Demo
+            <IoDownloadOutline size={18} className="text-[#22C55E]" /> Download Product PPT
           </button>
         </motion.div>
 
         {/* Live Interactive Product Mockup */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -206,25 +270,25 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-              <button 
+              <button
                 onClick={() => setActivePreviewTab('pm')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activePreviewTab === 'pm' ? 'bg-[#22C55E] text-white' : 'text-slate-400 hover:text-white'}`}
               >
                 Project Kanban
               </button>
-              <button 
+              <button
                 onClick={() => setActivePreviewTab('crm')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activePreviewTab === 'crm' ? 'bg-[#22C55E] text-white' : 'text-slate-400 hover:text-white'}`}
               >
                 Client CRM
               </button>
-              <button 
+              <button
                 onClick={() => setActivePreviewTab('finance')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activePreviewTab === 'finance' ? 'bg-[#22C55E] text-white' : 'text-slate-400 hover:text-white'}`}
               >
                 Billing Hub
               </button>
-              <button 
+              <button
                 onClick={() => setActivePreviewTab('seo')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activePreviewTab === 'seo' ? 'bg-[#22C55E] text-white' : 'text-slate-400 hover:text-white'}`}
               >
@@ -350,7 +414,7 @@ export const LandingPage: React.FC = () => {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Platform Uptime</p>
           </div>
           <div>
-            <h3 className="text-3xl font-black text-[#22C55E]">10k+</h3>
+            <h3 className="text-3xl font-black text-[#22C55E]">500+</h3>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Active Teams</p>
           </div>
           <div>
@@ -520,22 +584,37 @@ export const LandingPage: React.FC = () => {
               StackPilot AI Product Presentation (PPT)
             </h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Explore our complete architecture slides, feature breakdown, and enterprise deployment options in our official presentation deck.
+              Explore our complete architecture slides, feature breakdown, and enterprise deployment options. Enter your name and email to download the presentation deck directly to your device.
             </p>
-            <button 
-              onClick={() => { setPresSuccess(false); setIsPresentationOpen(true); }}
-              className="mt-2 px-6 py-3 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white font-bold text-sm shadow-lg shadow-[#22C55E]/20 transition-all cursor-pointer inline-flex items-center gap-2"
-            >
-              <IoDesktopOutline size={18} /> Request Presentation
-            </button>
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => setIsPresentationOpen(true)}
+                className="px-6 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white font-bold text-sm shadow-lg shadow-[#22C55E]/20 transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                <IoDownloadOutline size={18} /> Download Presentation Deck (PPT)
+              </button>
+              <a
+                href="/presentation.html"
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                <IoDesktopOutline size={16} /> Live Web Slides
+              </a>
+            </div>
           </div>
 
           <div className="w-full md:w-1/2 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-3">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-[#22C55E]/10 border border-[#22C55E]/30 flex items-center justify-center text-[#22C55E]">
               <IoRibbonOutline size={32} />
             </div>
-            <h4 className="text-base font-bold text-white">Enterprise Deck v1.0.1</h4>
-            <p className="text-xs text-slate-400">Includes system architecture, module workflows, and client case studies.</p>
+            <h4 className="text-base font-bold text-white">Enterprise Deck v1.0.6 (.PPTX & .PDF)</h4>
+            <p className="text-xs text-slate-400">10 high-impact slides with system architecture, 7-column agile board, CRM workflows, and live metrics. Direct download to customer.</p>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <span className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700">PowerPoint .PPTX</span>
+              <span className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700">PDF Document</span>
+              <span className="px-2.5 py-1 rounded-md bg-emerald-500/20 text-[#22C55E] text-[11px] font-semibold border border-emerald-500/30">Direct Download</span>
+            </div>
           </div>
         </div>
       </section>
@@ -553,13 +632,13 @@ export const LandingPage: React.FC = () => {
 
             {/* Monthly / Annual Toggle */}
             <div className="mt-8 inline-flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-              <button 
+              <button
                 onClick={() => setIsAnnual(false)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${!isAnnual ? 'bg-[#22C55E] text-white' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 Monthly Billing
               </button>
-              <button 
+              <button
                 onClick={() => setIsAnnual(true)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${isAnnual ? 'bg-[#22C55E] text-white' : 'text-slate-600 hover:text-slate-900'}`}
               >
@@ -585,7 +664,7 @@ export const LandingPage: React.FC = () => {
                   <li className="flex items-center gap-2"><IoCheckmarkCircle className="text-[#22C55E]" size={16} /> AI Workspace Preview</li>
                 </ul>
               </div>
-              <button 
+              <button
                 onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
                 className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all cursor-pointer"
               >
@@ -613,7 +692,7 @@ export const LandingPage: React.FC = () => {
                   <li className="flex items-center gap-2"><IoCheckmarkCircle className="text-[#22C55E]" size={16} /> SEO & Keyword Tracker</li>
                 </ul>
               </div>
-              <button 
+              <button
                 onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
                 className="w-full py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white text-xs font-bold shadow-md shadow-[#22C55E]/20 transition-all cursor-pointer"
               >
@@ -636,11 +715,11 @@ export const LandingPage: React.FC = () => {
                   <li className="flex items-center gap-2"><IoCheckmarkCircle className="text-[#22C55E]" size={16} /> Audit Log Export API</li>
                 </ul>
               </div>
-              <button 
-                onClick={() => { setPresSuccess(false); setIsPresentationOpen(true); }}
+              <button
+                onClick={() => setIsPresentationOpen(true)}
                 className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer"
               >
-                Contact Sales
+                Download Deck / Contact Sales
               </button>
             </div>
           </div>
@@ -667,7 +746,7 @@ export const LandingPage: React.FC = () => {
             { q: "Who provides support for StackPilot AI?", a: "StackPilot AI is powered and supported by Creovix.Stack. You can reach out directly via email at creovixstack@gmail.com." }
           ].map((item, idx) => (
             <div key={idx} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-              <button 
+              <button
                 onClick={() => toggleFaq(idx)}
                 className="w-full p-5 text-left flex items-center justify-between font-bold text-slate-900 text-base cursor-pointer hover:bg-slate-50 transition-colors"
               >
@@ -694,7 +773,7 @@ export const LandingPage: React.FC = () => {
             <p className="text-emerald-50 text-base md:text-lg">
               Join thousands of forward-thinking teams streamlining their CRM, projects, billing, and productivity today.
             </p>
-            <button 
+            <button
               onClick={() => { setStartFreeSuccess(false); setIsStartFreeOpen(true); }}
               className="px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-950 text-white font-bold text-base shadow-xl transition-all cursor-pointer inline-flex items-center gap-2"
             >
@@ -706,7 +785,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-16 border-t border-slate-800 text-sm">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-5 gap-10 mb-12">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-10 mb-12">
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-[#22C55E] flex items-center justify-center font-black text-white text-lg">S</div>
@@ -715,59 +794,98 @@ export const LandingPage: React.FC = () => {
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               The unified AI business operations platform for CRM, project management, automated billing, and team collaboration.
             </p>
-            <div className="text-xs font-semibold text-slate-300">
-              Support Email: <a href="mailto:creovixstack@gmail.com" className="text-[#22C55E] hover:underline">creovixstack@gmail.com</a>
+            <div className="mt-6">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-3">Direct Contact</h4>
+              <div className="space-y-3 text-xs font-semibold text-slate-300">
+                <div className="flex items-center gap-2">
+                  <IoLogoWhatsapp size={16} className="text-[#25D366]" />
+                  <a href="https://wa.me/918075995734" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    WhatsApp: +91 8075995734
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <IoMailOutline size={16} className="text-[#22C55E]" />
+                  <a href="mailto:creovixstack@gmail.com" className="hover:text-white transition-colors">
+                    creovixstack@gmail.com
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <IoLogoLinkedin size={16} className="text-[#0A66C2]" />
+                  <a href="https://linkedin.com/in/creovixstack" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    linkedin.com/in/creovixstack
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Product</h4>
             <ul className="space-y-2 text-xs">
-              <li><a href="#features" className="hover:text-white">Features</a></li>
-              <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-              <li><a href="#presentation" className="hover:text-white">Product Deck</a></li>
-              <li><a href="#faq" className="hover:text-white">FAQ</a></li>
+              <li><button onClick={() => scrollTo('features')} className="hover:text-white transition-colors cursor-pointer">Features</button></li>
+              <li><button onClick={() => scrollTo('pricing')} className="hover:text-white transition-colors cursor-pointer">Pricing</button></li>
+              <li><button onClick={() => scrollTo('presentation')} className="hover:text-white transition-colors cursor-pointer">Product Deck</button></li>
+              <li><button onClick={() => scrollTo('faq')} className="hover:text-white transition-colors cursor-pointer">FAQ</button></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Legal</h4>
             <ul className="space-y-2 text-xs">
-              <li><a href="#privacy" className="hover:text-white">Privacy Policy</a></li>
-              <li><a href="#terms" className="hover:text-white">Terms of Service</a></li>
-              <li><a href="#security" className="hover:text-white">Security Center</a></li>
+              <li><button onClick={() => navigate('/privacy-policy')} className="hover:text-white transition-colors cursor-pointer">Privacy Policy</button></li>
+              <li><button onClick={() => navigate('/terms-of-service')} className="hover:text-white transition-colors cursor-pointer">Terms of Service</button></li>
+              <li><button onClick={() => navigate('/security')} className="hover:text-white transition-colors cursor-pointer">Security Center</button></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">Company</h4>
             <ul className="space-y-2 text-xs">
-              <li><a href="#about" className="hover:text-white">About Us</a></li>
-              <li><a href="#contact" className="hover:text-white">Contact Sales</a></li>
-              <li><a href="mailto:creovixstack@gmail.com" className="hover:text-white">Support</a></li>
+              <li><button onClick={() => scrollTo('why-us')} className="hover:text-white transition-colors cursor-pointer">About Us</button></li>
+              <li><button onClick={() => setIsPresentationOpen(true)} className="hover:text-white transition-colors cursor-pointer">Product Deck (.PPTX)</button></li>
+              <li><a href="mailto:creovixstack@gmail.com" className="hover:text-white transition-colors">Support</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-6 border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
           <div>© {new Date().getFullYear()} StackPilot AI. All rights reserved.</div>
           <div className="mt-2 sm:mt-0 font-bold text-slate-400">
-            Powered by <span className="text-[#22C55E]">Creovix.Stack</span>
+            Powered by{' '}
+            <a
+              href="https://creovix-website.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#22C55E] hover:underline"
+            >
+              Creovix Stack
+            </a>
           </div>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/918075995734"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/40 hover:scale-110 hover:-translate-y-1 transition-all duration-300 ease-out"
+        aria-label="Chat on WhatsApp"
+      >
+        <IoLogoWhatsapp size={32} />
+      </a>
 
       {/* Start Free Lead Capture Modal */}
       <AnimatePresence>
         {isStartFreeOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-3xl border border-slate-200 p-8 max-w-lg w-full shadow-2xl relative"
             >
-              <button 
+              <button
                 onClick={() => setIsStartFreeOpen(false)}
                 className="absolute top-6 right-6 text-slate-400 hover:text-slate-700 cursor-pointer"
               >
@@ -783,7 +901,7 @@ export const LandingPage: React.FC = () => {
                   <p className="text-sm text-slate-600">
                     Our team will contact you shortly to set up your StackPilot AI workspace.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setIsStartFreeOpen(false)}
                     className="px-6 py-2.5 rounded-xl bg-[#22C55E] text-white font-bold text-xs shadow-md"
                   >
@@ -800,10 +918,10 @@ export const LandingPage: React.FC = () => {
                   <form onSubmit={handleStartFreeSubmit} className="space-y-4 text-left">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Your Full Name</label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="John Doe" 
+                      <input
+                        type="text"
+                        required
+                        placeholder="John Doe"
                         value={startFreeData.name}
                         onChange={(e) => setStartFreeData({ ...startFreeData, name: e.target.value })}
                         className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
@@ -812,10 +930,10 @@ export const LandingPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Company Name</label>
-                        <input 
-                          type="text" 
-                          required 
-                          placeholder="Acme Corp" 
+                        <input
+                          type="text"
+                          required
+                          placeholder="Acme Corp"
                           value={startFreeData.companyName}
                           onChange={(e) => setStartFreeData({ ...startFreeData, companyName: e.target.value })}
                           className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
@@ -823,10 +941,10 @@ export const LandingPage: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Business Email</label>
-                        <input 
-                          type="email" 
-                          required 
-                          placeholder="john@acme.com" 
+                        <input
+                          type="email"
+                          required
+                          placeholder="john@acme.com"
                           value={startFreeData.email}
                           onChange={(e) => setStartFreeData({ ...startFreeData, email: e.target.value })}
                           className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
@@ -836,10 +954,10 @@ export const LandingPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
-                        <input 
-                          type="tel" 
-                          required 
-                          placeholder="+1 (555) 000-0000" 
+                        <input
+                          type="tel"
+                          required
+                          placeholder="+1 (555) 000-0000"
                           value={startFreeData.phone}
                           onChange={(e) => setStartFreeData({ ...startFreeData, phone: e.target.value })}
                           className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
@@ -847,7 +965,7 @@ export const LandingPage: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Employees</label>
-                        <select 
+                        <select
                           value={startFreeData.employees}
                           onChange={(e) => setStartFreeData({ ...startFreeData, employees: e.target.value })}
                           className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
@@ -861,16 +979,16 @@ export const LandingPage: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">Requirements / Message</label>
-                      <textarea 
-                        rows={2} 
+                      <textarea
+                        rows={2}
                         placeholder="Tell us about your team size and operational goals..."
                         value={startFreeData.message}
                         onChange={(e) => setStartFreeData({ ...startFreeData, message: e.target.value })}
                         className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
                       />
                     </div>
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={startFreeLoading}
                       className="w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white font-bold text-xs shadow-md shadow-[#22C55E]/20 transition-all cursor-pointer mt-2"
                     >
@@ -883,106 +1001,11 @@ export const LandingPage: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Product Presentation Request Modal */}
-      <AnimatePresence>
-        {isPresentationOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl border border-slate-200 p-8 max-w-md w-full shadow-2xl relative text-left"
-            >
-              <button 
-                onClick={() => setIsPresentationOpen(false)}
-                className="absolute top-6 right-6 text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                <IoCloseOutline size={24} />
-              </button>
-
-              {presSuccess ? (
-                <div className="text-center py-8 space-y-4">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 text-[#22C55E] flex items-center justify-center">
-                    <IoCheckmarkCircle size={36} />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900">Request Received!</h3>
-                  <p className="text-sm text-slate-600">
-                    Thank you! Our enterprise sales team will review your details and send the StackPilot AI Presentation Deck to your email.
-                  </p>
-                  <button 
-                    onClick={() => setIsPresentationOpen(false)}
-                    className="px-6 py-2.5 rounded-xl bg-[#22C55E] text-white font-bold text-xs shadow-md"
-                  >
-                    Close
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-black text-slate-900">Request Presentation</h3>
-                    <p className="text-xs text-slate-500 mt-1">Receive the official StackPilot AI overview deck directly.</p>
-                  </div>
-
-                  <form onSubmit={handlePresSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Your Name</label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="John Doe" 
-                        value={presData.name}
-                        onChange={(e) => setPresData({ ...presData, name: e.target.value })}
-                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Company Name</label>
-                      <input 
-                        type="text" 
-                        required 
-                        placeholder="Acme Corp" 
-                        value={presData.companyName}
-                        onChange={(e) => setPresData({ ...presData, companyName: e.target.value })}
-                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Business Email</label>
-                      <input 
-                        type="email" 
-                        required 
-                        placeholder="john@acme.com" 
-                        value={presData.email}
-                        onChange={(e) => setPresData({ ...presData, email: e.target.value })}
-                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
-                      <input 
-                        type="tel" 
-                        required 
-                        placeholder="+1 (555) 000-0000" 
-                        value={presData.phone}
-                        onChange={(e) => setPresData({ ...presData, phone: e.target.value })}
-                        className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-[#22C55E]"
-                      />
-                    </div>
-                    <button 
-                      type="submit" 
-                      disabled={presLoading}
-                      className="w-full py-3 rounded-xl bg-[#22C55E] hover:bg-[#1db053] text-white font-bold text-xs shadow-md shadow-[#22C55E]/20 transition-all cursor-pointer mt-2"
-                    >
-                      {presLoading ? 'Submitting...' : 'Request Presentation Deck'}
-                    </button>
-                  </form>
-                </>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Product Presentation Request / Direct Download Modal */}
+      <PresentationDownloadModal
+        isOpen={isPresentationOpen}
+        onClose={() => setIsPresentationOpen(false)}
+      />
     </div>
   );
 };

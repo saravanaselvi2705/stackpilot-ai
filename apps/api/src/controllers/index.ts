@@ -18,6 +18,8 @@ export * from './calendarController';
 export * from './automationController';
 export * from './saasController';
 export * from './healthController';
+export * from './presentationController';
+
 
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';

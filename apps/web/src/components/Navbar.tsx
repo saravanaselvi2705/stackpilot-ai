@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearchOpen }) => {
 
   const handleRead = async (id: string) => {
     try {
-      await API.notifications.markAsRead(id);
+      await API.notifications.markRead(id);
       const list = await API.notifications.list();
       setNotifications(list);
     } catch (err) {
